@@ -1,0 +1,32 @@
+/*
+ * some ideas about how function parallelism should look
+ */
+
+// these functions are functional
+int function1(int x) { return 0; }
+int function2(int y) { return 1; }
+
+// these functions mutate global state, and assume lexical scoping
+int mu = 10;
+int function3(int x) { return mu; }
+int function4(int y) { mu += 1; return mu; }
+
+// theoretically, these should execute in parallel automatically
+function1(0);
+function2(0);
+
+// and these shouldn't, because of the outside reference
+// possibly enforce with locks, but not all locks enforce order
+function3(0);
+function4(0);
+
+// annotations seem redundant, but it would mean not keeping track of references
+@parallel {
+    function1(0);
+    function2(0);
+}
+// and if you do the following, you just screwed yourself over
+@parallel {
+    function3(0);
+    function4(0);
+}
