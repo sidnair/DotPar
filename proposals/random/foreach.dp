@@ -1,0 +1,10 @@
+/*
+ * A specialized foreach syntax
+ */
+
+int arr[100]; // leave some sort of initialization syntax for later
+
+// treat foreach as a possible expression, as a list comprehension form
+int newarr[] = foreach(arr) {
+    yield 0;
+}
