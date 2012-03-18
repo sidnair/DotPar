@@ -1,0 +1,41 @@
+/*
+ * summing over an array example
+ */
+
+int arr[1000];
+int sum;
+
+// fill the array with random things
+for(int i=0; i<arr.length; i++) {
+    arr[i] = (int)random(0,100);
+}
+
+// sum over it
+sum = 0;
+for(int i=0; i<arr.length; i++) {
+    sum = sum + arr[i];
+}
+
+print(sum);
+
+////////////////////////////////////////////////////////////////////////////////
+// with annotations
+
+int arr[1000];
+int sum;
+
+// fill the array with random things
+@concurrent
+for(int i=0; i<arr.length; i++) {
+    arr[i] = (int)random(0,100); // random should be thread-callable anyways
+}
+
+// sum over it
+sum = 0;
+
+@concurrent // lock any external, overwriting writes?
+for(int i=0; i<arr.length; i++) {
+    sum = sum + arr[i];
+}
+
+print(sum);
