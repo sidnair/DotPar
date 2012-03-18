@@ -1,0 +1,2 @@
+@par
+arr.each(func() { ... });

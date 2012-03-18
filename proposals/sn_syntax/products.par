@@ -1,0 +1,14 @@
+// In the new aray, each element is the product of all other elements in the
+// array.
+
+funct int map(int i) {
+  return i;
+}
+
+func int reduce (int a, int b) {
+  return a * b;
+}
+
+int total = arr.par(map, reduce);
+// No reduce function means it's just a parallel map.
+arr.par(func(int i) { total / i });

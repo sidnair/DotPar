@@ -1,0 +1,13 @@
+func int reduce(int existing, int additional) {
+  return existing + additional;
+}
+
+func int map(int i) {
+  if (i == 3) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+
+arr.map_and_reduce(map, reduce);

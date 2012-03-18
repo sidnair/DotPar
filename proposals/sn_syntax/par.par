@@ -1,0 +1,25 @@
+class Array {
+
+  func map_and_reduce(map, reduce) {
+    if (map.se || reduce.se) {
+      for (int i = 0; i < self.length; i++) {
+        self[i] = map(self[i]);
+      }
+      Obj red = new Object();
+      for (int i = 0; i < self.length; i++) {
+        red(red, self[i]);
+      }
+    } else {
+      @par map_and_reduce: self, map, reduce
+    }
+  }
+
+  func par(map, reduce) {
+    @par map_and_reduce: map, reduce
+  }
+
+  func par(map) {
+    @par map: map
+  }
+
+}

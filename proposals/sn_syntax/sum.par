@@ -1,0 +1,9 @@
+func int reduce(int existing, int additional) {
+  return existing + additional;
+}
+
+func int map(int i) {
+  return i;
+}
+
+arr.par(map, reduce);
