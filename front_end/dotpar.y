@@ -43,51 +43,28 @@
 
 %%
 
+statement_list : statement_list statement
+               | statement
+               /*| statement_list declaration*/
+               /*| declaration*/
+               ;
 
-tmp : tmp ';' {printf("yeaaah\n");}
-    | {printf("nooo\n");}
-    ;
+statement: expression_statement
+         | compound_statement
+         /*| selection_statement*/
+         /*| iteration_statement*/
+         ;
 
-/*lines : lines expr '\n'   {*/
-                            /*if ($2)*/
-                              /*printf("true\n");*/
-                            /*else*/
-                              /*printf("false\n");*/
-                          /*}*/
-      /*| lines '\n'*/
-      /*| [> empty <]*/
-      /*;*/
+expression_statement: expression ';'
+                    | ';'
+                    ;
 
-/*expr : expr OR expr     { $$ = !!($1 || $3); }*/
-     /*| expr AND expr    { $$ = !!($1 && $3); }*/
-     /*| NOT expr         { $$ = !($2); }*/
-     /*| '(' expr ')'     { $$ = $2; }*/
-     /*| TRUE             { $$ = 1; }*/
-     /*| FALSE            { $$ = 0; }*/
-     /*;*/
+expression: TRUE
+          ;
 
-/*statement_list : statement_list statement*/
-               /*| statement*/
-               /*[>| statement_list declaration<]*/
-               /*[>| declaration<]*/
-               /*;*/
-
-/*statement: expression_statement*/
-         /*| compound_statement*/
-         /*[>| selection_statement<]*/
-         /*[>| iteration_statement<]*/
-         /*;*/
-
-/*expression_statement: expression ';'*/
-                    /*| ';'*/
-                    /*;*/
-
-/*expression: TRUE*/
-          /*;*/
-
-/*compound_statement: '{' statement_list '}'*/
-                  /*| '{' '}'*/
-                  /*;*/
+compound_statement: '{' statement_list '}'
+                  | '{' '}'
+                  ;
 
 
 %%

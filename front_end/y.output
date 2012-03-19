@@ -1,6 +1,5 @@
 Terminals unused in grammar
 
-   TRUE
    FALSE
    NIL
    STRUCT
@@ -33,18 +32,31 @@ Terminals unused in grammar
 
 Grammar
 
-    0 $accept: tmp $end
+    0 $accept: statement_list $end
 
-    1 tmp: tmp ';'
-    2    | /* empty */
+    1 statement_list: statement_list statement
+    2               | statement
+
+    3 statement: expression_statement
+    4          | compound_statement
+
+    5 expression_statement: expression ';'
+    6                     | ';'
+
+    7 expression: TRUE
+
+    8 compound_statement: '{' statement_list '}'
+    9                   | '{' '}'
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
-';' (59) 1
+';' (59) 5 6
+'{' (123) 8 9
+'}' (125) 8 9
 error (256)
-TRUE (258)
+TRUE (258) 7
 FALSE (259)
 NIL (260)
 STRUCT (261)
@@ -77,39 +89,156 @@ MOD (286)
 
 Nonterminals, with rules where they appear
 
-$accept (33)
+$accept (35)
     on left: 0
-tmp (34)
-    on left: 1 2, on right: 0 1
+statement_list (36)
+    on left: 1 2, on right: 0 1 8
+statement (37)
+    on left: 3 4, on right: 1 2
+expression_statement (38)
+    on left: 5 6, on right: 3
+expression (39)
+    on left: 7, on right: 5
+compound_statement (40)
+    on left: 8 9, on right: 4
 
 
 state 0
 
-    0 $accept: . tmp $end
+    0 $accept: . statement_list $end
 
-    $default  reduce using rule 2 (tmp)
+    TRUE  shift, and go to state 1
+    ';'   shift, and go to state 2
+    '{'   shift, and go to state 3
 
-    tmp  go to state 1
+    statement_list        go to state 4
+    statement             go to state 5
+    expression_statement  go to state 6
+    expression            go to state 7
+    compound_statement    go to state 8
 
 
 state 1
 
-    0 $accept: tmp . $end
-    1 tmp: tmp . ';'
+    7 expression: TRUE .
 
-    $end  shift, and go to state 2
-    ';'   shift, and go to state 3
+    $default  reduce using rule 7 (expression)
 
 
 state 2
 
-    0 $accept: tmp $end .
+    6 expression_statement: ';' .
 
-    $default  accept
+    $default  reduce using rule 6 (expression_statement)
 
 
 state 3
 
-    1 tmp: tmp ';' .
+    8 compound_statement: '{' . statement_list '}'
+    9                   | '{' . '}'
 
-    $default  reduce using rule 1 (tmp)
+    TRUE  shift, and go to state 1
+    ';'   shift, and go to state 2
+    '{'   shift, and go to state 3
+    '}'   shift, and go to state 9
+
+    statement_list        go to state 10
+    statement             go to state 5
+    expression_statement  go to state 6
+    expression            go to state 7
+    compound_statement    go to state 8
+
+
+state 4
+
+    0 $accept: statement_list . $end
+    1 statement_list: statement_list . statement
+
+    $end  shift, and go to state 11
+    TRUE  shift, and go to state 1
+    ';'   shift, and go to state 2
+    '{'   shift, and go to state 3
+
+    statement             go to state 12
+    expression_statement  go to state 6
+    expression            go to state 7
+    compound_statement    go to state 8
+
+
+state 5
+
+    2 statement_list: statement .
+
+    $default  reduce using rule 2 (statement_list)
+
+
+state 6
+
+    3 statement: expression_statement .
+
+    $default  reduce using rule 3 (statement)
+
+
+state 7
+
+    5 expression_statement: expression . ';'
+
+    ';'  shift, and go to state 13
+
+
+state 8
+
+    4 statement: compound_statement .
+
+    $default  reduce using rule 4 (statement)
+
+
+state 9
+
+    9 compound_statement: '{' '}' .
+
+    $default  reduce using rule 9 (compound_statement)
+
+
+state 10
+
+    1 statement_list: statement_list . statement
+    8 compound_statement: '{' statement_list . '}'
+
+    TRUE  shift, and go to state 1
+    ';'   shift, and go to state 2
+    '{'   shift, and go to state 3
+    '}'   shift, and go to state 14
+
+    statement             go to state 12
+    expression_statement  go to state 6
+    expression            go to state 7
+    compound_statement    go to state 8
+
+
+state 11
+
+    0 $accept: statement_list $end .
+
+    $default  accept
+
+
+state 12
+
+    1 statement_list: statement_list statement .
+
+    $default  reduce using rule 1 (statement_list)
+
+
+state 13
+
+    5 expression_statement: expression ';' .
+
+    $default  reduce using rule 5 (expression_statement)
+
+
+state 14
+
+    8 compound_statement: '{' statement_list '}' .
+
+    $default  reduce using rule 8 (compound_statement)
