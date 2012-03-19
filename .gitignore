@@ -1,4 +1,8 @@
 *~
 *.swp
-
 *.class
+*.out
+*.c
+*.h
+*.output
+*#
