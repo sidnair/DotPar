@@ -35,8 +35,9 @@
 "*"                       { return MULT; }
 "/"                       { return DIV; }
 "%"                       { return MOD; }
+
 \n
-[ \t]+
+[ \t\v\n\f]+
 .                         { return yytext[0]; }
 
 %%

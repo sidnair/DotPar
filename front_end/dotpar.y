@@ -43,6 +43,7 @@
 
 %%
 
+/*Can compound statement become statement? */
 statement_list : statement_list statement
                | statement
                /*| statement_list declaration*/
@@ -51,7 +52,7 @@ statement_list : statement_list statement
 
 statement: expression_statement
          | compound_statement
-         /*| selection_statement*/
+         | selection_statement
          /*| iteration_statement*/
          ;
 
@@ -59,8 +60,48 @@ expression_statement: expression ';'
                     | ';'
                     ;
 
-expression: TRUE
+
+
+primary_expression: identifier
+                  | constant
+                  | string
+                  | '(' expression ')'
+                  ;
+
+postfix_expression: primary_expression
+                  | postfix_expression '[' expression ']'
+                  /* Function call */
+                  | postfix_exprssion '(' argument_expression_list_opt ')'
+
+argument_expression_list: assignment_expression
+                        | argument_expression_list ',' assignment_expression
+                        ;
+
+
+
+
+
+opt_expression: expression
+              | /* empty statement */
+              ;
+
+expression: assignment_expression
+          | expression ',' assignment_expression
           ;
+
+int x, y, z = 4;
+
+assignment_expression: conditional_expression
+                     | unary_expression assignment_operator assignment_expression
+                     ;
+
+
+selection_statement: IF '(' expression ')' compound_statement
+                   | IF '(' expression ')' compound_statement ELSE compound_statement
+                   ;
+
+iteration_statement: FOR '(' opt_expression ';' opt_expression ';' opt_expression ')' compound_statement
+                   ;
 
 compound_statement: '{' statement_list '}'
                   | '{' '}'
