@@ -35,6 +35,20 @@ func matrix_multiply(number[][] a, number[][] b) {
         	for row in a];
 }
 
+func count_threes(number[] a) {
+
+  // Version 1
+  len([true for val in a if val == 3])
+
+  // Version 2
+  a.reduce(func(mem, val) {
+    if (val == 3) {
+      return mem + 1;
+    } else {
+      return mem;
+    }, a, 0);
+}
+
 SYNTAX
 // ######################################################################
 // ----------------------------------------------------------------------
