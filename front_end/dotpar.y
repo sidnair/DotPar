@@ -43,15 +43,20 @@
 
 %%
 
-lines : lines expr '\n'
-      | lines '\n'
-      | /* empty */
-      ;
 
-expr : TRUE
-     ;
+tmp : tmp ';' {printf("yeaaah\n");}
+    | {printf("nooo\n");}
+    ;
 
-/*primary_expr: identify*/
+/*lines : lines expr '\n'   {*/
+                            /*if ($2)*/
+                              /*printf("true\n");*/
+                            /*else*/
+                              /*printf("false\n");*/
+                          /*}*/
+      /*| lines '\n'*/
+      /*| [> empty <]*/
+      /*;*/
 
 /*expr : expr OR expr     { $$ = !!($1 || $3); }*/
      /*| expr AND expr    { $$ = !!($1 && $3); }*/
@@ -60,6 +65,30 @@ expr : TRUE
      /*| TRUE             { $$ = 1; }*/
      /*| FALSE            { $$ = 0; }*/
      /*;*/
+
+/*statement_list : statement_list statement*/
+               /*| statement*/
+               /*[>| statement_list declaration<]*/
+               /*[>| declaration<]*/
+               /*;*/
+
+/*statement: expression_statement*/
+         /*| compound_statement*/
+         /*[>| selection_statement<]*/
+         /*[>| iteration_statement<]*/
+         /*;*/
+
+/*expression_statement: expression ';'*/
+                    /*| ';'*/
+                    /*;*/
+
+/*expression: TRUE*/
+          /*;*/
+
+/*compound_statement: '{' statement_list '}'*/
+                  /*| '{' '}'*/
+                  /*;*/
+
 
 %%
 

@@ -1,0 +1,115 @@
+Terminals unused in grammar
+
+   TRUE
+   FALSE
+   NIL
+   STRUCT
+   NUMBER
+   BOOLEAN
+   CHAR
+   ARRAY
+   IF
+   ELSE
+   ELIF
+   FOR
+   IN
+   APPEND
+   AND
+   OR
+   NOT
+   GT
+   LT
+   GEQ
+   LEQ
+   EQ
+   NEQ
+   ASSIGN
+   PLUS
+   MINUS
+   MULT
+   DIV
+   MOD
+
+
+Grammar
+
+    0 $accept: tmp $end
+
+    1 tmp: tmp ';'
+    2    | /* empty */
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+';' (59) 1
+error (256)
+TRUE (258)
+FALSE (259)
+NIL (260)
+STRUCT (261)
+NUMBER (262)
+BOOLEAN (263)
+CHAR (264)
+ARRAY (265)
+IF (266)
+ELSE (267)
+ELIF (268)
+FOR (269)
+IN (270)
+APPEND (271)
+AND (272)
+OR (273)
+NOT (274)
+GT (275)
+LT (276)
+GEQ (277)
+LEQ (278)
+EQ (279)
+NEQ (280)
+ASSIGN (281)
+PLUS (282)
+MINUS (283)
+MULT (284)
+DIV (285)
+MOD (286)
+
+
+Nonterminals, with rules where they appear
+
+$accept (33)
+    on left: 0
+tmp (34)
+    on left: 1 2, on right: 0 1
+
+
+state 0
+
+    0 $accept: . tmp $end
+
+    $default  reduce using rule 2 (tmp)
+
+    tmp  go to state 1
+
+
+state 1
+
+    0 $accept: tmp . $end
+    1 tmp: tmp . ';'
+
+    $end  shift, and go to state 2
+    ';'   shift, and go to state 3
+
+
+state 2
+
+    0 $accept: tmp $end .
+
+    $default  accept
+
+
+state 3
+
+    1 tmp: tmp ';' .
+
+    $default  reduce using rule 1 (tmp)
