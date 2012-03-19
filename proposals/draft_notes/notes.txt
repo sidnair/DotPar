@@ -1,0 +1,140 @@
+// each row in A processed independently(last line) columns are converted into
+// sequence items by transposing the input array B so, for each row of A each of
+// the columns of B will be paired and processed in parallel
+function matrix_multiply(A,B)=
+{{sum({x*y : x in rowA; y in columnB})
+	: columnB in transpose(B)}
+	: rowA in A}
+
+// ----------------------------------
+func transpose(number[][] a) {
+	number[][] b = fill(func() { return 0; }, [len(a), len(a[0]);
+	for (int i<0; i < len(a[]); i++){
+    	for (int j<0; j < len(a[0]); j++){  
+        	number tmp = b[i][j];
+        	b[i][j] = a[j][i];
+        	b[j][i] = tmp;
+    	}
+	}  
+}
+
+func matrix_multiply(number[][] a, number[][] b) {
+	func sum(number a, number b) {
+    	return a + b;
+	}
+    
+	func dotprod(number[] a, number[] b) {
+    	return reduce(sum, [x*y for x,y in a,b]);
+	}
+    
+	if (len(a) != len(b[0])) {
+    	return null;
+	}
+    
+	return [[dotprod(row, col) for col in transpose(b)]
+        	for row in a];
+}
+
+SYNTAX
+// ######################################################################
+// ----------------------------------------------------------------------
+
+// Assignment
+number x = 10; // everything is a double
+
+// TYPES
+Struct
+Number
+Boolean
+Char  // strings are arrays of chars, special syntax
+Array // define arrays as [thing, thing, thing]
+
+func name(typed_args) {}
+
+// If, else, else if
+if (cond) {
+} else if (cond) {
+} else {}
+
+//for loop
+for(int i = 0; i < 10; i++) {}
+
+//for each
+for row in array {}
+
+// List comprehension and filtering
+foo = [sqrt(x) for x in [1, 3, 9] if (cond)];
+foo = [x*y for x,y in zip([1, 3, 9], [1, 2, 3]) if (cond)];
+foo = [sqrt(x*y) for x,y in [1, 3, 9], [1, 2, 3] if (cond)]; // alternative syntax?
+
+// Built-in functions
+zip(arr, other_arr) // maybe, or alternative syntax above
+
+reduce(sum, nums, 0) // 0 is initializer
+
+map(fn, arr);
+
+filter(fn, arr);
+
+len(arr);
+#arr; // length
+
+// Array initialization
+[1,2,3] // array literal
+[1,2] ++ [3,4]  -> [1,2,3,4]
+fill(fn, [num])
+
+// Array indexing
+arr[0];
+
+// Logical
+&&, ||, !,
+
+// Comp
+==, !=
+
+//Assignment
+=
+
+// Arithmetic
++, -, *, /, %
+sqrt, ln, log(num, base), exp(num, exponent)
+ceil, floor, trunc, round
+sin(x), cos(x), tan(x)
+rand(cap) // use the thread-safe rand
+
+// I/O
+print()
+read()
+
+
+// LATER
+// arr[a:b], [a:b] as sequence of nums, [a:b:stride]
+// namespaces are important only for further stuff, fuck it
+// zip!, map!
+// remove, append
+// *=, /=, +=, -=, %=
+// foo = [sqrt(x*y) for x,y in zip([1, 3, 9], [1, 2, 3]) if (cond)];
+// struct equivalent
+
+// DEMONSTRATIONS
+// Possible reductions
+sum(a)
+max_val(a)
+min_val(a)
+any(a)
+all(a)
+count(a)
+max_index(a)
+min_index(a)
+
+// other things to demonstrate
+sort(a)
+
+
+// hard // so hard // so hard // so
+sum = 0;
+(1..4).each(func() {
+	sum += heavyFn(Math.rand());
+});
+asserts // don't do this, derp
