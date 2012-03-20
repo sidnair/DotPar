@@ -13,11 +13,11 @@ A                         {D}|{L}
 "true"                    { return TRUE; }
 "false"                   { return FALSE; }
 "nil"                     { return NIL; }
-"struct"                  { return STRUCT; }
-"number"                  { return NUMBER; }
 "boolean"                 { return BOOLEAN; }
 "char"                    { return CHAR; }
-"array"                   { return ARRAY; }
+"func"                    { return FUNC; }
+"number"                  { return NUMBER; }
+"void"                    { return VOID; }
 "if"                      { return IF; }
 "else"                    { return ELSE; }
 "elif"                    { return ELIF; }

@@ -8,11 +8,11 @@
 %token TRUE
 %token FALSE
 %token NIL
-%token STRUCT
-%token NUMBER
 %token BOOLEAN
 %token CHAR
-%token ARRAY
+%token FUNC
+%token NUMBER
+%token VOID
 %token IF
 %token ELSE
 %token ELIF
@@ -53,6 +53,7 @@
 %%
 
 lines: lines primary_expression
+     | lines declaration
      |
      ;
 
@@ -61,9 +62,6 @@ constant: CHAR_LITERAL
         | TRUE
         | FALSE
         ;
-
-identifier: IDENTIFIER
-          ;
 
 argument_expression_list: assignment_expression
                         | argument_expression_list ',' assignment_expression
@@ -115,15 +113,44 @@ assignment_expression: conditional_expression
 expression: assignment_expression
           ;
 
-primary_expression: identifier
+primary_expression: IDENTIFIER
                   | constant
                   | STRING_LITERAL
                   | '(' expression ')'
                   ;
 
+/* TODO - fix array and func */
+type: NUMBER
+    | CHAR
+    | BOOLEAN
+    | FUNC
+    | VOID
+    ;
 
+/* TODO - handle funcs, incl assignment */
+declaration: type_specifier declarator
+           | type_specifier declarator ASSIGN initializer
+           ;
 
+declarator: IDENTIFIER
+          | '(' declarator ')'
+          | '[' ']' IDENTIFIER
+          | IDENTIFIER ':' type_specifier '(' parameter_list_opt ')'
+          | ':' type_specifier '(' parameter_list_opt ')'
+          | ':' type_specifier '(' parameter_list_opt ')' IDENTIFIER
+          ;
 
+parameter_list_opt: parameter_list
+                  | /*empty */
+                  ;
+
+parameter_list: parameter_declaration
+              | parameter_list ',' parameter_declaration
+              ;
+
+parameter_declaration: type_specifier declarator
+
+initializer: TRUE
 
 
 /*[>Can compound statement become statement? <]*/
