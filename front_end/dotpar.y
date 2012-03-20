@@ -52,10 +52,8 @@
 
 %%
 
-lines: lines primary_expression ';'
-     | lines declaration ';'
-     |
-     ;
+s: file
+ ;
 
 constant: CHAR_LITERAL
         | NUM_LITERAL
@@ -103,11 +101,8 @@ conditional_expression: relational_expression
                       | conditional_expression AND conditional_expression {printf("and\n");}
                       ;
 
-assignment_operator: ASSIGN
-                   ;
-
 assignment_expression: conditional_expression
-                     | postfix_expression assignment_operator assignment_expression
+                     | postfix_expression ASSIGN assignment_expression
                      ;
 
 expression: assignment_expression
@@ -122,26 +117,26 @@ primary_expression: IDENTIFIER
 /* TODO - fix array and func */
 
 type_specifier: type_specifier '[' ']'
-              | type
-              | FUNC ':' type_specifier '(' type_list ')' 
-              | FUNC ':' type_specifier '(' parameter_list_opt ')' 
+              | reg_type
+              | func_specifier
               ;
 
-type: NUMBER
+func_specifier: FUNC ':' type_specifier '(' type_list ')' 
+              | FUNC ':' type_specifier '(' parameter_list_opt ')'
+              ;
+reg_type: NUMBER
     | CHAR
     | BOOLEAN
     | VOID
-    | FUNC
     ;
 
 /* TODO - handle funcs, incl assignment */
-declaration: type_specifier declarator
-           | type_specifier declarator ASSIGN initializer
+declaration: type_specifier declarator ';'
+           | type_specifier declarator ASSIGN initializer ';'
            ;
 
 declarator: IDENTIFIER
           | '(' declarator ')'
-          | IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' 
           ;
 
 type_list: type_specifier
@@ -172,52 +167,58 @@ initializer_list: initializer
                 | initializer_list ',' initializer
                 ;
 
+expression_statement: expression_opt ';'
+                    ;
+
+expression_opt: expression
+              | /* empty statement */
+              ;
+
+compound_statement: '{' statement_list_opt '}'
+                  ;
+ Force only compound statements? */
+statement_list_opt: statement_list
+                  | /* empty */
+                  ;
+
+/* Allow statements and declarations to be interwoven. */
+statement_list : statement_list statement
+               | statement
+               | statement_list declaration
+               | declaration
+               ;
+
+selection_statement: IF '(' expression ')' compound_statement
+                   | IF '(' expression ')' compound_statement ELSE compound_statement
+                   ;
+
+iteration_statement: FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' compound_statement
+                   ;
+
+statement: expression_statement
+         | compound_statement
+         | selection_statement
+         | iteration_statement
+         ;
+
+function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
+                   ;
+
+external_declaration: function_definition
+                    | declaration
+                    ;
+
+file: external_declaration
+    | file external_declaration
+    ;
+
 
 /* TODOS*/
 /*array literals as params - foo(number[] [1, 2, 3]);*/
 /*object literals*/
+/*while*/
+/* *= */
 
-
-/*[>Can compound statement become statement? <]*/
-/*statement_list : statement_list statement*/
-               /*| statement*/
-               /*[>| statement_list declaration<]*/
-               /*[>| declaration<]*/
-               /*;*/
-
-/*statement: expression_statement*/
-         /*| compound_statement*/
-         /*| selection_statement*/
-         /*[>| iteration_statement<]*/
-         /*;*/
-
-/*expression_statement: expression ';'*/
-                    /*| ';'*/
-                    /*;*/
-
-/*opt_expression: expression*/
-              /*| [> empty statement <]*/
-              /*;*/
-
-/*expression: assignment_expression*/
-          /*| expression ',' assignment_expression*/
-          /*;*/
-
-/*assignment_expression: conditional_expression*/
-                     /*| unary_expression assignment_operator assignment_expression*/
-                     /*;*/
-
-
-/*selection_statement: IF '(' expression ')' compound_statement*/
-                   /*| IF '(' expression ')' compound_statement ELSE compound_statement*/
-                   /*;*/
-
-/*iteration_statement: FOR '(' opt_expression ';' opt_expression ';' opt_expression ')' compound_statement*/
-                   /*;*/
-
-/*compound_statement: '{' statement_list '}'*/
-                  /*| '{' '}'*/
-                  /*;*/
 
 
 %%
