@@ -2,6 +2,8 @@
 #include "y.tab.h"
 %}
 
+D                         [0-9]
+
 %%
 
 "/*"                      { multicomment(); }
@@ -35,6 +37,11 @@
 "*"                       { return MULT; }
 "/"                       { return DIV; }
 "%"                       { return MOD; }
+
+{D}*\.{D}+|{D}+           { return NUM_CONSTANT; }
+'(\\.|[^'\n])'            { return CHAR_CONSTANT; }
+\"(\\.|[^\\"\n])*\"       { return STRING_CONSTANT; }
+
 
 \n
 [ \t\v\n\f]+
