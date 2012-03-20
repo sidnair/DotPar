@@ -2,3 +2,8 @@
 *.swp
 
 *.class
+
+# LaTeX temp files
+*.aux
+*.log
+*.pdf
