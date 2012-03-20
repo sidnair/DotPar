@@ -120,11 +120,18 @@ primary_expression: IDENTIFIER
                   ;
 
 /* TODO - fix array and func */
+
+type_specifier: type_specifier '[' ']'
+              | type
+              | FUNC ':' type_specifier '(' type_list ')' 
+              | FUNC ':' type_specifier '(' parameter_list_opt ')' 
+              ;
+
 type: NUMBER
     | CHAR
     | BOOLEAN
-    | FUNC
     | VOID
+    | FUNC
     ;
 
 /* TODO - handle funcs, incl assignment */
@@ -134,11 +141,12 @@ declaration: type_specifier declarator
 
 declarator: IDENTIFIER
           | '(' declarator ')'
-          | '[' ']' IDENTIFIER
-          | IDENTIFIER ':' type_specifier '(' parameter_list_opt ')'
-          | ':' type_specifier '(' parameter_list_opt ')'
-          | ':' type_specifier '(' parameter_list_opt ')' IDENTIFIER
+          | IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' 
           ;
+
+type_list: type_specifier
+         | type_list ',' type_specifier
+         ;
 
 parameter_list_opt: parameter_list
                   | /*empty */
@@ -149,6 +157,7 @@ parameter_list: parameter_declaration
               ;
 
 parameter_declaration: type_specifier declarator
+                     ;
 
 initializer: TRUE
 
