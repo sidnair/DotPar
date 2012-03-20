@@ -38,9 +38,9 @@ D                         [0-9]
 "/"                       { return DIV; }
 "%"                       { return MOD; }
 
-{D}*\.{D}+|{D}+           { return NUM_CONSTANT; }
-'(\\.|[^'\n])'            { return CHAR_CONSTANT; }
-\"(\\.|[^\\"\n])*\"       { return STRING_CONSTANT; }
+{D}*\.{D}+|{D}+           { return NUM_LITERAL; }
+'(\\.|[^'\n])'            { return CHAR_LITERAL; }
+\"(\\.|[^\\"\n])*\"       { return STRING_LITERAL; }
 
 
 \n

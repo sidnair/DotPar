@@ -34,9 +34,9 @@
 %token MULT
 %token DIV
 %token MOD
-%token STRING_CONSTANT
-%token NUM_CONSTANT
-%token CHAR_CONSTANT
+%token STRING_LITERAL
+%token NUM_LITERAL
+%token CHAR_LITERAL
 
 /*
 %left OR
@@ -50,18 +50,19 @@ lines: lines constant
      |
      ;
 
-constant: char_constant
-        | num_constant
-        | string_constant
+/* CONSTANTS */
+constant: char_literal
+        | num_literal
+        | string_literal
         ;
 
-num_constant: NUM_CONSTANT
+num_literal: NUM_LITERAL
             ;
 
-char_constant: CHAR_CONSTANT
+char_literal: CHAR_LITERAL
             ;
 
-string_constant: STRING_CONSTANT
+string_literal: STRING_LITERAL
             ;
 
 
