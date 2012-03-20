@@ -29,21 +29,26 @@
 %token EQ
 %token NEQ
 %token ASSIGN
-%token PLUS
-%token MINUS
+%token ADD
+%token SUB
 %token MULT
 %token DIV
-%token MOD
+%token REM
 %token STRING_LITERAL
 %token NUM_LITERAL
 %token CHAR_LITERAL
 %token IDENTIFIER
 
-/*
 %left OR
 %left AND
-%right NOT
-*/ 
+
+%left EQ NEQ
+%left GT GEQ LT LEQ
+
+%left ADD SUB
+%left MULT DIV REM
+
+/*%right NOT*/
 %%
 
 /* CONSTANTS */
@@ -67,19 +72,30 @@ string_literal: STRING_LITERAL
 identifier: IDENTIFIER
           ;
 
-equality_expression: TRUE
-                   | FALSE
-                   ;
+unary_expression: TRUE
+                | FALSE
+                ;
 
-logical_AND_expression: logical_AND_expression AND equality_expression
-                      | equality_expression
+arithmetic_expression: unary_expression
+                      | arithmetic_expression REM arithmetic_expression { printf("rem"); }
+                      | arithmetic_expression DIV arithmetic_expression {printf("div"); }
+                      | arithmetic_expression MULT arithmetic_expression {printf("mult");}
+                      | arithmetic_expression ADD arithmetic_expression {printf("add");}
+                      | arithmetic_expression SUB arithmetic_expression {printf("sub");}
                       ;
 
-logical_OR_expression: logical_AND_expression
-                     | logical_OR_expression OR logical_AND_expression
+relational_expression: arithmetic_expression
+                     | relational_expression GEQ relational_expression {printf(">=");}
+                     | relational_expression GT relational_expression {printf(">");}
+                     | relational_expression LT relational_expression {printf("<");}
+                     | relational_expression LEQ relational_expression {printf("<=");}
+                     | relational_expression EQ relational_expression {printf("==");}
+                     | relational_expression NEQ relational_expression {printf("!=");}
                      ;
 
-conditional_expression: logical_OR_expression
+conditional_expression: relational_expression
+                      | conditional_expression OR conditional_expression {printf("or");}
+                      | conditional_expression AND conditional_expression {printf("and");}
                       ;
 
 assignment_operator: EQ

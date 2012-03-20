@@ -34,11 +34,11 @@ A                         {D}|{L}
 "=="                      { return EQ; }
 "!="                      { return NEQ; }
 "="                       { return ASSIGN; }
-"+"                       { return PLUS; }
-"-"                       { return MINUS; }
+"+"                       { return ADD; }
+"-"                       { return SUB; }
 "*"                       { return MULT; }
 "/"                       { return DIV; }
-"%"                       { return MOD; }
+"%"                       { return REM; }
 
 {D}*\.{D}+|{D}+           { return NUM_LITERAL; }
 '(\\.|[^'\n])'            { return CHAR_LITERAL; }
