@@ -52,8 +52,8 @@
 
 %%
 
-lines: lines primary_expression
-     | lines declaration
+lines: lines primary_expression ';'
+     | lines declaration ';'
      |
      ;
 
@@ -159,7 +159,23 @@ parameter_list: parameter_declaration
 parameter_declaration: type_specifier declarator
                      ;
 
-initializer: TRUE
+
+initializer: '[' opt_initializer_list ']'
+           | conditional_expression
+           ;
+
+opt_initializer_list: initializer_list
+                    | /* empty */
+                    ;
+
+initializer_list: initializer
+                | initializer_list ',' initializer
+                ;
+
+
+/* TODOS*/
+/*array literals as params - foo(number[] [1, 2, 3]);*/
+/*object literals*/
 
 
 /*[>Can compound statement become statement? <]*/
