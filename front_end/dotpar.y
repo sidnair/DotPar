@@ -48,7 +48,8 @@
 %left ADD SUB
 %left MULT DIV REM
 
-/*%right NOT*/
+%right UMINUS
+
 %%
 
 /* CONSTANTS */
@@ -72,30 +73,36 @@ string_literal: STRING_LITERAL
 identifier: IDENTIFIER
           ;
 
-unary_expression: TRUE
-                | FALSE
+
+postfix_expression: TRUE
+                  | FALSE
+                  ;
+
+unary_expression: postfix_expression
+                | NOT unary_expression {printf("not\n");}
+                | SUB unary_expression %prec UMINUS {printf("negate\n");}
                 ;
 
 arithmetic_expression: unary_expression
-                      | arithmetic_expression REM arithmetic_expression { printf("rem"); }
-                      | arithmetic_expression DIV arithmetic_expression {printf("div"); }
-                      | arithmetic_expression MULT arithmetic_expression {printf("mult");}
-                      | arithmetic_expression ADD arithmetic_expression {printf("add");}
-                      | arithmetic_expression SUB arithmetic_expression {printf("sub");}
+                      | arithmetic_expression REM arithmetic_expression { printf("rem\n"); }
+                      | arithmetic_expression DIV arithmetic_expression {printf("div\n"); }
+                      | arithmetic_expression MULT arithmetic_expression {printf("mult\n");}
+                      | arithmetic_expression ADD arithmetic_expression {printf("add\n");}
+                      | arithmetic_expression SUB arithmetic_expression {printf("sub\n");}
                       ;
 
 relational_expression: arithmetic_expression
-                     | relational_expression GEQ relational_expression {printf(">=");}
-                     | relational_expression GT relational_expression {printf(">");}
-                     | relational_expression LT relational_expression {printf("<");}
-                     | relational_expression LEQ relational_expression {printf("<=");}
-                     | relational_expression EQ relational_expression {printf("==");}
-                     | relational_expression NEQ relational_expression {printf("!=");}
+                     | relational_expression GEQ relational_expression {printf(">=\n");}
+                     | relational_expression GT relational_expression {printf(">\n");}
+                     | relational_expression LT relational_expression {printf("<\n");}
+                     | relational_expression LEQ relational_expression {printf("<=\n");}
+                     | relational_expression EQ relational_expression {printf("==\n");}
+                     | relational_expression NEQ relational_expression {printf("!=\n");}
                      ;
 
 conditional_expression: relational_expression
-                      | conditional_expression OR conditional_expression {printf("or");}
-                      | conditional_expression AND conditional_expression {printf("and");}
+                      | conditional_expression OR conditional_expression {printf("or\n");}
+                      | conditional_expression AND conditional_expression {printf("and\n");}
                       ;
 
 assignment_operator: EQ
