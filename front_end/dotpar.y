@@ -63,8 +63,13 @@ num_literal: NUM_LITERAL
 char_literal: CHAR_LITERAL
             ;
 
+boolean_literal: TRUE
+               | FALSE
+               ;
+
 constant: char_literal
         | num_literal
+        | boolean_literal
         ;
 
 string_literal: STRING_LITERAL
@@ -74,8 +79,18 @@ identifier: IDENTIFIER
           ;
 
 
-postfix_expression: TRUE
-                  | FALSE
+
+argument_expression_list: assignment_expression
+                        | argument_expression_list ',' assignment_expression
+                        ;
+
+argument_expression_list_opt: argument_expression_list
+                            |  /* empty */
+                            ;
+
+postfix_expression: primary_expression
+                  | postfix_expression '[' expression ']'
+                  | postfix_expression '(' argument_expression_list_opt ')'
                   ;
 
 unary_expression: postfix_expression
@@ -105,11 +120,11 @@ conditional_expression: relational_expression
                       | conditional_expression AND conditional_expression {printf("and\n");}
                       ;
 
-assignment_operator: EQ
+assignment_operator: ASSIGN
                    ;
 
 assignment_expression: conditional_expression
-                     /*| unary_expression assignment_operator assignment_expression*/
+                     | postfix_expression assignment_operator assignment_expression
                      ;
 
 expression: assignment_expression
@@ -120,7 +135,6 @@ primary_expression: identifier
                   | string_literal
                   | '(' expression ')'
                   ;
-
 
 
 
@@ -144,27 +158,6 @@ primary_expression: identifier
                     /*| ';'*/
                     /*;*/
 
-
-
-/*primary_expression: identifier*/
-                  /*| constant*/
-                  /*| string*/
-                  /*| '(' expression ')'*/
-                  /*;*/
-
-/*postfix_expression: primary_expression*/
-                  /*| postfix_expression '[' expression ']'*/
-                  /*[> Function call <]*/
-                  /*| postfix_exprssion '(' argument_expression_list_opt ')'*/
-
-/*argument_expression_list: assignment_expression*/
-                        /*| argument_expression_list ',' assignment_expression*/
-                        /*;*/
-
-
-
-
-
 /*opt_expression: expression*/
               /*| [> empty statement <]*/
               /*;*/
@@ -172,8 +165,6 @@ primary_expression: identifier
 /*expression: assignment_expression*/
           /*| expression ',' assignment_expression*/
           /*;*/
-
-/*int x, y, z = 4;*/
 
 /*assignment_expression: conditional_expression*/
                      /*| unary_expression assignment_operator assignment_expression*/
