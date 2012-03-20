@@ -52,33 +52,18 @@
 
 %%
 
-/* CONSTANTS */
 lines: lines primary_expression
      |
      ;
 
-num_literal: NUM_LITERAL
-            ;
-
-char_literal: CHAR_LITERAL
-            ;
-
-boolean_literal: TRUE
-               | FALSE
-               ;
-
-constant: char_literal
-        | num_literal
-        | boolean_literal
+constant: CHAR_LITERAL
+        | NUM_LITERAL
+        | TRUE
+        | FALSE
         ;
-
-string_literal: STRING_LITERAL
-            ;
 
 identifier: IDENTIFIER
           ;
-
-
 
 argument_expression_list: assignment_expression
                         | argument_expression_list ',' assignment_expression
@@ -132,7 +117,7 @@ expression: assignment_expression
 
 primary_expression: identifier
                   | constant
-                  | string_literal
+                  | STRING_LITERAL
                   | '(' expression ')'
                   ;
 
