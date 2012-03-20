@@ -3,6 +3,8 @@
 %}
 
 D                         [0-9]
+L                         [A-Za-z]
+A                         {D}|{L}
 
 %%
 
@@ -41,7 +43,7 @@ D                         [0-9]
 {D}*\.{D}+|{D}+           { return NUM_LITERAL; }
 '(\\.|[^'\n])'            { return CHAR_LITERAL; }
 \"(\\.|[^\\"\n])*\"       { return STRING_LITERAL; }
-
+{L}{A}*                   { return IDENTIFIER; }
 
 \n
 [ \t\v\n\f]+

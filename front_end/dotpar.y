@@ -37,24 +37,19 @@
 %token STRING_LITERAL
 %token NUM_LITERAL
 %token CHAR_LITERAL
+%token IDENTIFIER
 
 /*
 %left OR
 %left AND
 %right NOT
-*/
-
+*/ 
 %%
 
-lines: lines constant
+/* CONSTANTS */
+lines: lines primary_expression
      |
      ;
-
-/* CONSTANTS */
-constant: char_literal
-        | num_literal
-        | string_literal
-        ;
 
 num_literal: NUM_LITERAL
             ;
@@ -62,11 +57,46 @@ num_literal: NUM_LITERAL
 char_literal: CHAR_LITERAL
             ;
 
+constant: char_literal
+        | num_literal
+        ;
+
 string_literal: STRING_LITERAL
             ;
 
+identifier: IDENTIFIER
+          ;
 
+equality_expression: TRUE
+                   | FALSE
+                   ;
 
+logical_AND_expression: logical_AND_expression AND equality_expression
+                      | equality_expression
+                      ;
+
+logical_OR_expression: logical_AND_expression
+                     | logical_OR_expression OR logical_AND_expression
+                     ;
+
+conditional_expression: logical_OR_expression
+                      ;
+
+assignment_operator: EQ
+                   ;
+
+assignment_expression: conditional_expression
+                     /*| unary_expression assignment_operator assignment_expression*/
+                     ;
+
+expression: assignment_expression
+          ;
+
+primary_expression: identifier
+                  | constant
+                  | string_literal
+                  | '(' expression ')'
+                  ;
 
 
 
