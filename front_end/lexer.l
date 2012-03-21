@@ -48,18 +48,36 @@ I                         {A}|_
 \"(\\.|[^\\"\n])*\"       {show(); return STRING_LITERAL; }
 {L}{I}*                   {show(); return IDENTIFIER; }
 
-\n
-[ \t\v\n\f]+
+\n                        {show();}
+[ \t\v\n\f]+              {show();}
 .                         {show(); return yytext[0]; }
 
 %%
 
 int show() {
-//  printf("%s", yytext);
+  // printf("%s", yytext);
 }
 
 int multicomment() {
+	char c, c1;
+
+loop:
+	while ((c = input()) != '*' && c != 0)
+		putchar(c);
+
+	if ((c1 = input()) != '/' && c != 0)
+	{
+		unput(c1);
+		goto loop;
+	}
+
+	if (c != 0)
+		putchar(c1);
 }
 
 int comment() {
+  char c;
+  while ((c = input()) != '\n' && c != 0)
+    putchar(c);
+
 }
