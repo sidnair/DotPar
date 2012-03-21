@@ -18,6 +18,7 @@
 %token ELIF
 %token FOR
 %token IN
+%token RETURN
 %token APPEND
 %token AND
 %token OR
@@ -52,24 +53,24 @@
 
 %%
 
-lines: lines primary_expression ';'
-     | lines declaration ';'
-     |
-     ;
+lines: external_declaration
+    | lines external_declaration
+    ;
 
 constant: CHAR_LITERAL
         | NUM_LITERAL
         | TRUE
         | FALSE
+        | NIL
         ;
-
-argument_expression_list: assignment_expression
-                        | argument_expression_list ',' assignment_expression
-                        ;
 
 argument_expression_list_opt: argument_expression_list
                             |  /* empty */
                             ;
+
+argument_expression_list: assignment_expression
+                        | argument_expression_list ',' assignment_expression
+                        ;
 
 postfix_expression: primary_expression
                   | postfix_expression '[' expression ']'
@@ -77,37 +78,59 @@ postfix_expression: primary_expression
                   ;
 
 unary_expression: postfix_expression
-                | NOT unary_expression {printf("not\n");}
-                | SUB unary_expression %prec UMINUS {printf("negate\n");}
+                | NOT unary_expression
+                | SUB unary_expression %prec UMINUS
                 ;
 
 arithmetic_expression: unary_expression
-                      | arithmetic_expression REM arithmetic_expression { printf("rem\n"); }
-                      | arithmetic_expression DIV arithmetic_expression {printf("div\n"); }
-                      | arithmetic_expression MULT arithmetic_expression {printf("mult\n");}
-                      | arithmetic_expression ADD arithmetic_expression {printf("add\n");}
-                      | arithmetic_expression SUB arithmetic_expression {printf("sub\n");}
+                      | arithmetic_expression REM arithmetic_expression
+                      | arithmetic_expression DIV arithmetic_expression
+                      | arithmetic_expression MULT arithmetic_expression
+                      | arithmetic_expression ADD arithmetic_expression
+                      | arithmetic_expression SUB arithmetic_expression
                       ;
 
 relational_expression: arithmetic_expression
-                     | relational_expression GEQ relational_expression {printf(">=\n");}
-                     | relational_expression GT relational_expression {printf(">\n");}
-                     | relational_expression LT relational_expression {printf("<\n");}
-                     | relational_expression LEQ relational_expression {printf("<=\n");}
-                     | relational_expression EQ relational_expression {printf("==\n");}
-                     | relational_expression NEQ relational_expression {printf("!=\n");}
+                     | relational_expression GEQ relational_expression
+                     | relational_expression GT relational_expression
+                     | relational_expression LT relational_expression
+                     | relational_expression LEQ relational_expression
+                     | relational_expression EQ relational_expression
+                     | relational_expression NEQ relational_expression
                      ;
 
 conditional_expression: relational_expression
-                      | conditional_expression OR conditional_expression {printf("or\n");}
-                      | conditional_expression AND conditional_expression {printf("and\n");}
+                      | conditional_expression OR conditional_expression
+                      | conditional_expression AND conditional_expression
                       ;
 
-assignment_operator: ASSIGN
-                   ;
+array_expression_list: array_expression
+                     | array_expression_list ',' array_expression
+                     ;
 
-assignment_expression: conditional_expression
-                     | postfix_expression assignment_operator assignment_expression
+array_expression: conditional_expression
+                | '[' list_comprehension ']'
+                | '[' opt_initializer_list ']'
+                ;
+
+/*[x*y for x,y in zip([1, 3, 9], [1, 2, 3]) if (cond)]*/
+
+if_comp_opt: if_comp
+           | /* empty */
+           ;
+
+/* optionally will have parentheses. */
+if_comp: IF expression
+       ;
+
+list_comprehension: array_expression FOR parameter_list IN array_expression_list if_comp_opt
+                  | array_expression FOR '(' parameter_list ')' IN array_expression_list if_comp_opt
+                  ;
+
+assignment_expression: array_expression
+                     | postfix_expression ASSIGN array_expression
+                     | postfix_expression ASSIGN function_definition
+                     | postfix_expression ASSIGN anonymous_function_definition
                      ;
 
 expression: assignment_expression
@@ -119,29 +142,26 @@ primary_expression: IDENTIFIER
                   | '(' expression ')'
                   ;
 
-/* TODO - fix array and func */
-
 type_specifier: type_specifier '[' ']'
-              | type
-              | FUNC ':' type_specifier '(' type_list ')' 
-              | FUNC ':' type_specifier '(' parameter_list_opt ')' 
+              | reg_type
+              | func_specifier
               ;
 
-type: NUMBER
+func_specifier: FUNC ':' type_specifier '(' type_list ')' 
+              | FUNC ':' type_specifier '(' parameter_list_opt ')'
+              ;
+reg_type: NUMBER
     | CHAR
     | BOOLEAN
     | VOID
-    | FUNC
     ;
 
-/* TODO - handle funcs, incl assignment */
-declaration: type_specifier declarator
-           | type_specifier declarator ASSIGN initializer
+declaration: type_specifier declarator ';'
+           | type_specifier declarator ASSIGN initializer ';'
            ;
 
 declarator: IDENTIFIER
           | '(' declarator ')'
-          | IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' 
           ;
 
 type_list: type_specifier
@@ -160,8 +180,7 @@ parameter_declaration: type_specifier declarator
                      ;
 
 
-initializer: '[' opt_initializer_list ']'
-           | conditional_expression
+initializer: array_expression
            ;
 
 opt_initializer_list: initializer_list
@@ -172,53 +191,83 @@ initializer_list: initializer
                 | initializer_list ',' initializer
                 ;
 
+expression_statement: expression_opt ';'
+                    ;
+
+expression_opt: expression
+              | /* empty statement */
+              ;
+
+compound_statement: '{' statement_list_opt '}'
+                  ;
+
+statement_list_opt: statement_list
+                  | /* empty */
+                  ;
+
+/* Allows statements and declarations to be interwoven. */
+statement_list : statement_list_opt statement
+               | statement_list_opt declaration
+               | statement_list_opt function_definition
+               ;
+
+selection_statement: if elifs_opt else_opt
+                   ;
+if: IF '(' expression ')' compound_statement
+  ;
+
+else_opt: else
+        | /* empty */
+        ;
+
+else: ELSE compound_statement;
+
+elifs_opt: elifs
+         | /* empty */
+         ;
+
+elifs: ELIF '(' expression ')' compound_statement 
+     | elifs ELIF '(' expression ')' compound_statement
+     ;
+
+iteration_statement: FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' compound_statement
+                   ;
+
+jump_statement: RETURN expression_opt ';'
+              ;
+
+statement: expression_statement
+         | compound_statement
+         | selection_statement
+         | iteration_statement
+         | jump_statement
+         ;
+
+anonymous_function_definition: FUNC ':' type_specifier '(' parameter_list_opt ')' compound_statement
+                   ;
+
+function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
+                   ;
+
+/* Top level */
+external_declaration: function_definition
+                    | declaration
+                    ;
 
 /* TODOS*/
-/*array literals as params - foo(number[] [1, 2, 3]);*/
-/*object literals*/
-
-
-/*[>Can compound statement become statement? <]*/
-/*statement_list : statement_list statement*/
-               /*| statement*/
-               /*[>| statement_list declaration<]*/
-               /*[>| declaration<]*/
-               /*;*/
-
-/*statement: expression_statement*/
-         /*| compound_statement*/
-         /*| selection_statement*/
-         /*[>| iteration_statement<]*/
-         /*;*/
-
-/*expression_statement: expression ';'*/
-                    /*| ';'*/
-                    /*;*/
-
-/*opt_expression: expression*/
-              /*| [> empty statement <]*/
-              /*;*/
-
-/*expression: assignment_expression*/
-          /*| expression ',' assignment_expression*/
-          /*;*/
-
-/*assignment_expression: conditional_expression*/
-                     /*| unary_expression assignment_operator assignment_expression*/
-                     /*;*/
-
-
-/*selection_statement: IF '(' expression ')' compound_statement*/
-                   /*| IF '(' expression ')' compound_statement ELSE compound_statement*/
-                   /*;*/
-
-/*iteration_statement: FOR '(' opt_expression ';' opt_expression ';' opt_expression ')' compound_statement*/
-                   /*;*/
-
-/*compound_statement: '{' statement_list '}'*/
-                  /*| '{' '}'*/
-                  /*;*/
-
+/* array literals as params - foo(number[] [1, 2, 3]);*/
+/* objects */
+/* object literals*/
+/* while*/
+/* self-invoking functions */
+/* time */
+/*type inference*/
+/* *= */
+/* array append */
+/* for..in */
+/* for (number i = 0; i < 10; i = i + 1) { */
+/* break, continue */
+/* java interop */
 
 %%
 
