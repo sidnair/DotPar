@@ -104,8 +104,31 @@ conditional_expression: relational_expression
                       | conditional_expression AND conditional_expression
                       ;
 
-assignment_expression: conditional_expression
-                     | postfix_expression ASSIGN conditional_expression
+array_expression_list: array_expression
+                     | array_expression_list ',' array_expression
+                     ;
+
+array_expression: conditional_expression
+                | '[' list_comprehension ']'
+                | '[' opt_initializer_list ']'
+                ;
+
+/*[x*y for x,y in zip([1, 3, 9], [1, 2, 3]) if (cond)]*/
+
+if_comp_opt: if_comp
+           | /* empty */
+           ;
+
+/* optionally will have parentheses. */
+if_comp: IF expression
+       ;
+
+list_comprehension: array_expression FOR parameter_list IN array_expression_list if_comp_opt
+                  | array_expression FOR '(' parameter_list ')' IN array_expression_list if_comp_opt
+                  ;
+
+assignment_expression: array_expression
+                     | postfix_expression ASSIGN array_expression
                      | postfix_expression ASSIGN function_definition
                      | postfix_expression ASSIGN anonymous_function_definition
                      ;
@@ -157,8 +180,7 @@ parameter_declaration: type_specifier declarator
                      ;
 
 
-initializer: '[' opt_initializer_list ']'
-           | conditional_expression
+initializer: array_expression
            ;
 
 opt_initializer_list: initializer_list
@@ -189,8 +211,10 @@ statement_list : statement_list_opt statement
                | statement_list_opt function_definition
                ;
 
-selection_statement: IF '(' expression ')' compound_statement elifs_opt else_opt
+selection_statement: if elifs_opt else_opt
                    ;
+if: IF '(' expression ')' compound_statement
+  ;
 
 else_opt: else
         | /* empty */
@@ -244,6 +268,7 @@ external_declaration: function_definition
 /* for (number i = 0; i < 10; i = i + 1) { */
 /* java interop */
 /* time */
+/*type inference*/
 
 %%
 
