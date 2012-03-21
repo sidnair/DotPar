@@ -285,21 +285,6 @@ external_declaration: function_definition
                     | declaration
                     ;
 
-/* TODOS*/
-/* array literals as params - foo(number[] [1, 2, 3]);*/
-/* objects */
-/* object literals*/
-/* while*/
-/* self-invoking functions */
-/* time */
-/*type inference*/
-/* *= */
-/* array append */
-/* for..in */
-/* for (number i = 0; i < 10; i = i + 1) { */
-/* break, continue */
-/* java interop */
-
 %%
 
 int yywrap() {
