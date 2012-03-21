@@ -85,6 +85,7 @@ argument_expression_list: assignment_expression
                         | argument_expression_list ',' assignment_expression
                         ;
 
+/* expression loop *****************************************/
 postfix_expression: primary_expression
                   | postfix_expression '[' expression ']'
                   | postfix_expression '(' argument_expression_list_opt ')'
@@ -131,8 +132,10 @@ array_expression_list: array_expression
                      ;
 array_expression: conditional_expression
                 | '[' list_comprehension ']'
-                | '[' opt_initializer_list ']'
+                | '[' initializer_list_opt ']'
                 ;
+
+/* end expression loop *****************************************/
 
 if_comp_opt: if_comp
            | /* empty */
@@ -142,10 +145,11 @@ if_comp_opt: if_comp
 if_comp: IF expression
        ;
 
-list_comprehension: array_expression FOR opt_paren_parameter_list IN array_expression if_comp_opt
-                  | array_expression FOR opt_paren_parameter_list IN opt_paren_multi_array_expression_list if_comp_opt
+list_comprehension: array_expression FOR paren_parameter_list_opt IN array_expression if_comp_opt
+                  | array_expression FOR paren_parameter_list_opt IN opt_paren_multi_array_expression_list if_comp_opt
                   ;
 
+/* look into allowing named function defs as rvalues */
 assignment_expression: array_expression
                      | anonymous_function_definition
                      | postfix_expression ASSIGN array_expression
@@ -191,7 +195,7 @@ parameter_list_opt: parameter_list
                   | /*empty */
                   ;
 
-opt_paren_parameter_list: '(' parameter_list ')'
+paren_parameter_list_opt: '(' parameter_list ')'
                         | parameter_list
                         ;
 
@@ -208,7 +212,7 @@ initializer: array_expression
            | anonymous_function_definition
            ;
 
-opt_initializer_list: initializer_list
+initializer_list_opt: initializer_list
                     | /* empty */
                     ;
 
@@ -255,6 +259,7 @@ elifs: ELIF '(' expression ')' compound_statement
      | elifs ELIF '(' expression ')' compound_statement
      ;
 
+/* add declarations later */
 iteration_statement: FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' compound_statement
                    ;
 
