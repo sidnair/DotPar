@@ -1,0 +1,9 @@
+scripts/tutorial/run.sh texname.tex
+
+Note: this checks syntax between \begin{verbatim} and \end{verbatim} markers.
+This includes some stuff that isn't code, such as instructions on compilation.
+For the short-term, I just hardcode these strings as strings we don't need to
+check for syntax in the ruby script. A better long-term solution would be to
+have some sort of tag associated with either the code or the non-code.
+
+You should be in the DotPar/scripts/tutorial directory when you run this.

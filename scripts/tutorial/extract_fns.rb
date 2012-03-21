@@ -24,12 +24,12 @@ end
 
 
 def usage
-  "ruby extract_fns.rb filename.text"
+  "USAGE: ruby extract_fns.rb filename.tex. See README for details"
 end
 
 if ARGV.length == 0
-  usage
-  return
+  $stderr.print(usage + "\n")
+  exit 1
 end
 
 extract_verbatim(ARGV[0])
