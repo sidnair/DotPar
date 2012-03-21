@@ -71,6 +71,7 @@ import_declaration: IMPORT IDENTIFIER ';'
 
 constant: CHAR_LITERAL
         | NUM_LITERAL
+        | STRING_LITERAL
         | TRUE
         | FALSE
         | NIL
@@ -157,7 +158,6 @@ expression: assignment_expression
 
 primary_expression: IDENTIFIER
                   | constant
-                  | STRING_LITERAL
                   | '(' expression ')'
                   ;
 
