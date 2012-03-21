@@ -18,6 +18,7 @@
 %token ELIF
 %token FOR
 %token IN
+%token RETURN
 %token APPEND
 %token AND
 %token OR
@@ -52,7 +53,7 @@
 
 %%
 
-s: file
+s: lines
  ;
 
 constant: CHAR_LITERAL
@@ -103,6 +104,8 @@ conditional_expression: relational_expression
 
 assignment_expression: conditional_expression
                      | postfix_expression ASSIGN assignment_expression
+                     | function_definition
+                     | anonymous_function_definition
                      ;
 
 expression: assignment_expression
@@ -176,7 +179,7 @@ expression_opt: expression
 
 compound_statement: '{' statement_list_opt '}'
                   ;
- Force only compound statements? */
+/* Force only compound statements? */
 statement_list_opt: statement_list
                   | /* empty */
                   ;
@@ -195,11 +198,19 @@ selection_statement: IF '(' expression ')' compound_statement
 iteration_statement: FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' compound_statement
                    ;
 
+jump_statement: RETURN expression_opt ';'
+              ;
+
+
 statement: expression_statement
          | compound_statement
          | selection_statement
          | iteration_statement
+         | jump_statement
          ;
+
+anonymous_function_definition: FUNC ':' type_specifier '(' parameter_list_opt ')' compound_statement
+                   ;
 
 function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
                    ;
@@ -208,8 +219,8 @@ external_declaration: function_definition
                     | declaration
                     ;
 
-file: external_declaration
-    | file external_declaration
+lines: external_declaration
+    | lines external_declaration
     ;
 
 
@@ -218,8 +229,12 @@ file: external_declaration
 /*object literals*/
 /*while*/
 /* *= */
-
-
+/* self-invoking functions */
+/* break, continue */
+/* list comprehensions, array append, for..in */
+/* for (number i = 0; i < 10; i = i + 1) { */
+/* java interop */
+/* time */
 
 %%
 

@@ -23,6 +23,7 @@ A                         {D}|{L}
 "elif"                    { return ELIF; }
 "for"                     { return FOR; }
 "in"                      { return IN; }
+"return"                  { return RETURN; }
 "++"                      { return APPEND; }
 "&&"                      { return AND; }
 "||"                      { return OR; }
