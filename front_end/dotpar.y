@@ -194,6 +194,7 @@ parameter_declaration: type_specifier declarator
 
 
 initializer: array_expression
+           | anonymous_function_definition
            ;
 
 opt_initializer_list: initializer_list
