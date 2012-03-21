@@ -9,6 +9,7 @@ I                         {A}|_
 
 %%
 
+"import"                  {show(); return IMPORT; }
 "/*"                      {show(); multicomment(); }
 "//"                      {show(); comment(); }
 "true"                    {show(); return TRUE; }

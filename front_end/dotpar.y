@@ -5,6 +5,7 @@
 #include <stdio.h>
 %}
 
+%token IMPORT
 %token TRUE
 %token FALSE
 %token NIL
@@ -249,9 +250,13 @@ anonymous_function_definition: FUNC ':' type_specifier '(' parameter_list_opt ')
 function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
                    ;
 
+import_declaration: IMPORT IDENTIFIER ';'
+                  ;
+
 /* Top level */
 external_declaration: function_definition
                     | declaration
+                    | import_declaration
                     ;
 
 /* TODOS*/
