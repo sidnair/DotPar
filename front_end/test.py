@@ -101,6 +101,12 @@ func main:void() {
   func:void(number a) x = b;
 }""", True),
 ("""func main:void() {
+  func:void(char[] a) x = b;
+}""", True),
+("""func main:void() {
+  func:func:void()(number a) x;
+}""", True),
+("""func main:void() {
   func:void(func:void() documentation) x;
 }""", True),
 ####################
@@ -134,6 +140,14 @@ func main:void() {
 }""", True),
 ####################
 # func definitions (anonymous)
+("""func main:void() {
+  x = func:void() { };
+}""", True),
+("""func main:void() {
+  x = func:func:void()(char[] s) {
+    return func:void() { };
+  };
+}""", True),
 ("""func main:void() {
   func:void() x = func:void() { };
 }""", True),
@@ -224,7 +238,8 @@ func main:void() {
 
 test_errors = 0
 
-for test in tests:
+for i in range(len(tests)):
+    test = tests[i]
     # run each test, check the return value
     proc = subprocess.Popen(["./a.out"],
                             stdin=subprocess.PIPE,
@@ -240,11 +255,10 @@ for test in tests:
         proc.terminate()
     # check if we're
     if (status is None) == test[1] or (status == 0) == test[1]:
-        print("test okay")
+        print("%3d/%d test okay" % (i, len(tests)))
     else:
-        print("")
-        print(status is None, test[1])
-        print("test failed:")
+        print("%3d/%d test failed: %s expected" %
+              (i, len(tests), {True: "Pass", False: "Failure"}[test[1]]))
         print(test[0])
         print("")
         test_errors += 1
