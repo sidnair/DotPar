@@ -53,8 +53,9 @@
 
 %%
 
-s: lines
- ;
+lines: external_declaration
+    | lines external_declaration
+    ;
 
 constant: CHAR_LITERAL
         | NUM_LITERAL
@@ -62,13 +63,13 @@ constant: CHAR_LITERAL
         | FALSE
         ;
 
-argument_expression_list: assignment_expression
-                        | argument_expression_list ',' assignment_expression
-                        ;
-
 argument_expression_list_opt: argument_expression_list
                             |  /* empty */
                             ;
+
+argument_expression_list: assignment_expression
+                        | argument_expression_list ',' assignment_expression
+                        ;
 
 postfix_expression: primary_expression
                   | postfix_expression '[' expression ']'
@@ -117,8 +118,6 @@ primary_expression: IDENTIFIER
                   | '(' expression ')'
                   ;
 
-/* TODO - fix array and func */
-
 type_specifier: type_specifier '[' ']'
               | reg_type
               | func_specifier
@@ -133,7 +132,6 @@ reg_type: NUMBER
     | VOID
     ;
 
-/* TODO - handle funcs, incl assignment */
 declaration: type_specifier declarator ';'
            | type_specifier declarator ASSIGN initializer ';'
            ;
@@ -179,28 +177,39 @@ expression_opt: expression
 
 compound_statement: '{' statement_list_opt '}'
                   ;
-/* Force only compound statements? */
 statement_list_opt: statement_list
                   | /* empty */
                   ;
 
-/* Allow statements and declarations to be interwoven. */
+/* Allows statements and declarations to be interwoven. */
 statement_list : statement_list statement
                | statement
                | statement_list declaration
                | declaration
                ;
 
-selection_statement: IF '(' expression ')' compound_statement
-                   | IF '(' expression ')' compound_statement ELSE compound_statement
+selection_statement: IF '(' expression ')' compound_statement elifs_opt else_opt
                    ;
+
+else_opt: else
+        | /* empty */
+        ;
+
+else: ELSE compound_statement;
+
+elifs_opt: elifs
+         | /* empty */
+         ;
+
+elifs: ELIF '(' expression ')' compound_statement 
+     | elifs ELIF '(' expression ')' compound_statement
+     ;
 
 iteration_statement: FOR '(' expression_opt ';' expression_opt ';' expression_opt ')' compound_statement
                    ;
 
 jump_statement: RETURN expression_opt ';'
               ;
-
 
 statement: expression_statement
          | compound_statement
@@ -215,14 +224,10 @@ anonymous_function_definition: FUNC ':' type_specifier '(' parameter_list_opt ')
 function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
                    ;
 
+/* Top level */
 external_declaration: function_definition
                     | declaration
                     ;
-
-lines: external_declaration
-    | lines external_declaration
-    ;
-
 
 /* TODOS*/
 /*array literals as params - foo(number[] [1, 2, 3]);*/
