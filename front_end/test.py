@@ -236,7 +236,8 @@ func main:void() {
 # some examples
 ]
 
-test_errors = 0
+count_errors = 0
+str_errors = ""
 
 for i in range(len(tests)):
     test = tests[i]
@@ -255,12 +256,22 @@ for i in range(len(tests)):
         proc.terminate()
     # check if we're
     if (status is None) == test[1] or (status == 0) == test[1]:
-        print("%3d/%d test okay" % (i, len(tests)))
+        print ".",
     else:
-        print("%3d/%d test failed: %s expected" %
-              (i, len(tests), {True: "Pass", False: "Failure"}[test[1]]))
-        print(test[0])
-        print("")
-        test_errors += 1
+        str_errors += ("%3d/%d test failed: %s expected\n" %
+                       (i, len(tests),
+                        {True: "Pass", False: "Failure"}[test[1]]))
+        str_errors += test[0]+"\n"
+        print "F",
+        count_errors += 1
+    if (i+1) % 40 == 0:
+        print ""
 
-print("total failures: %d/%d" % (test_errors, len(tests)) )
+if count_errors != 0:
+    print ""
+    print "Failures:"
+    print str_errors
+
+    print("total failures: %d/%d" % (count_errors, len(tests)) )
+else:
+    print("No failures, have a good day!")
