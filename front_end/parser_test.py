@@ -306,4 +306,5 @@ if count_errors != 0:
 
     print("total failures: %d/%d" % (count_errors, len(tests)) )
 else:
+    print ""
     print("No failures, have a good day!")
