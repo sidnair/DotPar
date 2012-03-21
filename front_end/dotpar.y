@@ -116,16 +116,22 @@ conditional_expression: relational_expression
                       | conditional_expression AND conditional_expression
                       ;
 
+opt_paren_multi_array_expression_list: '(' multi_array_expression_list ')'
+                                     | multi_array_expression_list
+                                     ;
+
+/* Has at least two array_expressions */
+multi_array_expression_list: array_expression ',' array_expression
+                           | array_expression ',' array_expression ',' array_expression_list 
+                           ;
+
 array_expression_list: array_expression
                      | array_expression_list ',' array_expression
                      ;
-
 array_expression: conditional_expression
                 | '[' list_comprehension ']'
                 | '[' opt_initializer_list ']'
                 ;
-
-/*[x*y for x,y in zip([1, 3, 9], [1, 2, 3]) if (cond)]*/
 
 if_comp_opt: if_comp
            | /* empty */
@@ -135,8 +141,8 @@ if_comp_opt: if_comp
 if_comp: IF expression
        ;
 
-list_comprehension: array_expression FOR parameter_list IN array_expression_list if_comp_opt
-                  | array_expression FOR '(' parameter_list ')' IN array_expression_list if_comp_opt
+list_comprehension: array_expression FOR opt_paren_parameter_list IN array_expression if_comp_opt
+                  | array_expression FOR opt_paren_parameter_list IN opt_paren_multi_array_expression_list if_comp_opt
                   ;
 
 assignment_expression: array_expression
@@ -184,6 +190,11 @@ type_list: type_specifier
 parameter_list_opt: parameter_list
                   | /*empty */
                   ;
+
+opt_paren_parameter_list: '(' parameter_list ')'
+                        | parameter_list
+                        ;
+
 
 parameter_list: parameter_declaration
               | parameter_list ',' parameter_declaration
