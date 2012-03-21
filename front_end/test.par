@@ -1,0 +1,19 @@
+func matrix_multiply:void (number[][] a, number[][] b) {
+    func sum:number (number a, number b) {
+        return a + b;
+    }
+
+    func dotprod:number (number[] a, number[] b) {
+        return reduce(sum, 3);
+    }
+
+    if (len(a) != len(b[0])) {
+        return nil;
+    }
+
+    func test:number[] () {
+    }
+
+  return "yeaeeaaaaaah";
+
+}

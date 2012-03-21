@@ -61,6 +61,7 @@ constant: CHAR_LITERAL
         | NUM_LITERAL
         | TRUE
         | FALSE
+        | NIL
         ;
 
 argument_expression_list_opt: argument_expression_list
@@ -77,36 +78,36 @@ postfix_expression: primary_expression
                   ;
 
 unary_expression: postfix_expression
-                | NOT unary_expression {printf("not\n");}
-                | SUB unary_expression %prec UMINUS {printf("negate\n");}
+                | NOT unary_expression
+                | SUB unary_expression %prec UMINUS
                 ;
 
 arithmetic_expression: unary_expression
-                      | arithmetic_expression REM arithmetic_expression { printf("rem\n"); }
-                      | arithmetic_expression DIV arithmetic_expression {printf("div\n"); }
-                      | arithmetic_expression MULT arithmetic_expression {printf("mult\n");}
-                      | arithmetic_expression ADD arithmetic_expression {printf("add\n");}
-                      | arithmetic_expression SUB arithmetic_expression {printf("sub\n");}
+                      | arithmetic_expression REM arithmetic_expression
+                      | arithmetic_expression DIV arithmetic_expression
+                      | arithmetic_expression MULT arithmetic_expression
+                      | arithmetic_expression ADD arithmetic_expression
+                      | arithmetic_expression SUB arithmetic_expression
                       ;
 
 relational_expression: arithmetic_expression
-                     | relational_expression GEQ relational_expression {printf(">=\n");}
-                     | relational_expression GT relational_expression {printf(">\n");}
-                     | relational_expression LT relational_expression {printf("<\n");}
-                     | relational_expression LEQ relational_expression {printf("<=\n");}
-                     | relational_expression EQ relational_expression {printf("==\n");}
-                     | relational_expression NEQ relational_expression {printf("!=\n");}
+                     | relational_expression GEQ relational_expression
+                     | relational_expression GT relational_expression
+                     | relational_expression LT relational_expression
+                     | relational_expression LEQ relational_expression
+                     | relational_expression EQ relational_expression
+                     | relational_expression NEQ relational_expression
                      ;
 
 conditional_expression: relational_expression
-                      | conditional_expression OR conditional_expression {printf("or\n");}
-                      | conditional_expression AND conditional_expression {printf("and\n");}
+                      | conditional_expression OR conditional_expression
+                      | conditional_expression AND conditional_expression
                       ;
 
 assignment_expression: conditional_expression
-                     | postfix_expression ASSIGN assignment_expression
-                     | function_definition
-                     | anonymous_function_definition
+                     | postfix_expression ASSIGN conditional_expression
+                     | postfix_expression ASSIGN function_definition
+                     | postfix_expression ASSIGN anonymous_function_definition
                      ;
 
 expression: assignment_expression
@@ -177,15 +178,15 @@ expression_opt: expression
 
 compound_statement: '{' statement_list_opt '}'
                   ;
+
 statement_list_opt: statement_list
                   | /* empty */
                   ;
 
 /* Allows statements and declarations to be interwoven. */
-statement_list : statement_list statement
-               | statement
-               | statement_list declaration
-               | declaration
+statement_list : statement_list_opt statement
+               | statement_list_opt declaration
+               | statement_list_opt function_definition
                ;
 
 selection_statement: IF '(' expression ')' compound_statement elifs_opt else_opt
@@ -230,13 +231,16 @@ external_declaration: function_definition
                     ;
 
 /* TODOS*/
+/* list comprehensions*/
+/* array append */
+/* for..in */
+
 /*array literals as params - foo(number[] [1, 2, 3]);*/
 /*object literals*/
 /*while*/
 /* *= */
 /* self-invoking functions */
 /* break, continue */
-/* list comprehensions, array append, for..in */
 /* for (number i = 0; i < 10; i = i + 1) { */
 /* java interop */
 /* time */
