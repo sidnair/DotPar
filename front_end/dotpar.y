@@ -54,9 +54,20 @@
 
 %%
 
-lines: external_declaration
+lines: imports_opt external_declaration
     | lines external_declaration
     ;
+
+imports_opt: imports
+           | /* empty */
+           ;
+
+imports: imports import_declaration
+       | import_declaration
+       ;
+
+import_declaration: IMPORT IDENTIFIER ';'
+                  ;
 
 constant: CHAR_LITERAL
         | NUM_LITERAL
@@ -250,13 +261,9 @@ anonymous_function_definition: FUNC ':' type_specifier '(' parameter_list_opt ')
 function_definition: FUNC IDENTIFIER ':' type_specifier '(' parameter_list_opt ')' compound_statement
                    ;
 
-import_declaration: IMPORT IDENTIFIER ';'
-                  ;
-
 /* Top level */
 external_declaration: function_definition
                     | declaration
-                    | import_declaration
                     ;
 
 /* TODOS*/
