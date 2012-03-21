@@ -140,6 +140,7 @@ list_comprehension: array_expression FOR parameter_list IN array_expression_list
                   ;
 
 assignment_expression: array_expression
+                     | anonymous_function_definition
                      | postfix_expression ASSIGN array_expression
                      | postfix_expression ASSIGN function_definition
                      | postfix_expression ASSIGN anonymous_function_definition
