@@ -165,7 +165,8 @@ primary_expression: IDENTIFIER
                   | '(' expression ')'
                   ;
 
-type_specifier: type_specifier '[' ']'
+type_specifier: type_specifier '[' arithmetic_expression ']'
+              | type_specifier '[' ']'
               | reg_type
               | func_specifier
               ;
