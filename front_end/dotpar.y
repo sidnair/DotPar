@@ -167,17 +167,17 @@ primary_expression: IDENTIFIER
 
 type_specifier: type_specifier '[' arithmetic_expression ']'
               | type_specifier '[' ']'
-              | reg_type
+              | basic_type
+              | VOID
               | func_specifier
               ;
 
 func_specifier: FUNC ':' type_specifier '(' type_list ')' 
               | FUNC ':' type_specifier '(' parameter_list_opt ')'
               ;
-reg_type: NUMBER
+basic_type: NUMBER
     | CHAR
     | BOOLEAN
-    | VOID
     ;
 
 declaration: type_specifier declarator ';'
