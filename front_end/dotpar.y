@@ -118,7 +118,7 @@ conditional_expression: relational_expression
                       | conditional_expression AND conditional_expression
                       ;
 
-opt_paren_multi_array_expression_list: '(' multi_array_expression_list ')'
+paren_multi_array_expression_list_opt: '(' multi_array_expression_list ')'
                                      | multi_array_expression_list
                                      ;
 
@@ -146,7 +146,7 @@ if_comp: IF expression
        ;
 
 list_comprehension: array_expression FOR paren_parameter_list_opt IN array_expression if_comp_opt
-                  | array_expression FOR paren_parameter_list_opt IN opt_paren_multi_array_expression_list if_comp_opt
+                  | array_expression FOR paren_parameter_list_opt IN paren_multi_array_expression_list_opt if_comp_opt
                   ;
 
 /* look into allowing named function defs as rvalues */
