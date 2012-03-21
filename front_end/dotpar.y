@@ -255,20 +255,19 @@ external_declaration: function_definition
                     ;
 
 /* TODOS*/
-/* list comprehensions*/
-/* array append */
-/* for..in */
-
-/*array literals as params - foo(number[] [1, 2, 3]);*/
-/*object literals*/
-/*while*/
-/* *= */
+/* array literals as params - foo(number[] [1, 2, 3]);*/
+/* objects */
+/* object literals*/
+/* while*/
 /* self-invoking functions */
-/* break, continue */
-/* for (number i = 0; i < 10; i = i + 1) { */
-/* java interop */
 /* time */
 /*type inference*/
+/* *= */
+/* array append */
+/* for..in */
+/* for (number i = 0; i < 10; i = i + 1) { */
+/* break, continue */
+/* java interop */
 
 %%
 
