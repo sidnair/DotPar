@@ -68,6 +68,9 @@ func main:void() {
 # anti-check
 ("""func main:void() { "a"b"; }""", False),
 ####################
+# string concatenation
+("""func main:void() { "ab" + x; }""", True),
+####################
 # check array types
 ("""func main:void(char[] x) { }""", True),
 ("""func main:void(number[] x) { }""", True),
@@ -80,6 +83,7 @@ func main:void() {
 ("""func main:void() { ['a','b']; }""", True),
 ("""func main:void() { ["hello","world"]; }""", True),
 ("""func main:void() { [true, false]; }""", True),
+("""func main:void() { [ [1,2,3], [4,5,6], [7,8,9] ]; }""", True),
 ####################
 # check array indexing/slicing
 ("""func main:void() { a[0]; }""", True),
@@ -234,6 +238,34 @@ func main:void() {
 # foreach
 ####################
 # some examples
+("""func matrix_multiply:void (number[][] a, number[][] b) {
+    func sum:number (number a, number b) {
+        return a + b;
+    }
+    func dotprod:void (number[] a, number[] b) {
+        return reduce(sum, [x*y for number x, number y in a,b]);
+    }
+    if (len(a) != len(b[0])) {
+        return nil;
+    }
+    return [[dotprod(row, col) for number[] col in transpose(b)]
+            for number[] row in a];
+}""", True),
+("""func main:void()
+{
+    number[] arr;
+    fill(arr, rand(100));
+    char[] even = "is even";
+    char[] odd = "is odd";
+
+    each(arr, func:void(number element) {
+        if (element % 2 == 0) {
+            print(element + " " + even);
+        } else {
+            print(element + " " + odd);
+        }
+    });
+}""", True),
 ]
 
 count_errors = 0
