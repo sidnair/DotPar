@@ -250,7 +250,8 @@ else_opt: else
         | /* empty */
         ;
 
-else: ELSE compound_statement;
+else: ELSE compound_statement
+    ;
 
 elifs_opt: elifs
          | /* empty */
