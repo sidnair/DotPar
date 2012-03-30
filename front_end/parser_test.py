@@ -2,6 +2,7 @@
 
 import subprocess
 import time
+import sys
 
 tests = [
 ####################
@@ -268,6 +269,9 @@ func main:void() {
 }""", True),
 ]
 
+################################################################################
+# testing scaffold
+
 count_errors = 0
 str_errors = ""
 
@@ -280,7 +284,7 @@ for i in range(len(tests)):
                             stderr=subprocess.STDOUT)
     proc.communicate(test[0]+"\n")
     # wait a bit
-    time.sleep(0.01)
+    time.sleep(0.001)
     # poll
     status = proc.poll()
     # end it if it's still running
@@ -288,15 +292,15 @@ for i in range(len(tests)):
         proc.terminate()
     # check if we're
     if (status is None) == test[1] or (status == 0) == test[1]:
-        print ".",
+        sys.stdout.write('.')
     else:
         str_errors += ("%3d/%d test failed: %s expected\n" %
                        (i, len(tests),
                         {True: "Pass", False: "Failure"}[test[1]]))
         str_errors += test[0]+"\n"
-        print "F",
+        sys.stdout.write('F')
         count_errors += 1
-    if (i+1) % 40 == 0:
+    if (i+1) % 80 == 0:
         print ""
 
 if count_errors != 0:
