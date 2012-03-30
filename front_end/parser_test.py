@@ -191,6 +191,29 @@ func main:void() {
     }
   }
 }""", True),
+("""func main:void() {
+  if(x<5) {
+    do_something();
+  }
+}""", True),
+
+("""func main:void() {
+  if something {
+    do_something();
+  }
+}""", False),
+("""func main:void() {
+  if (something)
+    do_something();
+}""", False),
+("""func main:void() {
+  if something
+    do_something();
+}""", False),
+("""func main:void() {
+  if x<10
+    do_something();
+}""", False),
 ####################
 # normal for
 ("""func main:void() {
@@ -207,6 +230,27 @@ func main:void() {
     do_something_else();
   }
 }""", True),
+
+("""func main:void() {
+  for() { }
+}""", False),
+("""func main:void() {
+  for(;;);
+}""", False),
+("""func main:void() {
+  for(;;;) { }
+}""", False),
+("""func main:void() {
+  for { }
+}""", False),
+("""func main:void() {
+  for(;;)
+}""", False),
+("""func main:void() {
+  for(x < 10; y < 10; z < 10) {
+    do_things();
+  }
+}""", False),
 ####################
 # list comprehensions
 ("""func main:void() {
@@ -232,9 +276,14 @@ func main:void() {
 }""", True),
 ####################
 # imports
-("""import math;""", False),
 ("""import math; number a;""", True),
 ("""import math; import types; number a;""", True),
+
+("""import math;""", False), # need to have at least 1 expression
+("""import x<10;""", False),
+("""import;""", False),
+("""import; number a;""", False),
+("""import 480; number a;""", False),
 ####################
 # foreach
 ####################
