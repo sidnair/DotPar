@@ -5,21 +5,45 @@ import subprocess
 import time
 import sys
 
+########################################
+## TOC
+# simple statements
+# comments
+# check simple types
+# check arithmetic expressions
+# check boolean expressions
+# check char literals
+# check strings literals
+# string concatenation
+# check array types
+# check array literals
+# check array indexing/slicing
+# check array expressions
+# func types
+# func calls
+# func definitions (normal)
+# func definitions (anonymous)
+# if
+# normal for
+# list comprehensions
+# imports
+# foreach
+# some examples
+
 tests = [
 ####################
-# anti-check simple statements
+# simple statements
+("""number x = 0;""", True),
+("""number x;""", True),
+("""func:void() x;""", True),
+("""func:void()[] x;""", True),
+
 ("""1+1""", False),
 ("""aoeu""", False),
 ("""number x = 0""", False),
 ("""1+1;""", False),
 ("""aoeu;""", False),
 
-("""number x = 0;""", True),
-("""number x;""", True),
-("""func:void() x;""", True),
-("""func:void()[] x;""", True),
-####################
-# simple statements
 ("""func main:void() { }""", True),
 ("""func main:void() { ; }""", True),
 ("""func m:void() { }""", True),
@@ -29,6 +53,31 @@ tests = [
 ("""func m:(int) {}""", False),
 ("""func m() {}""", False),
 ("""func void() {}""", False),
+
+####################
+# comments
+("""func main:void() {
+  /* hello world */
+}""", True),
+("""func main:void() {
+  // hello world
+}""", True),
+("""func main:void() {
+  // /* hello world */
+}""", True),
+("""func main:void() {
+  /* // hello world */
+}""", True),
+("""func main:void() {
+  /* hello /* world */
+}""", True),
+("""func main:void() {
+  /* /* hello world */ // */
+}""", True),
+
+("""func main:void() {
+  /* /* hello world */ */
+}""", False),
 ####################
 # check simple types
 ("""func main:void(char x) { }""", True),
@@ -60,10 +109,14 @@ func main:void() {
 ("""func main:void() { 0b10; }""", False),
 ("""func main:void() { 0x10; }""", False),
 ("""func main:void() { 10..9; }""", False),
+("""func main:void() { a++; }""", False),
+("""func main:void() { a+++; }""", False),
+("""func main:void() { a-; }""", False),
 ####################
 # check boolean expressions
 ("""func main:void() { true; }""", True),
 ("""func main:void() { false; }""", True),
+("""func main:void() { !!!false; }""", True),
 ("""
 func main:void() {
   true && false;
@@ -87,10 +140,16 @@ func main:void() {
 ("""func main:void() { y/19.08 < x*y; }""", True),
 ("""func main:void() { 10.05/40.5 >= x+y; }""", True),
 ("""func main:void() { x <= y; }""", True),
+("""func main:void() { true - - true; }""", True),
 
 ("""func main:void() { true <; }""", False),
 ("""func main:void() { > true; }""", False),
+("""func main:void() { true >> true; }""", False),
+("""func main:void() { true >>> true; }""", False),
+("""func main:void() { true <> true; }""", False),
+("""func main:void() { 2**10; }""", False),
 ("""func main:void() { ==; }""", False),
+("""func main:void() { true === x; }""", False),
 ####################
 # check char literals
 ("""func main:void() { 'a'; }""", True),
