@@ -25,10 +25,13 @@ syn match dpNumber '[-+]\d\+\.\d+'
 
 syn keyword dpTodo contained TODO FIXME XXX
 syn match dpComment "//.*" contains=dpTodo
+syntax region dpComment start="/\*" end="\*/" contains=dpTodo
 
-"TODO: string - include escape chars, make sure comments can't appear within
-"TODO: multi-comment
-"TODO: some matchgroup
+syn match dpSpecial '\\n'
+syn region dpString start='"' end='"' contains=dpSpecial
+
+" TODO: Disallow multiline string highlighting
+" TODO: Support adding * on enter
 
 hi def link dpType Type
 hi def link dpRepeat Repeat
@@ -41,6 +44,8 @@ hi def link dpBoolean Type
 hi def link dpNil Type
 
 hi def link dpNumber Number
+hi def link dpString String
+hi def link dpSpecial Special
 
 hi def link dpTodo Todo
 hi def link dpComment Comment
