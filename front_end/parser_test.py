@@ -1,20 +1,83 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import subprocess
 import time
+import sys
+
+########################################
+## TOC
+# simple statements
+# comments
+# check simple types
+# check arithmetic expressions
+# check boolean expressions
+# check char literals
+# check strings literals
+# string concatenation
+# check array types
+# check array literals
+# check array indexing/slicing
+# check array expressions
+# func types
+# func calls
+# func definitions (normal)
+# func definitions (anonymous)
+# if
+# normal for
+# list comprehensions
+# imports
+# foreach
+# some examples
 
 tests = [
 ####################
-# anti-check simple statements
+# simple statements
+("""number x = 0;""", True),
+("""number x;""", True),
+("""func:void() x;""", True),
+("""func:void()[] x;""", True),
+
 ("""1+1""", False),
 ("""aoeu""", False),
 ("""number x = 0""", False),
 ("""1+1;""", False),
 ("""aoeu;""", False),
-("""number x = 0;""", False),
-####################
-# simple statements
+
+("""func main:void() { }""", True),
 ("""func main:void() { ; }""", True),
+("""func m:void() { }""", True),
+
+("""func m:void()""", False),
+("""func m:() {}""", False),
+("""func m:(int) {}""", False),
+("""func m() {}""", False),
+("""func void() {}""", False),
+
+####################
+# comments
+("""func main:void() {
+  /* hello world */
+}""", True),
+("""func main:void() {
+  // hello world
+}""", True),
+("""func main:void() {
+  // /* hello world */
+}""", True),
+("""func main:void() {
+  /* // hello world */
+}""", True),
+("""func main:void() {
+  /* hello /* world */
+}""", True),
+("""func main:void() {
+  /* /* hello world */ // */
+}""", True),
+
+("""func main:void() {
+  /* /* hello world */ */
+}""", False),
 ####################
 # check simple types
 ("""func main:void(char x) { }""", True),
@@ -23,6 +86,13 @@ tests = [
 ("""func main:void() { char x; }""", True),
 ("""func main:void() { number x; }""", True),
 ("""func main:void() { boolean x; }""", True),
+
+("""func main:void() { int x; }""", False),
+("""func main:void() { double x; }""", False),
+#("""func main:void() { void x; }""", False), # catch type void in semantic
+("""func main:void() { char* x; }""", False),
+("""func main:void() { char& x; }""", False),
+("""func main:void() { &char x; }""", False),
 ####################
 # check arithmetic expressions
 ("""
@@ -31,10 +101,22 @@ func main:void() { 2+2; }""", True),
 func main:void() {
   (2*2-5.0)/(.988999+3.0%9);
 }""", True),
+("""func main:void() { 089; }""", True),
+
+("""func main:void() { 10.; }""", False),
+("""func main:void() { 10e4; }""", False),
+("""func main:void() { 10e-2; }""", False),
+("""func main:void() { 0b10; }""", False),
+("""func main:void() { 0x10; }""", False),
+("""func main:void() { 10..9; }""", False),
+("""func main:void() { a++; }""", False),
+("""func main:void() { a+++; }""", False),
+("""func main:void() { a-; }""", False),
 ####################
 # check boolean expressions
 ("""func main:void() { true; }""", True),
 ("""func main:void() { false; }""", True),
+("""func main:void() { !!!false; }""", True),
 ("""
 func main:void() {
   true && false;
@@ -43,6 +125,14 @@ func main:void() {
 func main:void() {
   true && not (false || true && (false || !true));
 }""", True),
+
+("""func main:void() { ||; }""", False),
+("""func main:void() { &&; }""", False),
+("""func main:void() { |; }""", False),
+("""func main:void() { &; }""", False),
+("""func main:void() { x & x; }""", False),
+("""func main:void() { x | x; }""", False),
+("""func main:void() { x ^ x; }""", False),
 ####################
 # check comparisons
 ("""func main:void() { true == x; }""", True),
@@ -50,14 +140,26 @@ func main:void() {
 ("""func main:void() { y/19.08 < x*y; }""", True),
 ("""func main:void() { 10.05/40.5 >= x+y; }""", True),
 ("""func main:void() { x <= y; }""", True),
+("""func main:void() { true - - true; }""", True),
+
+("""func main:void() { true <; }""", False),
+("""func main:void() { > true; }""", False),
+("""func main:void() { true >> true; }""", False),
+("""func main:void() { true >>> true; }""", False),
+("""func main:void() { true <> true; }""", False),
+("""func main:void() { 2**10; }""", False),
+("""func main:void() { ==; }""", False),
+("""func main:void() { true === x; }""", False),
 ####################
 # check char literals
 ("""func main:void() { 'a'; }""", True),
 (r"""func main:void() { '\n'; }""", True),
 (r"""func main:void() { '\'; }""", True),
 ("""func main:void() { char x = 'b'; }""", True),
-# anti-check
+
 ("""func main:void() { ''; }""", False),
+(r'func main:void() { \'\\\'; }', False),
+("""func main:void() { 'ಠ_ಠ'; }""", False),
 ####################
 # check strings literals
 ("""func main:void() { ""; }""", True),
@@ -65,11 +167,17 @@ func main:void() {
 ("""func main:void() { "a"; }""", True),
 ("""func main:void() { "hello world 29.0"; }""", True),
 (r"""func main:void() { "\"\n\\"; }""", True),
-# anti-check
+(r"""func main:void() { "\"a"; }""", True),
+
 ("""func main:void() { "a"b"; }""", False),
+("""func main:void() { "a\\\\"b"; }""", False),
+("""func main:void() { "ab; }""", False),
 ####################
 # string concatenation
 ("""func main:void() { "ab" + x; }""", True),
+("""func main:void() { "ab" + "aoeu"; }""", True),
+
+("""func main:void() { "ab" +; }""", False),
 ####################
 # check array types
 ("""func main:void(char[] x) { }""", True),
@@ -77,13 +185,22 @@ func main:void() {
 ("""func main:void(boolean[] x) { }""", True),
 ("""func main:void(char[][][] x) { }""", True),
 ("""func main:void() { char[][] x; }""", True),
+("""func main:void() { char[10] x; }""", True),
+
+("""func main:void() { char[[]] x; }""", False),
+("""func main:void() { char() x; }""", False),
 ####################
 # check array literals
+("""func main:void() { [1]; }""", True),
 ("""func main:void() { [1, 2, 3.1]; }""", True),
 ("""func main:void() { ['a','b']; }""", True),
 ("""func main:void() { ["hello","world"]; }""", True),
 ("""func main:void() { [true, false]; }""", True),
 ("""func main:void() { [ [1,2,3], [4,5,6], [7,8,9] ]; }""", True),
+
+("""func main:void() { [1,[2]; }""", False),
+("""func main:void() { [,]; }""", False),
+("""func main:void() { [,,,x]; }""", False),
 ####################
 # check array indexing/slicing
 ("""func main:void() { a[0]; }""", True),
@@ -102,6 +219,12 @@ func main:void() {
   func:void() x;
 }""", True),
 ("""func main:void() {
+  func:void(number) x = b;
+}""", True),
+("""func main:void() {
+  func:void(number, char) x = b;
+}""", True),
+("""func main:void() {
   func:void(number a) x = b;
 }""", True),
 ("""func main:void() {
@@ -113,6 +236,10 @@ func main:void() {
 ("""func main:void() {
   func:void(func:void() documentation) x;
 }""", True),
+
+("""func main:void() {
+  func(number, char) x;
+}""", False),
 ####################
 # func calls
 ("""func main:void() { f(); }""", True),
@@ -124,6 +251,8 @@ func main:void() {
 ("""func main:void() { f(g(h())); }""", True),
 # returns a function, which we call again
 ("""func main:void() { f(1)(2)(3); }""", True),
+
+("""func main:void() { f((); }""", False),
 ####################
 # func definitions (normal)
 ("""func main:void() {
@@ -139,9 +268,17 @@ func main:void() {
 ("""func main:void() {
   func foo:void() {
     func bar:void() {
+      func baz:void() {
+      }
     }
   }
 }""", True),
+
+("""func main:void() {
+  func:number() {
+    return 2+2;
+  }
+}""", False),
 ####################
 # func definitions (anonymous)
 ("""func main:void() {
@@ -160,6 +297,10 @@ func main:void() {
     return 2;
   };
 }""", True),
+
+("""func main:void() {
+  x = func:void() { }
+}""", False),
 ####################
 # if
 ("""func main:void() {
@@ -186,10 +327,33 @@ func main:void() {
 ("""func main:void() {
   if(something) {
     if(and_something) {
-     do_something();
+      do_something();
     }
   }
 }""", True),
+("""func main:void() {
+  if(x<5) {
+    do_something();
+  }
+}""", True),
+
+("""func main:void() {
+  if something {
+    do_something();
+  }
+}""", False),
+("""func main:void() {
+  if (something)
+    do_something();
+}""", False),
+("""func main:void() {
+  if something
+    do_something();
+}""", False),
+("""func main:void() {
+  if x<10
+    do_something();
+}""", False),
 ####################
 # normal for
 ("""func main:void() {
@@ -206,6 +370,27 @@ func main:void() {
     do_something_else();
   }
 }""", True),
+
+("""func main:void() {
+  for() { }
+}""", False),
+("""func main:void() {
+  for(;;);
+}""", False),
+("""func main:void() {
+  for(;;;) { }
+}""", False),
+("""func main:void() {
+  for { }
+}""", False),
+("""func main:void() {
+  for(;;)
+}""", False),
+("""func main:void() {
+  for(x < 10; y < 10; z < 10) {
+    do_things();
+  }
+}""", False),
 ####################
 # list comprehensions
 ("""func main:void() {
@@ -229,11 +414,29 @@ func main:void() {
 ("""func main:void() {
   return [[x*y for number y in bb] for number x in aa];
 }""", True),
+
+("""func main:void() {
+  return [x for x];
+}""", False),
+("""func main:void() {
+  return [x for x in x];
+}""", False),
+("""func main:void() {
+  return [x for number x in number list];
+}""", False),
+("""func main:void() {
+  return [for number x in list];
+}""", False),
 ####################
 # imports
-("""import math;""", False),
 ("""import math; number a;""", True),
 ("""import math; import types; number a;""", True),
+
+("""import math;""", False), # need to have at least 1 expression
+("""import x<10;""", False),
+("""import;""", False),
+("""import; number a;""", False),
+("""import 480; number a;""", False),
 ####################
 # foreach
 ####################
@@ -268,8 +471,13 @@ func main:void() {
 }""", True),
 ]
 
+################################################################################
+# testing scaffold
+
 count_errors = 0
 str_errors = ""
+
+DEBUG = False
 
 for i in range(len(tests)):
     test = tests[i]
@@ -278,29 +486,32 @@ for i in range(len(tests)):
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
+    
     proc.communicate(test[0]+"\n")
     # wait a bit
-    time.sleep(0.01)
+    time.sleep(0.001)
     # poll
     status = proc.poll()
+    if DEBUG:
+        print status,test[1]
     # end it if it's still running
     if status is None:
         proc.terminate()
     # check if we're
-    if (status is None) == test[1] or (status == 0) == test[1]:
-        print ".",
+    if (status == 0) == test[1]:
+        sys.stdout.write('.')
     else:
-        str_errors += ("%3d/%d test failed: %s expected\n" %
-                       (i, len(tests),
+        str_errors += ("#%3d test failed: %s expected\n" %
+                       (i,
                         {True: "Pass", False: "Failure"}[test[1]]))
-        str_errors += test[0]+"\n"
-        print "F",
+        str_errors += test[0]+"\n\n"
+        sys.stdout.write('F')
         count_errors += 1
-    if (i+1) % 40 == 0:
+    if (i+1) % 80 == 0:
         print ""
 
 if count_errors != 0:
-    print ""
+    print "\n"
     print "Failures:"
     print str_errors
 
