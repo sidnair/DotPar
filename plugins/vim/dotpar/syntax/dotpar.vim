@@ -31,7 +31,7 @@ syn match dpSpecial '\\n'
 syn region dpString start='"' end='"' contains=dpSpecial
 
 " TODO: Disallow multiline string highlighting
-" TODO: Support adding * on enter
+" TODO: Support adding * on enter when doing a multiline comment
 
 hi def link dpType Type
 hi def link dpRepeat Repeat
