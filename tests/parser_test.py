@@ -482,7 +482,7 @@ DEBUG = False
 for i in range(len(tests)):
     test = tests[i]
     # run each test, check the return value
-    proc = subprocess.Popen(["./dotpar"],
+    proc = subprocess.Popen(["ocaml_front_end/dotpar"],
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
