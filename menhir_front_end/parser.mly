@@ -1,4 +1,3 @@
-
 %token IMPORT
 
 %token TRUE FALSE NIL
@@ -247,6 +246,8 @@ elifs:
 /* add declarations later */
 iteration_statement:
   | FOR LPAREN expression_opt SEMI expression_opt SEMI expression_opt RPAREN compound_statement { () }
+  /* declaration already has a SEMI */
+  | FOR LPAREN declaration expression_opt SEMI expression_opt RPAREN compound_statement { () }
 
 jump_statement:
   | RETURN expression_opt SEMI { () }
