@@ -11,8 +11,8 @@ let alpha        = ['_' 'a'-'z' 'A'-'Z']
 let alphanum     = alpha | digit
 let identifier   = alpha alphanum*
 let escaped_char = ("\\"[^'\n'])
-let string_char  = escaped_char | [^ '\n' '"']
-let char_char    = escaped_char | [^ '\n' '\'']
+let string_char  = escaped_char | [^ '\\' '\n' '"']
+let char_char    = escaped_char | [^ '\\' '\n' '\'']
 
 rule token = parse
 | whitespace          { token lexbuf }
