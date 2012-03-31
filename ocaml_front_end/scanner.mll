@@ -1,6 +1,13 @@
 {
   open Parser
-  (*exception Error of string*)
+
+  let incr_linenum lexbuf =
+    let pos = lexbuf.Lexing.lex_curr_p in
+    lexbuf.Lexing.lex_curr_p <- { pos with
+      Lexing.pos_lnum = pos.Lexing.pos_lnum + 1;
+      Lexing.pos_bol = pos.Lexing.pos_cnum;
+    }
+
 }
 
 let newline      = '\n' | "\r\n"
@@ -15,6 +22,7 @@ let string_char  = escaped_char | [^ '\\' '\n' '"']
 let char_char    = escaped_char | [^ '\\' '\n' '\'']
 
 rule token = parse
+| newline             { incr_linenum lexbuf; token lexbuf }
 | whitespace          { token lexbuf }
 | "/*"                { multi_comment lexbuf }
 | "//"                { single_comment lexbuf }
@@ -74,3 +82,4 @@ and single_comment = parse
 and multi_comment = parse
   | "*/"             { token lexbuf }
   | _                { multi_comment lexbuf }
+

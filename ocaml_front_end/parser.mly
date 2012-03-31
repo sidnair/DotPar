@@ -1,3 +1,6 @@
+%{
+%}
+
 %token IMPORT
 
 %token TRUE FALSE NIL
@@ -269,4 +272,3 @@ function_definition:
 external_declaration:
   | function_definition { () }
   | declaration { () }
-
