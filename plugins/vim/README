@@ -1,0 +1,5 @@
+1) Add this to your .vimrc:
+  au BufRead,BufNewFile *.par set filetype=dotpar
+
+2) Copy the dotpar directory into .vim/bundle if you use pathogen or move the
+contents of the dotpar directory into .vim.

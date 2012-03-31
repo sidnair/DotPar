@@ -370,6 +370,11 @@ func main:void() {
     do_something_else();
   }
 }""", True),
+("""func main:void() {
+  for(x < 10; y < 10; z < 10) {
+    do_things();
+  }
+}""", True),
 
 ("""func main:void() {
   for() { }
@@ -385,11 +390,6 @@ func main:void() {
 }""", False),
 ("""func main:void() {
   for(;;)
-}""", False),
-("""func main:void() {
-  for(x < 10; y < 10; z < 10) {
-    do_things();
-  }
 }""", False),
 ####################
 # list comprehensions
@@ -482,7 +482,7 @@ DEBUG = False
 for i in range(len(tests)):
     test = tests[i]
     # run each test, check the return value
-    proc = subprocess.Popen(["./a.out"],
+    proc = subprocess.Popen(["ocaml_front_end/dotpar"],
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
