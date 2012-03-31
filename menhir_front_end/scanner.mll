@@ -3,13 +3,16 @@
   (*exception Error of string*)
 }
 
-let newline    = '\n' | "\r\n"
-let whitespace = [' ' '\t'] | newline
-let digit      = ['0'-'9']
-let number     = digit+ | digit* '.' digit+
-let alpha      = ['_' 'a'-'z' 'A'-'Z']
-let alphanum   = alpha | digit
-let identifier = alpha alphanum*
+let newline      = '\n' | "\r\n"
+let whitespace   = [' ' '\t'] | newline
+let digit        = ['0'-'9']
+let number       = digit+ | digit* '.' digit+
+let alpha        = ['_' 'a'-'z' 'A'-'Z']
+let alphanum     = alpha | digit
+let identifier   = alpha alphanum*
+let escaped_char = ("\\"[^'\n'])
+let string_char  = escaped_char | [^ '\n' '"']
+let char_char    = escaped_char | [^ '\n' '\'']
 
 rule token = parse
 | whitespace          { token lexbuf }
@@ -58,8 +61,9 @@ rule token = parse
 | "%"                 { REM }
 | number              { NUM_LITERAL }
 | identifier          { IDENTIFIER }
-| "'(\\.|[^'\n])'"    { CHAR_LITERAL; }
-(*| "\"(\\.|[^\\"\n])*\"" { STRING_LITERAL; }*)
+| "'" char_char "'"   { CHAR_LITERAL }
+| '"' string_char* '"'{ STRING_LITERAL }
+| eof                 { EOF }
 | _ as char           { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 

@@ -11,4 +11,4 @@ test:
 	python parser_test.py
 
 clean:
-	rm -f dotpar *.cmo parser.ml scanner.ml parser.mli
+	rm -f dotpar *.cmo parser.ml scanner.ml parser.mli *.cmi
