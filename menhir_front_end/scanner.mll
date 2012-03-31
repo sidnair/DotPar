@@ -16,7 +16,7 @@ let char_char    = escaped_char | [^ '\n' '\'']
 
 rule token = parse
 | whitespace          { token lexbuf }
-(*| "/*"              { multicomment lexbuf }*)
+| "/*"                { multi_comment lexbuf }
 | "//"                { single_comment lexbuf }
 | "import"            { IMPORT }
 | "true"              { TRUE }
@@ -70,3 +70,7 @@ rule token = parse
 and single_comment = parse
   | ['\n' '\r']      { token lexbuf }
   | _                { single_comment lexbuf }
+
+and multi_comment = parse
+  | "*/"             { token lexbuf }
+  | _                { multi_comment lexbuf }
