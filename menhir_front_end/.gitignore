@@ -1,0 +1,6 @@
+*.cmi
+*.cmo
+parser.ml
+parser.mli
+scanner.ml
+dotpar
