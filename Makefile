@@ -1,17 +1,41 @@
-all: compiler
+SRC = src
+OCAML_PATH = $(SRC)/ocaml
+C_PATH = $(SRC)/c
+
+all: bin compiler c_compiler
+
+bin:
+	mkdir bin
 
 compiler:
-	cd ocaml_front_end; make; cd ..
+	cd $(OCAML_PATH); \
+	ocamlyacc parser.mly; \
+	ocamlc -c parser.mli; \
+	ocamllex scanner.mll; \
+	ocamlc -c scanner.ml; \
+	ocamlc -c parser.ml; \
+	ocamlc -c dotpar.ml; \
+	ocamlc -o ../../bin/dotpar scanner.cmo parser.cmo dotpar.cmo
 
-c_compiler:
-	cd c_front_end; make; cd ..
+clean_ocaml:
+	rm -f bin/dotpar
+	cd $(OCAML_PATH); \
+	rm -f *.cmo scanner.ml parser.ml parser.mli *.cmi
 
 test: compiler
 	python tests/parser_test.py
 
-clean:
-	cd ocaml_front_end; make clean; cd ..
-	cd c_front_end; make clean; cd ..
+c_compiler:
+	cd $(C_PATH); \
+	lex lexer.l; \
+	yacc -d --verbose dotpar.y; \
+	gcc lex.yy.c y.tab.c -ly
+
+clean_c:
+	cd $(C_PATH); \
+	rm -f a.out *.c *.h *.output;
+
+clean: clean_ocaml clean_c
 
 # http://linuxdevcenter.com/pub/a/linux/2002/01/31/make_intro.html?page=2
 .PHONY: all compiler c_compiler test clean
