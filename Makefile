@@ -2,7 +2,7 @@ SRC = src
 OCAML_PATH = $(SRC)/ocaml
 C_PATH = $(SRC)/c
 
-all: bin compiler c_compiler
+all: bin compiler
 
 bin:
 	mkdir bin
@@ -22,7 +22,7 @@ clean_ocaml:
 	cd $(OCAML_PATH); \
 	rm -f *.cmo scanner.ml parser.ml parser.mli *.cmi
 
-test: compiler
+parser_test: compiler
 	python tests/parser_test.py
 
 c_compiler:
@@ -30,6 +30,7 @@ c_compiler:
 	lex lexer.l; \
 	yacc -d --verbose dotpar.y; \
 	gcc lex.yy.c y.tab.c -ly
+	mv a.out ../../bin/dotpar
 
 clean_c:
 	cd $(C_PATH); \
