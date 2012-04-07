@@ -60,18 +60,15 @@ constant:
   | FALSE { }
   | NIL { }
 
-argument_expression_list_opt:
-  | argument_expression_list { }
-  |  /* empty */ { }
-
 argument_expression_list:
   | assignment_expression { }
   | argument_expression_list COMMA assignment_expression { }
+  | /* empty */ { }
 
 postfix_expression:
   | primary_expression { }
   | postfix_expression LBRACK expression RBRACK { }
-  | postfix_expression LPAREN argument_expression_list_opt RPAREN { }
+  | postfix_expression LPAREN argument_expression_list RPAREN { }
 
 unary_expression:
   | postfix_expression { }
@@ -115,21 +112,18 @@ array_expression_list:
                      array_expression:
   | conditional_expression { }
   | LBRACK list_comprehension RBRACK { }
-  | LBRACK initer_list_opt RBRACK { }
-
-if_comp_opt:
-  | if_comp { }
-  | /* empty */ { }
+  | LBRACK initer_list RBRACK { }
 
 /* optionally will have parentheses. */
 if_comp:
   | IF expression { }
+  | { }
 
 list_comprehension:
   | array_expression FOR paren_parameter_list_opt IN array_expression
-  if_comp_opt { }
+  if_comp { }
   | array_expression FOR paren_parameter_list_opt IN
-  opt_paren_multi_array_expression_list if_comp_opt { }
+  opt_paren_multi_array_expression_list if_comp { }
 
 /* look into allowing named function defs as rvalues */
 assignment_expression:
@@ -141,6 +135,7 @@ assignment_expression:
 
 expression:
   | assignment_expression { }
+  | { }
 
 primary_expression:
   | IDENTIFIER { }
@@ -156,7 +151,7 @@ type_specifier:
 
 func_specifier:
   | FUNC COLON type_specifier LPAREN type_list RPAREN { }
-  | FUNC COLON type_specifier LPAREN parameter_list_opt RPAREN { }
+  | FUNC COLON type_specifier LPAREN parameter_list RPAREN { }
 
 basic_type:
   | NUMBER { }
@@ -175,84 +170,66 @@ type_list:
   | type_specifier { }
   | type_list COMMA type_specifier { }
 
-parameter_list_opt:
-  | parameter_list { }
-  | /*empty */ { }
+parameter_list:
+  | parameter_declaration { }
+  | parameter_list COMMA parameter_declaration { }
+  | { }
 
 paren_parameter_list_opt:
   | LPAREN parameter_list RPAREN { }
   | parameter_list { }
 
-
-parameter_list:
-  | parameter_declaration { }
-  | parameter_list COMMA parameter_declaration { }
-
 parameter_declaration:
   | type_specifier declarator { }
-
 
 initer:
   | array_expression { }
   | anonymous_function_definition { }
 
-initer_list_opt:
-  | initer_list { }
-  | /* empty */ { }
-
 initer_list:
   | initer { }
   | initer_list COMMA initer { }
+  | { }
 
 expression_statement:
-  | expression_opt SEMI { }
-
-expression_opt:
-  | expression { }
-  | /* empty statement */ { }
+  | expression SEMI { }
 
 compound_statement:
-  | LBRACE statement_list_opt RBRACE { }
-
-statement_list_opt:
-  | statement_list { }
-  | /* empty */ { }
+  | LBRACE statement_list RBRACE { }
 
 /* Allows statements and declarations to be interwoven. */
 statement_list :
-  | statement_list_opt statement { }
-  | statement_list_opt declaration { }
-  | statement_list_opt function_definition { }
+  | statement_list statement { }
+  | statement_list declaration { }
+  | statement_list function_definition { }
+  | { }
 
 selection_statement:
-  | if_statement elifs_opt else_opt { }
+  | if_statement elifs_opt else_statement { }
 
 if_statement:
   | IF LPAREN expression RPAREN compound_statement { }
 
-else_opt:
-  | else_statement { }
-  | /* empty */ { }
-
 else_statement:
   | ELSE compound_statement { }
-
-elifs_opt:
-  | elifs { }
-  | /* empty */ { }
+  | { }
 
 elifs:
   | ELIF LPAREN expression RPAREN compound_statement { }
   | elifs ELIF LPAREN expression RPAREN compound_statement { }
 
+elifs_opt:
+  | elifs { }
+  | { }
+
 /* add declarations later */
 iteration_statement:
-  | FOR LPAREN expression_opt SEMI expression_opt SEMI expression_opt RPAREN compound_statement { }
+  | FOR LPAREN expression SEMI expression SEMI expression RPAREN compound_statement { }
   /* declaration already has a SEMI */
-  | FOR LPAREN declaration expression_opt SEMI expression_opt RPAREN compound_statement { }
+  | FOR LPAREN declaration expression SEMI expression RPAREN compound_statement { }
 
 jump_statement:
-  | RETURN expression_opt SEMI { }
+  | RETURN expression SEMI { }
 
 statement:
   | expression_statement { }
@@ -262,10 +239,10 @@ statement:
   | jump_statement { }
 
 anonymous_function_definition:
-  | FUNC COLON type_specifier LPAREN parameter_list_opt RPAREN compound_statement { }
+  | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
 
 function_definition:
-  | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list_opt RPAREN compound_statement { }
+  | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
 
 /* Top level */
 external_declaration:
