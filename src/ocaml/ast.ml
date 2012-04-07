@@ -44,7 +44,7 @@ type function_definition = {
 
 and statement =
     Expression of expression
-  | Statements of statements (* compound statement *)
+  (* | Statements of statements (\* compound statement *\) *)
   (* | Selection of  *)
   (* | Iteration of  *)
   (* | Jump of  *)
@@ -55,3 +55,41 @@ and statements =
   | :: of statement * statements;;
 
 type program = statements;;
+
+(***********************************************************************)
+
+let rec string_of_constant constant =
+  match constant with
+    Number_literal(n) -> (string_of_float n) ^ "\n"
+  | _-> raise Not_found
+
+and string_of_expression expression =
+  match expression with
+    Constant(c) -> (string_of_constant c) ^ "\n"
+  | _-> raise Not_found
+
+and string_of_basic_type btype =
+  match btype with
+    Void_type -> "void"
+  | _-> raise Not_found
+
+and string_of_function_definition fn =
+  "function " ^ fn.name ^ ":" ^ (string_of_type fn.ret_type) ^
+  "()" ^ "{" ^ (string_of_statements fn.body) ^ "}"
+
+and string_of_statement statement =
+  match statement with
+    Expression(e) -> (string_of_expression e) ^ "\n"
+  | Function_definition(f) -> (string_of_function_definition f) ^ "\n"
+  | _-> raise Not_found
+
+and string_of_statements statements =
+  match statements with
+    head::tail -> (string_of_statement head) ^ (string_of_statements tail)
+  | _-> ""
+
+and string_of_type vtype =
+  match vtype with
+    Basic_type(b) -> (string_of_basic_type b)
+  | _-> raise Not_found
+;;

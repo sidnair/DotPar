@@ -9,10 +9,10 @@ bin:
 
 compiler:
 	cd $(OCAML_PATH); \
+	ocamlc -c ast.ml; \
 	ocamlyacc parser.mly; \
 	ocamlc -c parser.mli; \
 	ocamllex scanner.mll; \
-	ocamlc -c ast.ml; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
 	ocamlc -c dotpar.ml; \

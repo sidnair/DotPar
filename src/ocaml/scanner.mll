@@ -67,8 +67,8 @@ rule token = parse
 | "*"                 { MULT }
 | "/"                 { DIV }
 | "%"                 { REM }
-| number              { NUM_LITERAL }
-| identifier          { IDENTIFIER }
+| number as lxm       { NUM_LITERAL(float_of_string lxm) }
+| identifier as lxm   { IDENTIFIER(lxm) }
 | "'" char_char "'"   { CHAR_LITERAL }
 | '"' string_char* '"'{ STRING_LITERAL }
 | eof                 { EOF }

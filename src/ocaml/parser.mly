@@ -1,4 +1,5 @@
-%{ open Ast %}
+%{ open Ast
+open Printf %}
 
 %token IMPORT
 
@@ -14,7 +15,9 @@
 
 %token ADD SUB MULT DIV REM
 
-%token  STRING_LITERAL NUM_LITERAL CHAR_LITERAL IDENTIFIER
+%token STRING_LITERAL CHAR_LITERAL
+%token <float> NUM_LITERAL
+%token <string> IDENTIFIER
 
 %token EOF
 
@@ -35,11 +38,11 @@
 %%
 
 program:
-  | lines { Nil }
+  | lines { $1 }
 
 lines:
-  | imports_opt external_declaration { }
-  | lines external_declaration { }
+  | imports_opt external_declaration { Nil }
+  | lines external_declaration { $2 :: $1 }
 
 imports_opt:
   | imports { }
@@ -53,12 +56,12 @@ import_declaration:
   | IMPORT IDENTIFIER SEMI { }
 
 constant:
-  | CHAR_LITERAL { }
-  | NUM_LITERAL { }
-  | STRING_LITERAL { }
+  /* | CHAR_LITERAL { } */
+  | NUM_LITERAL { Number_literal $1 }
+  /* | STRING_LITERAL { }
   | TRUE { }
   | FALSE { }
-  | NIL { }
+  | NIL { } */
 
 argument_expression_list:
   | assignment_expression { }
@@ -66,36 +69,36 @@ argument_expression_list:
   | /* empty */ { }
 
 postfix_expression:
-  | primary_expression { }
-  | postfix_expression LBRACK expression RBRACK { }
-  | postfix_expression LPAREN argument_expression_list RPAREN { }
+  | primary_expression { $1 }
+  /* | postfix_expression LBRACK expression RBRACK { }
+  | postfix_expression LPAREN argument_expression_list RPAREN { } */
 
 unary_expression:
-  | postfix_expression { }
-  | NOT unary_expression { }
-  | SUB unary_expression %prec UMINUS { }
+  | postfix_expression { $1 }
+  /* | NOT unary_expression { }
+  | SUB unary_expression %prec UMINUS { } */
 
 arithmetic_expression:
-  | unary_expression { }
-  | arithmetic_expression REM arithmetic_expression { }
+  | unary_expression { $1 }
+  /* | arithmetic_expression REM arithmetic_expression { }
   | arithmetic_expression DIV arithmetic_expression { }
   | arithmetic_expression MULT arithmetic_expression { }
   | arithmetic_expression ADD arithmetic_expression { }
-  | arithmetic_expression SUB arithmetic_expression { }
+  | arithmetic_expression SUB arithmetic_expression { } */
 
 relational_expression:
-  | arithmetic_expression { }
-  | relational_expression GEQ relational_expression { }
+  | arithmetic_expression { $1 }
+  /* | relational_expression GEQ relational_expression { }
   | relational_expression GT relational_expression { }
   | relational_expression LT relational_expression { }
   | relational_expression LEQ relational_expression { }
   | relational_expression EQ relational_expression { }
-  | relational_expression NEQ relational_expression { }
+  | relational_expression NEQ relational_expression { } */
 
 conditional_expression:
-  | relational_expression { }
-  | conditional_expression OR conditional_expression { }
-  | conditional_expression AND conditional_expression { }
+  | relational_expression { $1 }
+  /* | conditional_expression OR conditional_expression { }
+  | conditional_expression AND conditional_expression { } */
 
 opt_paren_multi_array_expression_list:
   | LPAREN multi_array_expression_list RPAREN { }
@@ -109,10 +112,11 @@ multi_array_expression_list:
 array_expression_list:
   | array_expression { }
   | array_expression_list COMMA array_expression { }
-                     array_expression:
-  | conditional_expression { }
-  | LBRACK list_comprehension RBRACK { }
-  | LBRACK initer_list RBRACK { }
+
+array_expression:
+  | conditional_expression { $1 }
+  /* | LBRACK list_comprehension RBRACK { }
+  | LBRACK initer_list RBRACK { } */
 
 /* optionally will have parentheses. */
 if_comp:
@@ -127,27 +131,27 @@ list_comprehension:
 
 /* look into allowing named function defs as rvalues */
 assignment_expression:
-  | array_expression { }
-  | anonymous_function_definition { }
+  | array_expression { $1 }
+  /* | anonymous_function_definition { }
   | postfix_expression ASSIGN array_expression { }
   | postfix_expression ASSIGN function_definition { }
-  | postfix_expression ASSIGN anonymous_function_definition { }
+  | postfix_expression ASSIGN anonymous_function_definition { } */
 
 expression:
-  | assignment_expression { }
-  | { }
+  | assignment_expression { Expression $1 }
+  /* | { } */
 
 primary_expression:
-  | IDENTIFIER { }
-  | constant { }
-  | LPAREN expression RPAREN { }
+  /* | IDENTIFIER { } */
+  | constant { Constant $1 }
+  /* | LPAREN expression RPAREN { } */
 
-type_specifier:
-  | type_specifier LBRACK arithmetic_expression RBRACK { }
+type_specifier: 
+  /* | type_specifier LBRACK arithmetic_expression RBRACK { }
   | type_specifier LBRACK RBRACK { }
-  | basic_type { }
-  | VOID { }
-  | func_specifier { }
+  | basic_type { } */
+  | VOID { Basic_type Void_type }
+  /* | func_specifier { } */
 
 func_specifier:
   | FUNC COLON type_specifier LPAREN type_list RPAREN { }
@@ -192,17 +196,17 @@ initer_list:
   | { }
 
 expression_statement:
-  | expression SEMI { }
+  | expression SEMI { $1 }
 
 compound_statement:
-  | LBRACE statement_list RBRACE { }
+  | LBRACE statement_list RBRACE { $2 }
 
 /* Allows statements and declarations to be interwoven. */
 statement_list :
-  | statement_list statement { }
-  | statement_list declaration { }
-  | statement_list function_definition { }
-  | { }
+  | statement_list statement { $2 :: $1 }
+  /* | statement_list declaration { }
+  | statement_list function_definition { } */
+  | { Nil }
 
 selection_statement:
   | if_statement elifs_opt else_statement { }
@@ -232,19 +236,22 @@ jump_statement:
   | RETURN expression SEMI { }
 
 statement:
-  | expression_statement { }
-  | compound_statement { }
+  | expression_statement { $1 }
+  /* | compound_statement { }
   | selection_statement { }
   | iteration_statement { }
-  | jump_statement { }
+  | jump_statement { } */
 
 anonymous_function_definition:
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
 
 function_definition:
-  | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
+  | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN
+      compound_statement
+      { {name=$2; ret_type=$4; body=$8} }
 
 /* Top level */
 external_declaration:
-  | function_definition { }
-  | declaration { }
+  | function_definition { Printf.printf "%s" (string_of_statements (Function_definition $1:: Nil));
+                          (Function_definition $1) }
+  /* | declaration { } */
