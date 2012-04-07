@@ -12,10 +12,11 @@ compiler:
 	ocamlyacc parser.mly; \
 	ocamlc -c parser.mli; \
 	ocamllex scanner.mll; \
+	ocamlc -c ast.ml; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
 	ocamlc -c dotpar.ml; \
-	ocamlc -o ../../bin/dotpar scanner.cmo parser.cmo dotpar.cmo
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo parser.cmo dotpar.cmo
 
 clean_ocaml:
 	rm -f bin/dotpar

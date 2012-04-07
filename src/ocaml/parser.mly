@@ -1,5 +1,4 @@
-%{
-%}
+%{ open Ast %}
 
 %token IMPORT
 
@@ -31,12 +30,12 @@
 %right UMINUS
 
 %start program
-%type <unit> program
+%type <Ast.program> program
 
 %%
 
 program:
-  | lines { }
+  | lines { Nil }
 
 lines:
   | imports_opt external_declaration { }
