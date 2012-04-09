@@ -40,11 +40,11 @@ open Printf %}
 %%
 
 program:
-  | lines { Printf.printf "%s" (string_of_statements $1); $1 }
+  | lines { $1 }
 
 lines:
-  | imports_opt external_declaration { Nil }
-  | lines external_declaration { Printf.printf "%s" (string_of_statements $1); $2 :: $1 }
+  | imports_opt external_declaration { [] }
+  | lines external_declaration { $2 :: $1 }
 
 imports_opt:
   | imports { }
@@ -66,14 +66,15 @@ constant:
   | NIL { Nil_literal }
 
 argument_expression_list:
-  | assignment_expression { }
-  | argument_expression_list COMMA assignment_expression { }
-  | /* empty */ { }
+  | assignment_expression { $1 :: [] }
+  | argument_expression_list COMMA assignment_expression { $3 :: $1 }
+  | /* empty */ { [] }
 
 postfix_expression:
   | primary_expression { $1 }
-  /* | postfix_expression LBRACK expression RBRACK { }
-  | postfix_expression LPAREN argument_expression_list RPAREN { } */
+  | postfix_expression LBRACK expression RBRACK { Array_access ($1, $3) }
+  | postfix_expression LPAREN argument_expression_list RPAREN
+      { Function_call ($1, $3) }
 
 unary_expression:
   | postfix_expression { $1 }
@@ -82,25 +83,25 @@ unary_expression:
 
 arithmetic_expression:
   | unary_expression { $1 }
-  /* | arithmetic_expression REM arithmetic_expression { }
-  | arithmetic_expression DIV arithmetic_expression { }
-  | arithmetic_expression MULT arithmetic_expression { }
-  | arithmetic_expression ADD arithmetic_expression { }
-  | arithmetic_expression SUB arithmetic_expression { } */
+  | arithmetic_expression REM arithmetic_expression { Binop ($1,Mod,$3) }
+  | arithmetic_expression DIV arithmetic_expression { Binop ($1,Div,$3) }
+  | arithmetic_expression MULT arithmetic_expression { Binop ($1,Mult,$3) }
+  | arithmetic_expression ADD arithmetic_expression { Binop ($1,Add,$3) }
+  | arithmetic_expression SUB arithmetic_expression { Binop ($1,Sub,$3) }
 
 relational_expression:
   | arithmetic_expression { $1 }
-  /* | relational_expression GEQ relational_expression { }
-  | relational_expression GT relational_expression { }
-  | relational_expression LT relational_expression { }
-  | relational_expression LEQ relational_expression { }
-  | relational_expression EQ relational_expression { }
-  | relational_expression NEQ relational_expression { } */
+  | relational_expression GEQ relational_expression { Binop ($1,Geq,$3) }
+  | relational_expression GT relational_expression { Binop ($1,Gt,$3) }
+  | relational_expression LT relational_expression { Binop ($1,Lt,$3) }
+  | relational_expression LEQ relational_expression { Binop ($1,Leq,$3) }
+  | relational_expression EQ relational_expression { Binop ($1,Eq,$3) }
+  | relational_expression NEQ relational_expression { Binop ($1,Neq,$3) }
 
 conditional_expression:
   | relational_expression { $1 }
-  /* | conditional_expression OR conditional_expression { }
-  | conditional_expression AND conditional_expression { } */
+  | conditional_expression OR conditional_expression { Binop ($1,Or,$3) }
+  | conditional_expression AND conditional_expression { Binop ($1,And,$3) }
 
 opt_paren_multi_array_expression_list:
   | LPAREN multi_array_expression_list RPAREN { }
@@ -134,9 +135,9 @@ list_comprehension:
 /* look into allowing named function defs as rvalues */
 assignment_expression:
   | array_expression { $1 }
-  /* | anonymous_function_definition { }
-  | postfix_expression ASSIGN array_expression { }
-  | postfix_expression ASSIGN function_definition { }
+  /* | anonymous_function_definition { } */
+  | postfix_expression ASSIGN array_expression { Assignment_expression ($1,$3) }
+  /* | postfix_expression ASSIGN function_definition { }
   | postfix_expression ASSIGN anonymous_function_definition { } */
 
 expression:
@@ -144,9 +145,9 @@ expression:
   /* | { } */
 
 primary_expression:
-  /* | IDENTIFIER { } */
-  | constant { Constant $1 }
-  /* | LPAREN expression RPAREN { } */
+  | IDENTIFIER { Variable $1 }
+  | constant { $1 }
+  | LPAREN expression RPAREN { $2 }
 
 type_specifier: 
   /* | type_specifier LBRACK arithmetic_expression RBRACK { }
@@ -208,7 +209,7 @@ statement_list :
   | statement_list statement { $2 :: $1 }
   /* | statement_list declaration { }
   | statement_list function_definition { } */
-  | { Nil }
+  | { [] }
 
 selection_statement:
   | if_statement elifs_opt else_statement { }
@@ -256,3 +257,4 @@ function_definition:
 external_declaration:
   | function_definition { (Function_definition $1) }
   /* | declaration { } */
+/* Printf.printf "%s" (string_of_statements ((Function_definition $1) :: Nil)); */
