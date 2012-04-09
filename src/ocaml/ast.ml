@@ -7,7 +7,6 @@
 (*     Relational_expression of string * expression * expression *)
 
 type unop = Neg | Not
-
 type binop =
     Add | Sub | Mult | Div | Mod
   | Eq | Neq | Lt | Leq | Gt | Geq
@@ -15,6 +14,8 @@ type binop =
 
 type expression =
     Assignment_expression of expression * expression
+  | Declaration of var_type * expression
+  | Declaration_expression of var_type * expression * expression
   (* | Array_expression of array_expression *) (* todo *)
         (* unary operators *)
   | Unop of unop * expression
@@ -32,10 +33,6 @@ type expression =
   | Boolean_literal of bool
   | Nil_literal
 
-(* type Selection = *)
-(* type Iteration = *)
-(* type Jump = *)
-
 and basic_type =
     Void_type
   | Number_type
@@ -44,9 +41,9 @@ and basic_type =
 
 and var_type =
     Basic_type of basic_type
-  (* | compound_type *)
+  (* !!! | compound_type *)
 
-and selection_statement ={
+and selection_statement = {
     if_cond : expression;
     if_body : statements;
     else_body : statements;
@@ -54,22 +51,24 @@ and selection_statement ={
     elif_bodies : statements list;
   }
 
+and iteration_statement = expression * expression * expression * statements
+
 and jump_statement = {
-    return : expression; (* check this *)
+    return : expression;
   }
 
 and function_definition = {
    name : string;
    ret_type : var_type;
-   (* param_list : ; *)
+   (* !!! param_list : ; *)
    body : statements;
 }
 
 and statement =
     Expression of expression
-  | Statements of statements (* compound statement *)
+  | Statements of statements (* compound statements *)
   | Selection of selection_statement
-  (* | Iteration of  *)
+  | Iteration of iteration_statement
   | Jump of jump_statement
   | Function_definition of function_definition
 

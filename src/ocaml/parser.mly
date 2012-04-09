@@ -166,12 +166,13 @@ basic_type:
   | BOOLEAN { Boolean_type }
 
 declaration:
-  | type_specifier declarator SEMI { }
-  | type_specifier declarator ASSIGN initer SEMI { }
+  | type_specifier declarator SEMI { Declaration ($1, $2) }
+  | type_specifier declarator ASSIGN initer SEMI
+      { Declaration_expression ($1, $2, $4) }
 
 declarator:
-  | IDENTIFIER { }
-  | LPAREN declarator RPAREN { }
+  | IDENTIFIER { Variable $1 }
+  | LPAREN declarator RPAREN { $2 }
 
 type_list:
   | type_specifier { }
@@ -190,8 +191,8 @@ parameter_declaration:
   | type_specifier declarator { }
 
 initer:
-  | array_expression { }
-  | anonymous_function_definition { }
+  | array_expression { $1 }
+  /* | anonymous_function_definition { } */
 
 initer_list:
   | initer { }
@@ -271,9 +272,13 @@ elifs_opt:
 
 /* add declarations later */
 iteration_statement:
-  | FOR LPAREN expression SEMI expression SEMI expression RPAREN compound_statement { }
+  | FOR LPAREN expression SEMI expression SEMI expression RPAREN
+      compound_statement
+      { Iteration ($3, $5, $7, $9) }
   /* declaration already has a SEMI */
-  | FOR LPAREN declaration expression SEMI expression RPAREN compound_statement { }
+  | FOR LPAREN declaration expression SEMI expression RPAREN
+      compound_statement
+      { Iteration ($3, $4, $6, $8) }
 
 jump_statement:
   | RETURN expression SEMI { Jump { return=$2; } }
@@ -282,7 +287,7 @@ statement:
   | expression_statement { $1 }
   | compound_statement { Statements $1 }
   | selection_statement { $1 }
-  /* | iteration_statement { } */
+  | iteration_statement { $1 }
   | jump_statement { $1 }
 
 anonymous_function_definition:
