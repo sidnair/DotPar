@@ -46,6 +46,7 @@ lines:
   | imports_opt external_declaration { [] }
   | lines external_declaration { $2 :: $1 }
 
+/* !!! */
 imports_opt:
   | imports { }
   | /* empty */ { }
@@ -103,6 +104,7 @@ conditional_expression:
   | conditional_expression OR conditional_expression { Binop ($1,Or,$3) }
   | conditional_expression AND conditional_expression { Binop ($1,And,$3) }
 
+/* !!! */
 opt_paren_multi_array_expression_list:
   | LPAREN multi_array_expression_list RPAREN { }
   | multi_array_expression_list { }
@@ -121,11 +123,12 @@ array_expression:
   /* | LBRACK list_comprehension RBRACK { }
   | LBRACK initer_list RBRACK { } */
 
-/* optionally will have parentheses. */
+/* optionally will have parentheses. part of list comprehension */
 if_comp:
   | IF expression { }
   | { }
 
+/* !!! */
 list_comprehension:
   | array_expression FOR paren_parameter_list_opt IN array_expression
   if_comp { }
@@ -142,7 +145,7 @@ assignment_expression:
 
 expression:
   | assignment_expression { $1 }
-  /* | { } */
+  | { Empty_expression }
 
 primary_expression:
   | IDENTIFIER { Variable $1 }
@@ -150,15 +153,18 @@ primary_expression:
   | LPAREN expression RPAREN { $2 }
 
 type_specifier: 
-  /* | type_specifier LBRACK arithmetic_expression RBRACK { }
-  | type_specifier LBRACK RBRACK { } */
+  | type_specifier LBRACK arithmetic_expression RBRACK
+      { Fixed_array_type ($1, $3) }
+  | type_specifier LBRACK RBRACK { Array_type $1 }
   | basic_type { Basic_type $1 }
   | VOID { Basic_type Void_type }
-  /* | func_specifier { } */
+  | func_specifier { $1 }
 
 func_specifier:
-  | FUNC COLON type_specifier LPAREN type_list RPAREN { }
-  | FUNC COLON type_specifier LPAREN parameter_list RPAREN { }
+  | FUNC COLON type_specifier LPAREN type_list RPAREN
+      { Func_type ($3, $5) }
+  | FUNC COLON type_specifier LPAREN parameter_list RPAREN
+      { Func_param_type ($3, $5) }
 
 basic_type:
   | NUMBER { Number_type }
@@ -175,29 +181,31 @@ declarator:
   | LPAREN declarator RPAREN { $2 }
 
 type_list:
-  | type_specifier { }
-  | type_list COMMA type_specifier { }
+  | type_specifier { [$1] }
+  | type_list COMMA type_specifier { $3 :: $1 }
 
 parameter_list:
-  | parameter_declaration { }
-  | parameter_list COMMA parameter_declaration { }
-  | { }
+  | parameter_declaration { [$1] }
+  | parameter_list COMMA parameter_declaration { $3 :: $1 }
+  | { [] }
 
+/* this is a list comprehension thing */
 paren_parameter_list_opt:
   | LPAREN parameter_list RPAREN { }
   | parameter_list { }
 
 parameter_declaration:
-  | type_specifier declarator { }
+  | type_specifier declarator { Param ($1, $2) }
 
+/* !!! */
 initer:
   | array_expression { $1 }
-  /* | anonymous_function_definition { } */
+  /* | anonymous_function_definition { $1 } */
 
 initer_list:
-  | initer { }
-  | initer_list COMMA initer { }
-  | { }
+  | initer { [$1] }
+  | initer_list COMMA initer { $3 :: $1 }
+  | { [] }
 
 expression_statement:
   | expression SEMI { Expression $1 }
@@ -205,6 +213,7 @@ expression_statement:
 compound_statement:
   | LBRACE statement_list RBRACE { $2 }
 
+/* !!! */
 /* Allows statements and declarations to be interwoven. */
 statement_list :
   | statement_list statement { $2 :: $1 }
@@ -270,7 +279,6 @@ elifs_opt:
        elif_bodies=[];
      } }
 
-/* add declarations later */
 iteration_statement:
   | FOR LPAREN expression SEMI expression SEMI expression RPAREN
       compound_statement
@@ -290,8 +298,10 @@ statement:
   | iteration_statement { $1 }
   | jump_statement { $1 }
 
+/* !!! */
 anonymous_function_definition:
-  | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
+  | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement
+      { }
 
 function_definition:
   | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN
@@ -301,5 +311,5 @@ function_definition:
 /* Top level */
 external_declaration:
   | function_definition { (Function_definition $1) }
-  /* | declaration { } */
+  | declaration { Expression $1 }
 /* Printf.printf "%s" (string_of_statements ((Function_definition $1) :: Nil)); */

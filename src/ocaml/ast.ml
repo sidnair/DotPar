@@ -32,6 +32,8 @@ type expression =
   | String_literal of string
   | Boolean_literal of bool
   | Nil_literal
+      (* *)
+  | Empty_expression
 
 and basic_type =
     Void_type
@@ -39,9 +41,15 @@ and basic_type =
   | Char_type
   | Boolean_type
 
+and param =
+    Param of var_type * expression
+
 and var_type =
     Basic_type of basic_type
-  (* !!! | compound_type *)
+  | Array_type of var_type
+  | Fixed_array_type of var_type * expression
+  | Func_type of var_type * var_type list
+  | Func_param_type of var_type * param list
 
 and selection_statement = {
     if_cond : expression;
