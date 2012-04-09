@@ -103,36 +103,36 @@ conditional_expression:
   | conditional_expression OR conditional_expression { Binop ($1,Or,$3) }
   | conditional_expression AND conditional_expression { Binop ($1,And,$3) }
 
-/* !!! */
 opt_paren_multi_array_expression_list:
-  | LPAREN multi_array_expression_list RPAREN { }
-  | multi_array_expression_list { }
+  | LPAREN multi_array_expression_list RPAREN { $2 }
+  | multi_array_expression_list { $1 }
 
 /* Has at least two array_expressions */
 multi_array_expression_list:
-  | array_expression COMMA array_expression { }
-  | array_expression COMMA array_expression COMMA array_expression_list { }
+  | array_expression COMMA array_expression { $1 :: $3 :: [] }
+  | array_expression COMMA array_expression COMMA array_expression_list
+      { $1 :: $3 :: $5 } /* !! check this, might have to reverse $5 */
 
 array_expression_list:
-  | array_expression { }
-  | array_expression_list COMMA array_expression { }
+  | array_expression { [$1] }
+  | array_expression_list COMMA array_expression { $3 :: $1 }
 
 array_expression:
   | conditional_expression { $1 }
-  /* | LBRACK list_comprehension RBRACK { }
-  | LBRACK initer_list RBRACK { } */
+  | LBRACK list_comprehension RBRACK { $2 } 
+  | LBRACK initer_list RBRACK { Array_literal $2 }
+
+list_comprehension:
+  | array_expression FOR paren_parameter_list_opt IN array_expression if_comp
+        { List_comprehension ($1, $3, [$5], $6) }
+  | array_expression FOR paren_parameter_list_opt IN
+      opt_paren_multi_array_expression_list if_comp
+        { List_comprehension ($1, $3, $5, $6) }
 
 /* optionally will have parentheses. part of list comprehension */
 if_comp:
-  | IF expression { }
-  | { }
-
-/* !!! */
-list_comprehension:
-  | array_expression FOR paren_parameter_list_opt IN array_expression
-  if_comp { }
-  | array_expression FOR paren_parameter_list_opt IN
-  opt_paren_multi_array_expression_list if_comp { }
+  | IF expression { $2 }
+  | { Empty_expression }
 
 assignment_expression:
   | array_expression { $1 }
@@ -189,11 +189,10 @@ parameter_list:
   | parameter_list COMMA parameter_declaration { $3 :: $1 }
   | { [] }
 
-/* !!! */
 /* this is a list comprehension thing */
 paren_parameter_list_opt:
-  | LPAREN parameter_list RPAREN { }
-  | parameter_list { }
+  | LPAREN parameter_list RPAREN { $2 }
+  | parameter_list { $1 }
 
 parameter_declaration:
   | type_specifier declarator { Param ($1, $2) }

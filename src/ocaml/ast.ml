@@ -16,7 +16,8 @@ type expression =
     Assignment_expression of expression * expression
   | Declaration of var_type * expression
   | Declaration_expression of var_type * expression * expression
-  (* | Array_expression of array_expression *) (* todo *)
+  | Array_literal of expression list
+  | List_comprehension of expression * param list * expression list * expression
         (* unary operators *)
   | Unop of unop * expression
         (* all binary operators *)
@@ -37,6 +38,13 @@ type expression =
   | Func_expr of statement (* hacky as hell, but whatever *)
       (* *)
   | Empty_expression
+
+(* and list_comprehension = { *)
+(*     array_expr : expression; *)
+(*     param_list : param list; *)
+(*     input_arrays : expression list; *)
+(*     if_comp : expression; *)
+(*   } *)
 
 and basic_type =
     Void_type
