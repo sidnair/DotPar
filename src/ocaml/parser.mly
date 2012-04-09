@@ -3,8 +3,6 @@ open Printf %}
 
 %token IMPORT
 
-%token TRUE FALSE NIL
-
 %token BOOLEAN CHAR FUNC NUMBER VOID
 
 %token IF ELSE ELIF FOR IN RETURN
@@ -15,9 +13,13 @@ open Printf %}
 
 %token ADD SUB MULT DIV REM
 
-%token STRING_LITERAL CHAR_LITERAL
+%token <string> STRING_LITERAL
+%token <char> CHAR_LITERAL
 %token <float> NUM_LITERAL
 %token <string> IDENTIFIER
+%token <bool> TRUE
+%token <bool> FALSE
+%token NIL
 
 %token EOF
 
@@ -38,11 +40,11 @@ open Printf %}
 %%
 
 program:
-  | lines { $1 }
+  | lines { Printf.printf "%s" (string_of_statements $1); $1 }
 
 lines:
   | imports_opt external_declaration { Nil }
-  | lines external_declaration { $2 :: $1 }
+  | lines external_declaration { Printf.printf "%s" (string_of_statements $1); $2 :: $1 }
 
 imports_opt:
   | imports { }
@@ -56,12 +58,12 @@ import_declaration:
   | IMPORT IDENTIFIER SEMI { }
 
 constant:
-  /* | CHAR_LITERAL { } */
+  | CHAR_LITERAL { Char_literal $1 }
   | NUM_LITERAL { Number_literal $1 }
-  /* | STRING_LITERAL { }
-  | TRUE { }
-  | FALSE { }
-  | NIL { } */
+  | STRING_LITERAL { String_literal $1 }
+  | TRUE { Boolean_literal $1 }
+  | FALSE { Boolean_literal $1 }
+  | NIL { Nil_literal }
 
 argument_expression_list:
   | assignment_expression { }
@@ -138,7 +140,7 @@ assignment_expression:
   | postfix_expression ASSIGN anonymous_function_definition { } */
 
 expression:
-  | assignment_expression { Expression $1 }
+  | assignment_expression { $1 }
   /* | { } */
 
 primary_expression:
@@ -148,8 +150,8 @@ primary_expression:
 
 type_specifier: 
   /* | type_specifier LBRACK arithmetic_expression RBRACK { }
-  | type_specifier LBRACK RBRACK { }
-  | basic_type { } */
+  | type_specifier LBRACK RBRACK { } */
+  | basic_type { Basic_type $1 }
   | VOID { Basic_type Void_type }
   /* | func_specifier { } */
 
@@ -158,9 +160,9 @@ func_specifier:
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN { }
 
 basic_type:
-  | NUMBER { }
-  | CHAR { }
-  | BOOLEAN { }
+  | NUMBER { Number_type }
+  | CHAR { Char_type }
+  | BOOLEAN { Boolean_type }
 
 declaration:
   | type_specifier declarator SEMI { }
@@ -196,7 +198,7 @@ initer_list:
   | { }
 
 expression_statement:
-  | expression SEMI { $1 }
+  | expression SEMI { Expression $1 }
 
 compound_statement:
   | LBRACE statement_list RBRACE { $2 }
@@ -252,6 +254,5 @@ function_definition:
 
 /* Top level */
 external_declaration:
-  | function_definition { Printf.printf "%s" (string_of_statements (Function_definition $1:: Nil));
-                          (Function_definition $1) }
+  | function_definition { (Function_definition $1) }
   /* | declaration { } */

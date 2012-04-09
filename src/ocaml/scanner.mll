@@ -27,8 +27,8 @@ rule token = parse
 | "/*"                { multi_comment lexbuf }
 | "//"                { single_comment lexbuf }
 | "import"            { IMPORT }
-| "true"              { TRUE }
-| "false"             { FALSE }
+| "true"              { TRUE(true) }
+| "false"             { FALSE(false) }
 | "nil"               { NIL }
 | "boolean"           { BOOLEAN }
 | "char"              { CHAR }
@@ -69,8 +69,9 @@ rule token = parse
 | "%"                 { REM }
 | number as lxm       { NUM_LITERAL(float_of_string lxm) }
 | identifier as lxm   { IDENTIFIER(lxm) }
-| "'" char_char "'"   { CHAR_LITERAL }
-| '"' string_char* '"'{ STRING_LITERAL }
+| "'" char_char "'" as lxm  { CHAR_LITERAL(String.get lxm 1) }
+| '"' string_char* '"' as lxm
+    { STRING_LITERAL(String.sub lxm 1 ((String.length lxm) - 2)) }
 | eof                 { EOF }
 | _ as char           { raise (Failure("illegal character " ^ Char.escaped char)) }
 

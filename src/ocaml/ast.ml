@@ -4,11 +4,11 @@
 (*     Bool of bool *)
 
 type constant =
-    (* Char_literal of char_literal *)
-  (* | *) Number_literal of float
-  (* | String_literal of string_literal *)
-  (* | Boolean_literal of boolean_literal *)
-  (* | Nil { } *)
+    Char_literal of char
+  | Number_literal of float
+  | String_literal of string
+  | Boolean_literal of bool
+  | Nil_literal
 
 (* type relational_expression = *)
 (*     Relational_expression of string * expression * expression *)
@@ -30,6 +30,9 @@ type expression =
 
 type basic_type =
     Void_type
+  | Number_type
+  | Char_type
+  | Boolean_type
 
 type var_type =
     Basic_type of basic_type
