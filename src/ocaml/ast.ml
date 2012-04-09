@@ -33,6 +33,9 @@ type expression =
   | Boolean_literal of bool
   | Nil_literal
       (* *)
+  | Anonymous_function of var_type * param list * statements
+  | Func_expr of statement (* hacky as hell, but whatever *)
+      (* *)
   | Empty_expression
 
 and basic_type =
@@ -65,24 +68,23 @@ and jump_statement = {
     return : expression;
   }
 
-and function_definition = {
-   name : string;
-   ret_type : var_type;
-   (* !!! param_list : ; *)
-   body : statements;
-}
-
 and statement =
     Expression of expression
   | Statements of statements (* compound statements *)
   | Selection of selection_statement
   | Iteration of iteration_statement
   | Jump of jump_statement
-  | Function_definition of function_definition
+  | Function_definition of string * var_type * param list * statements
 
-and statements = statement list;;
+and statements = statement list
 
-type program = statements;;
+and import = Import of string
+
+and imports = import list
+
+;;
+
+type program = Program of imports * statements;;
 
 (***********************************************************************)
 

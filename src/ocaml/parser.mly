@@ -40,23 +40,22 @@ open Printf %}
 %%
 
 program:
-  | lines { $1 }
+  | lines { Program (fst($1), snd($1)) }
 
 lines:
-  | imports_opt external_declaration { [] }
-  | lines external_declaration { $2 :: $1 }
+  | imports_opt external_declaration { ($1, [$2]) }
+  | lines external_declaration { (fst($1), $2 :: snd($1)) }
 
-/* !!! */
 imports_opt:
-  | imports { }
-  | /* empty */ { }
+  | imports { $1 }
+  | /* empty */ { [] }
 
 imports:
-  | imports import_declaration { }
-  | import_declaration { }
+  | imports import_declaration { $2 :: $1 }
+  | import_declaration { [$1] }
 
 import_declaration:
-  | IMPORT IDENTIFIER SEMI { }
+  | IMPORT IDENTIFIER SEMI { Import $2 }
 
 constant:
   | CHAR_LITERAL { Char_literal $1 }
@@ -135,13 +134,14 @@ list_comprehension:
   | array_expression FOR paren_parameter_list_opt IN
   opt_paren_multi_array_expression_list if_comp { }
 
-/* look into allowing named function defs as rvalues */
 assignment_expression:
   | array_expression { $1 }
-  /* | anonymous_function_definition { } */
+  | anonymous_function_definition { $1 }
   | postfix_expression ASSIGN array_expression { Assignment_expression ($1,$3) }
-  /* | postfix_expression ASSIGN function_definition { }
-  | postfix_expression ASSIGN anonymous_function_definition { } */
+  | postfix_expression ASSIGN function_definition
+      { Assignment_expression ($1, Func_expr $3) }
+  | postfix_expression ASSIGN anonymous_function_definition
+      { Assignment_expression ($1, $3) }
 
 expression:
   | assignment_expression { $1 }
@@ -189,6 +189,7 @@ parameter_list:
   | parameter_list COMMA parameter_declaration { $3 :: $1 }
   | { [] }
 
+/* !!! */
 /* this is a list comprehension thing */
 paren_parameter_list_opt:
   | LPAREN parameter_list RPAREN { }
@@ -197,10 +198,9 @@ paren_parameter_list_opt:
 parameter_declaration:
   | type_specifier declarator { Param ($1, $2) }
 
-/* !!! */
 initer:
   | array_expression { $1 }
-  /* | anonymous_function_definition { $1 } */
+  | anonymous_function_definition { $1 }
 
 initer_list:
   | initer { [$1] }
@@ -213,12 +213,11 @@ expression_statement:
 compound_statement:
   | LBRACE statement_list RBRACE { $2 }
 
-/* !!! */
 /* Allows statements and declarations to be interwoven. */
 statement_list :
   | statement_list statement { $2 :: $1 }
-  /* | statement_list declaration { }
-  | statement_list function_definition { } */
+  | statement_list declaration { (Expression $2) :: $1 }
+  | statement_list function_definition { $2 :: $1 }
   | { [] }
 
 selection_statement:
@@ -298,18 +297,17 @@ statement:
   | iteration_statement { $1 }
   | jump_statement { $1 }
 
-/* !!! */
 anonymous_function_definition:
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement
-      { }
+      { Anonymous_function ($3, $5, $7) }
 
 function_definition:
   | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN
       compound_statement
-      { {name=$2; ret_type=$4; body=$8} }
+      { Function_definition ($2, $4, $6, $8) }
 
 /* Top level */
 external_declaration:
-  | function_definition { (Function_definition $1) }
+  | function_definition { $1 }
   | declaration { Expression $1 }
 /* Printf.printf "%s" (string_of_statements ((Function_definition $1) :: Nil)); */
