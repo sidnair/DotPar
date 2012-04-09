@@ -6,19 +6,18 @@
 (* type relational_expression = *)
 (*     Relational_expression of string * expression * expression *)
 
+type unop = Neg | Not
+
 type binop =
     Add | Sub | Mult | Div | Mod
   | Eq | Neq | Lt | Leq | Gt | Geq
   | And | Or
 
 type expression =
-    (* Assignment_expression of assignment_expression *)
     Assignment_expression of expression * expression
-  (* | Array_expression of array_expression *)
-  (* | Conditional_expression of conditional_expression *)
-  (* | Relational_expression of relational_expression  *)
-  (* | Arithmetic_expression of arithmetic_expression *)
-  (* | Unary_expression of unary_expression *)
+  (* | Array_expression of array_expression *) (* todo *)
+        (* unary operators *)
+  | Unop of unop * expression
         (* all binary operators *)
   | Binop of expression * binop * expression
         (* postfix *)
@@ -47,8 +46,16 @@ and var_type =
     Basic_type of basic_type
   (* | compound_type *)
 
+and selection_statement ={
+    if_cond : expression;
+    if_body : statements;
+    else_body : statements;
+    elif_conds : expression list;
+    elif_bodies : statements list;
+  }
+
 and jump_statement = {
-    return : expression;
+    return : expression; (* check this *)
   }
 
 and function_definition = {
@@ -60,8 +67,8 @@ and function_definition = {
 
 and statement =
     Expression of expression
-  (* | Statements of statements (\* compound statement *\) *)
-  (* | Selection of  *)
+  | Statements of statements (* compound statement *)
+  | Selection of selection_statement
   (* | Iteration of  *)
   | Jump of jump_statement
   | Function_definition of function_definition

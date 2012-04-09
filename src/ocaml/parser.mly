@@ -78,8 +78,8 @@ postfix_expression:
 
 unary_expression:
   | postfix_expression { $1 }
-  /* | NOT unary_expression { }
-  | SUB unary_expression %prec UMINUS { } */
+  | NOT unary_expression { Unop(Not, $2) }
+  | SUB unary_expression %prec UMINUS { Unop(Neg, $2) }
 
 arithmetic_expression:
   | unary_expression { $1 }
@@ -212,22 +212,62 @@ statement_list :
   | { [] }
 
 selection_statement:
-  | if_statement elifs_opt else_statement { }
+  | if_statement elifs_opt else_statement
+        { Selection {if_cond=$1.if_cond;
+                     if_body=$1.if_body;
+                     else_body=$3.else_body;
+                     elif_conds=$2.if_cond :: $2.elif_conds;
+                     elif_bodies=$2.if_body :: $2.elif_bodies;
+                   } }
 
 if_statement:
-  | IF LPAREN expression RPAREN compound_statement { }
+  | IF LPAREN expression RPAREN compound_statement
+      { {if_cond=$3;
+         if_body=$5;
+         else_body=[];
+         elif_conds=[];
+         elif_bodies=[];
+         } }
 
 else_statement:
-  | ELSE compound_statement { }
-  | { }
+  | ELSE compound_statement
+      { {if_cond=Nil_literal;
+         if_body=[];
+         else_body=$2;
+         elif_conds=[];
+         elif_bodies=[];
+         } }
+  | { {if_cond=Nil_literal;
+       if_body=[];
+       else_body=[];
+       elif_conds=[];
+       elif_bodies=[];
+     } }
 
 elifs:
-  | ELIF LPAREN expression RPAREN compound_statement { }
-  | elifs ELIF LPAREN expression RPAREN compound_statement { }
+  | ELIF LPAREN expression RPAREN compound_statement
+      { {if_cond=$3;
+         if_body=$5;
+         else_body=[];
+         elif_conds=[];
+         elif_bodies=[];
+         } }
+  | elifs ELIF LPAREN expression RPAREN compound_statement
+      { {if_cond=$4;
+         if_body=$6;
+         else_body=[];
+         elif_conds=$1.if_cond :: $1.elif_conds;
+         elif_bodies=$1.if_body :: $1.elif_bodies;
+         } }
 
 elifs_opt:
-  | elifs { }
-  | { }
+  | elifs { $1 }
+  | { {if_cond=Nil_literal;
+       if_body=[];
+       else_body=[];
+       elif_conds=[];
+       elif_bodies=[];
+     } }
 
 /* add declarations later */
 iteration_statement:
@@ -236,14 +276,14 @@ iteration_statement:
   | FOR LPAREN declaration expression SEMI expression RPAREN compound_statement { }
 
 jump_statement:
-  | RETURN expression SEMI { }
+  | RETURN expression SEMI { Jump { return=$2; } }
 
 statement:
   | expression_statement { $1 }
-  /* | compound_statement { }
-  | selection_statement { }
-  | iteration_statement { }
-  | jump_statement { } */
+  | compound_statement { Statements $1 }
+  | selection_statement { $1 }
+  /* | iteration_statement { } */
+  | jump_statement { $1 }
 
 anonymous_function_definition:
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement { }
