@@ -287,7 +287,7 @@ iteration_statement:
       { Iteration ($3, $4, $6, $8) }
 
 jump_statement:
-  | RETURN expression SEMI { Jump { return=$2; } }
+  | RETURN expression SEMI { Jump $2 }
 
 statement:
   | expression_statement { $1 }
@@ -309,4 +309,3 @@ function_definition:
 external_declaration:
   | function_definition { $1 }
   | declaration { Expression $1 }
-/* Printf.printf "%s" (string_of_statements ((Function_definition $1) :: Nil)); */
