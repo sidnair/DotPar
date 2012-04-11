@@ -35,16 +35,9 @@ type expression =
   | Nil_literal
       (* *)
   | Anonymous_function of var_type * param list * statements
-  | Func_expr of statement (* hacky as hell, but whatever *)
+  | Function_expression of statement (* hacky as hell, but whatever *)
       (* *)
   | Empty_expression
-
-(* and list_comprehension = { *)
-(*     array_expr : expression; *)
-(*     param_list : param list; *)
-(*     input_arrays : expression list; *)
-(*     if_comp : expression; *)
-(*   } *)
 
 and basic_type =
     Void_type
