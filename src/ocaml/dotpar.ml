@@ -1,6 +1,3 @@
-open Ast
-open Printf
-
 let _ =
   let lexbuf = Lexing.from_channel stdin in 
   let ast =
@@ -15,10 +12,13 @@ let _ =
       Printf.fprintf stderr "Parsing error at line %d, char %d\n." l c;
       exit 1
   in
+  (* Semantic transforms *)
+  let ast = Transform.reverse_tree ast
+  in
   (* DEBUG: reprint the AST *)
-  Printf.printf "%s" (string_of_program ast);
+  Printf.printf "%s" (Ast.string_of_program ast);
   (* Semantic analysis *)
-
+  
   (* Code generation *)
 
 ;;

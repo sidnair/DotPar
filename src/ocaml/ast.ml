@@ -1,11 +1,5 @@
 (* Abstract syntax tree definitions *)
 
-(* type boolean_literal = *)
-(*     Bool of bool *)
-
-(* type relational_expression = *)
-(*     Relational_expression of string * expression * expression *)
-
 type unop = Neg | Not
 type binop =
     Add | Sub | Mult | Div | Mod
@@ -97,7 +91,7 @@ let rec string_of_expression expression =
       "[" ^ (String.concat ", " (List.map string_of_expression exprs)) ^ "]"
   | List_comprehension(expr, params, exprs, if_cond) ->
       "[" ^ (string_of_expression expr) ^ " for " ^
-      (String.concat ", " (List.map string_of_param params)) ^ " " ^
+      (String.concat ", " (List.map string_of_param params)) ^ " in " ^
       (String.concat ", " (List.map string_of_expression exprs)) ^
       (match if_cond with
         Empty_expression -> ""
@@ -182,7 +176,7 @@ and string_of_param parm =
 and string_of_selection select =
   "if(" ^ (string_of_expression select.if_cond) ^ ")" ^
     "{" ^ (string_of_statements select.if_body) ^ "}" ^
-      (if ((List.length select.elif_conds) == 0) then
+      (if ((List.length select.elif_conds) != 0) then
         let gen_elif cond body =
           "elif(" ^ (string_of_expression cond) ^ ")" ^
           "{" ^ (string_of_statements body) ^ "}"
