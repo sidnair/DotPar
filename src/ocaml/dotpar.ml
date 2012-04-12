@@ -20,5 +20,5 @@ let _ =
   (* Semantic analysis *)
   
   (* Code generation *)
-
+  Printf.printf "%s" (Generate.gen_program ast);
 ;;

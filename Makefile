@@ -11,13 +11,14 @@ compiler:
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
 	ocamlc -c transform.ml; \
+	ocamlc -c generate.ml; \
 	ocamlyacc parser.mly; \
 	ocamlc -c parser.mli; \
 	ocamllex scanner.mll; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
 	ocamlc -c dotpar.ml; \
-	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo parser.cmo dotpar.cmo
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo dotpar.cmo
 
 clean_ocaml:
 	rm -f bin/dotpar

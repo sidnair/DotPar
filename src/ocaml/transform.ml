@@ -1,3 +1,4 @@
+(* Transform the AST so all the lists point the right way *)
 (* reverse:
    imports
    statements

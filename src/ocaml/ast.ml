@@ -78,6 +78,8 @@ type program = Program of imports * statements;;
 (***********************************************************************)
 (* reverse string out for the AST *)
 
+(* let ind = "  ";; *)
+
 let rec string_of_expression expression =
   match expression with
     Assignment_expression(rv, lv) ->
@@ -202,10 +204,10 @@ and string_of_statement stat =
   | Function_definition(name, ret_type, params, sts) ->
       "func " ^ name ^ ":" ^ (string_of_type ret_type) ^
       "(" ^ (String.concat ", " (List.map string_of_param params)) ^ ")" ^
-      "{" ^ (string_of_statements sts) ^ "}\n"
+      "{\n" ^ (string_of_statements sts) ^ "}\n"
 and string_of_statements statements =
   match statements with
-    head::tail -> (string_of_statement head) ^ (string_of_statements tail)
+    head::tail -> (string_of_statement head) ^"\n"^ (string_of_statements tail)
   | _-> ""
 
 and string_of_import import =
