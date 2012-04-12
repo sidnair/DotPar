@@ -23,22 +23,21 @@ Sid Nair - ssn2114@columbia.edu}
 
 %----------------------------
 \section{Introduction}
-\\DotPar is a flexible language that provides implicit nested data parallelism with powerful first-class functions while providing a familiar imperative interface. The focus is on parallel performance for arrays and loops, since these are often the source of performance bottlenecks.
+DotPar is a flexible language that provides implicit nested data parallelism with powerful first-class functions while providing a familiar imperative interface. The focus is on parallel performance for arrays and loops, since these are often the source of performance bottlenecks.
 \\ \\*Previous implementations of nested data-parallel languages have relied on the use of purely functional paradigms which can make the learning-curve steep and difficult to those who just want to pick up a new tool. DotPar provides a multi-paradigm nested data-parallel language with a friendly imperative style in addition to powerful functions. Its implicit parallelism focuses on the performance of arrays and loops, but its implementation requirements are flexible enough for other forms of parallelism as well.
 
 \section{Lexical Convention}
 A program consists of zero or more input statements, and one or more lines stored in files. These are translated in several phases, which are described in Section 13. The first phases do low-level lexical transformations, which reduce the program to a series of tokens.
 
-\\ \tab \emph{lines:} 
+\tab \emph{lines:} 
 \\* \tab \tab \tab \textit{imports\_opt external\_declaration}
 \\* \tab \tab \tab \emph{lines external\_declaration}
 
-\\ \tab \emph{imports:}
+ \tab \emph{imports:}
 \\* \tab \tab \tab \textit{imports import\_declaration}
 \\* \tab \tab \tab \textit{import\_declaration}
 
-\\
-\newline import\_declarations will be explained in detail in Section 11.
+import\_declarations will be explained in detail in Section 11.
 
 \section{Tokens}
 DotPar has 5 token classes: identifiers, keywords, literals, operators, and other separators. All white space, collectively including blanks, horizontal and vertical tabs, newlines, and comments as described below are ignored except as they separate certain tokens. Sometimes white space is required to separate otherwise adjacent identifiers, keywords, and literals.
@@ -62,10 +61,10 @@ FALSE
 NIL
 \end{itemize}
 \subsubsection{Character Literal}
-\\ A character constant specifies a single ascii character surrounded by single quotes, such as `a'. If one is so inclined, he or she can include such control characters as newlines by using traditional backslash delimited escape codes. For instance, a newline is `\textbackslash n', and `\textbackslash 0' is the null character. A notable exception is the backslash itself, which is merely `\textbackslash'.
+A character constant specifies a single ascii character surrounded by single quotes, such as `a'. If one is so inclined, he or she can include such control characters as newlines by using traditional backslash delimited escape codes. For instance, a newline is `\textbackslash n', and `\textbackslash 0' is the null character. A notable exception is the backslash itself, which is merely `\textbackslash'.
 \\ \\* A char literal has the type char and is initialized with the given ascii character. The behavior of a program that attempts to alter a char literal is undefined.
 \subsubsection{Number Literal}
-\\There are two ways to represent literal numbers with DotPar: the first is an integral format, without a decimal point, and the second is a floating point representation, including a decimal point.
+There are two ways to represent literal numbers with DotPar: the first is an integral format, without a decimal point, and the second is a floating point representation, including a decimal point.
 \\ \\* The integral representation is merely a series of digits without spaces between them, like 31 or 42. Integral number literals are only available for base 10.
 \\ \\* The floating point representation is a series of digits with a period embedded within or prepended to the front, and without spaces anywhere. Examples include 3.14159, or .11235, but not 125. with a trailing period.
 \\ \\* The floating point representation is restricted to base 10, and there is no support for scientific notation.
@@ -112,31 +111,31 @@ The following identifiers are reserved for use as keywords, and may not be used 
 \end{itemize}
 
 \section{Syntax Notation}
-\\ The syntax in this manual has categories written in italics and literals and characters in
+The syntax in this manual has categories written in italics and literals and characters in
 plain font. Optional terminal and nonterminal symbols have the subscript ``opt,'' like below:
 
-\\ \centerline{\{expression\_opt\}}
+\centerline{\{expression\_opt\}}
 
-\\ \\*An non-terminal with the name foo\_opt will either go to ``the empty string'' or foo. Similarly, lists follow the format of imports above. To avoid repetition, rules that follow this rigid structure will not be explained in-depth. However, they will be included in the complete grammar at the end of this reference manual.
+*An non-terminal with the name foo\_opt will either go to ``the empty string'' or foo. Similarly, lists follow the format of imports above. To avoid repetition, rules that follow this rigid structure will not be explained in-depth. However, they will be included in the complete grammar at the end of this reference manual.
 \section{Meaning of Identifiers}
 Identifiers are simply the names given to functions and variables. A variable is used to store data and points to a specific location. The interpretation of the data is based on the variable's type. Identifiers are limited to the scope within which they are defined and are only accessible within that scope. This can be only within a specific function or an entire program.
 \subsection{Basic Types}
 DotPar contains three basic types: number, boolean and char. Variables of type number are 64-bit double precision floating point numbers. Boolean variables have only two possible values: true and false. They are internally treated as a 32-bit entities. Char variables can store any member of the set of characters. Every character has its value as equivalent to the integer code for the character.
 \subsection{Derived Types}
-\\These include arrays and functions which can be constructed from the basic types. Derived types include:
+These include arrays and functions which can be constructed from the basic types. Derived types include:
 \begin{itemize}
 \item
 \emph{arrays} of elements of a given type
 \item
 \emph{functions} accepting variables of certain types, and returning variables of a given type
 \end{itemize}
-\\There are infinitely many derived types. Type declaration syntax are described in more detail below.
+There are infinitely many derived types. Type declaration syntax are described in more detail below.
 
 \section{Objects and lvalues}
 A variable is a named region of storage and an lvalue is an expression referring to that variable. For example, an lvalue expression can be an identifier with a specified type. Like in C, the term ``lvalue'' originates from the term left-value which indicates that it was on the left side of the assignment operator. Each operator listed below can expect lvalue operands and yields an lvalue.
 
 \section{Expressions}
-\\The precedence of expression operators is the same as the order of the major subsections outlined below in this section, with highest precedence first. In all subsections, precedence follows C-style conventions.  Left- or right-associativity is specified in each subsection for the operators discussed therein. The grammar given in Section 13 incorporates the precedence and associativity of the operators.
+The precedence of expression operators is the same as the order of the major subsections outlined below in this section, with highest precedence first. In all subsections, precedence follows C-style conventions.  Left- or right-associativity is specified in each subsection for the operators discussed therein. The grammar given in Section 13 incorporates the precedence and associativity of the operators.
 \\ \\*The precedence and associativity of the operators is fully specified, but the order of evaluation of expressions is undefined, even if the subexpressions involve side effects. However, each operator combines the values it produces by its operands in a way that is compatible with the parsing of the containing expression in which it appears. The handling of overflow, divide check, and other exceptions in expression evaluation is undefined by the language spec.
 \subsection{Primary Expressions}
 Primary expressions are identifiers, constants, string literals, or expressions in parentheses.
@@ -158,8 +157,8 @@ The operators in postfix expressions group left to right.
 \subsubsection{Array References}
 A postfix expression followed by an expression in square brackets is a postfix expression denoting a subscripted array reference. The postfix expression must evaluate to an array and the expression must evaluate to a type number.
 \subsubsection{Function call}
-\\ A postfix expression followed by the function designator, followed by parentheses containing a possibly empty, comma-separated list of assignment expressions, which constitute the arguments to the given function.   
-\\ \\* The term argument is used for an expression passed by a function call; the term parameter is used for an input object (or its identifier) received by a function definition, or described in function declaration.
+A postfix expression followed by the function designator, followed by parentheses containing a possibly empty, comma-separated list of assignment expressions, which constitute the arguments to the given function.   
+\\ \\* The term argument is used for an expression passed by a function call; the term parameter is used for an input object (or its identifier) received by a function definition, or described in function declaration. The scope is lexical.
 \\ \\* Arguments are passed by value. A function may change the values of its parameter objects, which are copies of the argument expressions, but these changes cannot affect the values of the arguments. 
 \\ \\*However, array references are passed by value, so a function may modify the contents of an array passed to it. 
 \\ \\* Type agreement is strict between the parameters and arguments. Thus, DotPar is strongly and statically typed.          
@@ -218,7 +217,7 @@ Array Expressions are conditional statements, or list\_comprehnesionsand initial
 \\* \tab \tab \emph{[ initializer\_list\_opt ]}
 \\ \\*An initializer\_list is used in the creation of array literals.
 \subsection{List Comprehension}
-\\ \\*List comprehensions are used to succinctly create an array. They are equivalent in power to maps and filters, but are often a more convenient syntax to use. Although the list comprehension may be parallelized during its execution, the ordering of the resulting array is deterministic.
+*List comprehensions are used to succinctly create an array. They are equivalent in power to maps and filters, but are often a more convenient syntax to use. Although the list comprehension may be parallelized during its execution, the ordering of the resulting array is deterministic.
 \\ \\* \tab \emph{list\_comprehension:}
 \\* \tab \tab \emph{array\_expression FOR paren\_parameter\_list\_opt IN array\_expression if\_comp\_opt}
 \\* \tab \tab \emph{array\_expression FOR paren\_parameter\_list\_opt IN                               paren\_multi\_array\_expression\_list\_opt if\_comp\_opt}
@@ -265,7 +264,7 @@ char[]
 \item
 func:number[](char[])
 \end{itemize}
-\\ \\* At most one type-specifier may be given in a declaration. Type specifiers have the form:
+* At most one type-specifier may be given in a declaration. Type specifiers have the form:
 \\ \\* \tab \emph{type\_specifier:}
 \\* \tab \tab \emph{type\_specifier [arithmetic\_expression]}
 \\* \tab \tab \emph{type\_specifier [ ]}
@@ -287,7 +286,7 @@ Declarators have the syntax:
 \\* \tab \tab \emph{(declarator)}
 
 \subsection{Initializers}
-\\ \\* \tab \emph{initializer:}
+* \tab \emph{initializer:}
 \\* \tab \tab \emph{array\_expression}
 \\* \tab \tab \emph{anonymous\_function\_definition}
 \\ \\* As some example types, we can see that array types include number[] and number[][]. For example array can be declared initialized as: number[] a = [1, 2];
@@ -357,7 +356,7 @@ A program can be compiled from several .par files. Scoping is lexical. Thus, ide
 
 \section{Preprocessing}
 A preprocessor performs the inclusion of named files. Lines beginning with “import” communicate with the preprocessor. The syntax of these lines is independent of the rest of the language; they must only appear at the beginning of the file.
-<<<<<<< Other changes
+
 \subsection{File Inclusion}
 Imports have the syntax:
 \\ \\* \tab \emph{imports:}
@@ -370,19 +369,19 @@ Imports have the syntax:
 \\ means this line will be replaced by the contents of the file named filename, with extension .par. The named file is searched for in the current directory, and each file is imported only once per program. Import statements can be nested, so every file can include them.
 
 \section{Built-in Functions}
-\\ The language includes several built-in functions that provide basic building blocks for more complex user-defined functions. These appear to the user as regular library functions. They can be shadowed by user functions to avoid having an unreasonable amount of reserved words. Many of these functions are self-explanatory and, as such, their formal prototypes are not given.  Further explanation is present where warranted.
+The language includes several built-in functions that provide basic building blocks for more complex user-defined functions. These appear to the user as regular library functions. They can be shadowed by user functions to avoid having an unreasonable amount of reserved words. Many of these functions are self-explanatory and, as such, their formal prototypes are not given.  Further explanation is present where warranted.
 \\ \\* Finally, note that many useful functions, such as string containment, are not included. These are more appropriate as libraries than language features.
 
 \subsection{Array}
 \begin{verbatim}
 cat(arr, other\_arr) // concatenate two arrays and return the result
-each(arr, fn(element, index) // iterate through an array
+each(arr, fn(element, index)) // iterate through an array
 fill(dimensions, fn(index)) // fill an array using a function. dimensions
 // is an array that has the size of each dimension in the output array
 filter(arr, fn(element, index)) // selects certain elements from an 
 // array; the filter function returns a boolean
 len(arr) // array length
-map(arr, fn(element, index))
+map(arr, fn(element, index)) //runs function fn on each element of the array
 reduce(sum, nums, 0) // reduce operation. The last argument is the 
 // initial value.
 zip(arr, other\_arr) // combine two arrays into a nested array
@@ -464,6 +463,8 @@ Char to int function
 Mutating versions of some functions, such as map! and zip!
 \item
 Function keywords and/or optional params
+\item
+Implement more parallelized aspects in the language
 \end{enumerate}
 
 \section{Grammar}
