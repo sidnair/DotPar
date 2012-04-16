@@ -9,6 +9,9 @@ Program_lib=$Compile_dir/program_lib
 Scala_lib=$Compile_dir/scala_lib
 Gen_file=program.jar
 
+# handle a premature user-initialized exit
+trap "rm -rf $Compile_dir; exit 1" 0 1 2 3 6
+
 # for moving about
 CurDir=`pwd`
 
