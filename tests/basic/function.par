@@ -1,14 +1,14 @@
 func main:void() {
-     func f:number(number x) {
-          return x;
-     }
-     print_number(f(2));
-     func g:number(number x, number y) {
-          return x;
-     }
-     print_number(g(3,4));
-     func g:number(number x, number y) {
-          return y;
-     }
-     print_number(g(3,4));
+    func f:number(number x) {
+        return x;
+    }
+    println(f(2));
+    func g:number(number x, number y) {
+        return x;
+    }
+    println(g(3,4));
+    func g:number(number x, number y) {
+        return y;
+    }
+    println(g(3,4));
 }

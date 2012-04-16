@@ -1,6 +1,6 @@
 func main:void() {
-     print_boolean(true && true);
-     print_boolean(true && false);
-     print_boolean(true || false);
-     print_boolean(false || false);
+    println(true && true);
+    println(true && false);
+    println(true || false);
+    println(false || false);
 }

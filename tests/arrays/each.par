@@ -1,5 +1,5 @@
 func main:void() {
-     each("hello world", func:void(char c){
-        print_char(c);
-     });
+    each("hello world", func:void(char c){
+            println(c);
+        });
 }

@@ -1,0 +1,9 @@
+number x = 0;
+
+func f:number(number y) {
+    return y + 2;
+}
+
+func main:void() {
+    println(f(x));
+}

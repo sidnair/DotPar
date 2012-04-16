@@ -20,11 +20,11 @@ func matrixMultiply:number[][](number[][] a, number[][] b) {
     }
     
     func dotprod:number(number[] a, number[] b) {
-          return sum([x * y for number x, number y in a, b]);
+        return sum([x * y for number x, number y in a, b]);
     }
     
     if (len(a) != len(b[0])) {
-          return nil; // one can always return nil in place of a real value
+        return nil; // one can always return nil in place of a real value
     }
     
     return [[dotprod(row, col) for number[] col in transpose(b)]
@@ -35,8 +35,8 @@ func det:number(number[][] a) {
     func range:number[] (number cap) {
         number x[cap];
         return map(cap, func:number(number elem, number index) {
-            return index;
-        });
+                return index;
+            });
     }
     func exclude:number[][] (number ex, number[][] arr) {
         number[][] a;
@@ -57,8 +57,8 @@ func det:number(number[][] a) {
 }
 
 func main:void() {
-     number[][] a, b;
-     a = [[1, 0], [0, 1]];
-     b = matrixMultiply(a,a);
-     println(det(b));
+    number[][] a, b;
+    a = [[1, 0], [0, 1]];
+    b = matrixMultiply(a,a);
+    println(det(b));
 }

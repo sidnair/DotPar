@@ -1,14 +1,14 @@
 func main:void() {
-     print_boolean(2 == 3);
-     print_boolean(1 == 1);
-     print_boolean(3 != 3);
-     print_boolean(3 != 4);
-     print_boolean(3 > 4);
-     print_boolean(5 > 4);
-     print_boolean(4 < 4);
-     print_boolean(6 < 8);
-     print_boolean(3 >= 6);
-     print_boolean(9 >= 9);
-     print_boolean(3 <= -6);
-     print_boolean(9 <= 10);
+    println(2 == 3);
+    println(1 == 1);
+    println(3 != 3);
+    println(3 != 4);
+    println(3 > 4);
+    println(5 > 4);
+    println(4 < 4);
+    println(6 < 8);
+    println(3 >= 6);
+    println(9 >= 9);
+    println(3 <= -6);
+    println(9 <= 10);
 }

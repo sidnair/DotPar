@@ -1,7 +1,7 @@
 func main:void() {
-     number x = 0;
-     x = reduce([1, 2, 3, 4, 5], func:number(number x, number y) {
-         return x+y;
-     }, 0);
-     println(x);
+    number x = 0;
+    x = reduce([1, 2, 3, 4, 5], func:number(number x, number y) {
+            return x+y;
+        }, 0);
+    println(x);
 }
