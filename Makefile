@@ -28,6 +28,9 @@ clean_ocaml:
 parser_test: compiler
 	python tests/parser_test.py
 
+full_test: compiler
+	scala tests/full_test.scala
+
 c_compiler:
 	cd $(C_PATH); \
 	lex lexer.l; \
