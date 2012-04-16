@@ -1,0 +1,22 @@
+func main:void() {
+     boolean x = true;
+     if(x) {
+           print_boolean(true);
+     } else {
+           print_boolean(false);
+     }
+
+     if(!x) {
+            print_boolean(true);
+     } elif(x) {
+            print_boolean(false);
+     } else {
+            print_number(0);
+     }
+
+     if(!x) {
+           print_boolean(true);
+     } elif(!x) {
+           print_boolean(false);
+     }
+}

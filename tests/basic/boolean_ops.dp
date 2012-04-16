@@ -1,0 +1,6 @@
+func main:void() {
+     print_boolean(true && true);
+     print_boolean(true && false);
+     print_boolean(true || false);
+     print_boolean(false || false);
+}

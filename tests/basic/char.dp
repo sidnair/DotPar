@@ -1,0 +1,5 @@
+func main:void() {
+     char x;
+     x = 'a';
+     print_char(x);
+}

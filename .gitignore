@@ -7,6 +7,9 @@
 *.output
 *#
 
+# tests
+!tests/basic/*.out
+
 # LaTeX temp files
 *.aux
 *.log
