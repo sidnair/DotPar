@@ -6,7 +6,10 @@
 *.h
 *.output
 *#
+
 # LaTeX temp files
 *.aux
 *.log
+
 bin
+*.jar

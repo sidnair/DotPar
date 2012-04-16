@@ -16,7 +16,7 @@ let _ =
   let ast = Transform.reverse_tree ast
   in
   (* DEBUG: reprint the AST *)
-  Printf.printf "%s" (Ast.string_of_program ast);
+  (* Printf.printf "%s" (Ast.string_of_program ast); *)
   (* Semantic analysis *)
   
   (* Code generation *)
