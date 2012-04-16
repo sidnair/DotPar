@@ -30,27 +30,43 @@ mkdir -p $Scala_lib
 
 # we assume this file is executed with ./dotparc.sh
 cat $1 | bin/dotpar > $Scala_file
+if [ $? -ne 0 ]
+then
+    echo "Dotpar -> Scala conversion failed"
+    exit $?
+fi
 
 # do the compilation
 scalac -d $Class_files $Scala_file
+if [ $? -ne 0 ]
+then
+    echo "Scalac compilation failed"
+    exit $?
+fi
 
-# pack it into a jar with the scala jar
+# unpack scala/, move it to $Class_files
+cp -n $SCALA_PATH/scala-library.jar $Scala_lib
+unzip -q -d $Scala_lib $Scala_lib/scala-library.jar
+if [ $? -ne 0 ]
+then
+    echo "Unpacking scala-library.jar failed"
+    exit $?
+fi
+cp -R $Scala_lib/scala $Class_files
+
+# pack it into a jar with scala/
 echo "Main-Class: Main" > $Manifest_file
 cd $Class_files
 jar -cfm $Compile_dir/$Gen_file $Manifest_file *
-cd $CurDir
-
-# unpack program.jar, repack it with scala/
-cp -n $SCALA_PATH/scala-library.jar $Scala_lib
-unzip -q -d $Scala_lib $Scala_lib/scala-library.jar
-unzip -q -d $Program_lib $Compile_dir/$Gen_file
-cp -R $Scala_lib/scala $Program_lib
-cd $Program_lib
-zip -q -r $Program_lib/$Gen_file *
+if [ $? -ne 0 ]
+then
+    echo "Packaging into a jar failed"
+    exit $?
+fi
 cd $CurDir
 
 # move the program.jar to the right place
-mv $Program_lib/$Gen_file $CurDir/$Gen_file
+mv $Compile_dir/$Gen_file $CurDir/$Gen_file
 
 # clean up
 rm -rf $Compile_dir
