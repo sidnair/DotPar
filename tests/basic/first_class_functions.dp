@@ -1,0 +1,9 @@
+func main:void() {
+    func f:number(func:number() g) {
+        return g();
+    }
+    func h:number() {
+        return 2;
+    }
+    println(f(h));
+}

@@ -1,0 +1,64 @@
+func sum:number(number[] a) {
+    func add:number(number x, number y) {
+        return x+y;
+    }
+
+    return reduce(a, sum, 0);
+}
+
+func matrixMultiply:number[][](number[][] a, number[][] b) {
+    func transpose: number[][](number[][] a) {
+        number[len(a[0])][len(a)] transposed;
+        number i;
+        number j;
+        for (i<0; i < len(a); i = i + 1){
+            for (j<0; j < len(a[0]); j = j+ 1){
+                transposed[j][i] = a[i][j];
+            }
+        }
+        return transposed;
+    }
+    
+    func dotprod:number(number[] a, number[] b) {
+          return sum([x * y for number x, number y in a, b]);
+    }
+    
+    if (len(a) != len(b[0])) {
+          return nil; // one can always return nil in place of a real value
+    }
+    
+    return [[dotprod(row, col) for number[] col in transpose(b)]
+            for number[] row in a];
+}
+
+func det:number(number[][] a) {
+    func range:number[] (number cap) {
+        number x[cap];
+        return map(cap, func:number(number elem, number index) {
+            return index;
+        });
+    }
+    func exclude:number[][] (number ex, number[][] arr) {
+        number[][] a;
+        zeros(a, [len(a)-1, len(a)-1]);
+        // row
+        for(number i=1; i<len(arr); i = i + 1) {
+            // col
+            for(number j=0; j<len(arr); j = j + 1) {
+                if(j < ex) {
+                    a[i-1][j] = arr[i][j];
+                } elif(j > ex) {
+                    a[i-1][j-1] = arr[i][j];
+                }
+            }
+        }
+    }
+    return sum([a[0][i]*det(exclude(i, a)) for i in range(len(a[0]))]);
+}
+
+func main:void() {
+     number[][] a, b;
+     a = [[1, 0], [0, 1]];
+     b = matrixMultiply(a,a);
+     println(det(b));
+}

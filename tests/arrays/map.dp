@@ -1,0 +1,6 @@
+func main:void() {
+     char[] str = map("hello world", func:char(char c){
+         return c;
+     });
+     print_string(str);
+}

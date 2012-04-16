@@ -1,0 +1,4 @@
+func main:void() {
+     char[] str = "hello world";
+     print_string(str);
+}
