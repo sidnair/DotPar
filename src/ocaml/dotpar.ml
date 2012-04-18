@@ -17,8 +17,10 @@ let _ =
   in
   (* DEBUG: reprint the AST *)
   Printf.printf "%s" (Ast.string_of_program ast);
-  (* Semantic analysis *)
-  
+  (* Semantic analysis 
+  Translate.translate ast *)
+
+
   (* Code generation *)
 
 ;;
