@@ -70,3 +70,8 @@ mv $Compile_dir/$Gen_file $CurDir/$Gen_file
 
 # clean up
 rm -rf $Compile_dir
+
+# undo the trap at the end of the universe
+trap - 0 1 2 3 6
+
+exit 0
