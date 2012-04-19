@@ -9,6 +9,8 @@
 
 # tests
 !tests/basic/*.out
+!tests/arrays/*.out
+!tests/examples/*.out
 
 # LaTeX temp files
 *.aux

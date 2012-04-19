@@ -1,0 +1,6 @@
+func main:void() {
+    number[] arr = [1, 2, 3, 4];
+    arr[2] = 5;
+    arr[0] = 2;
+    println(arr);
+}

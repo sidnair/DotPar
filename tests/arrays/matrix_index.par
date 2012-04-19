@@ -1,0 +1,6 @@
+func main:void() {
+    number[][] mat = [[1,2],[3,4]];
+    mat[1][1] = 0;
+    mat[1][0] = 10;
+    println(mat);
+}
