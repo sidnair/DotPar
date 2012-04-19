@@ -70,12 +70,12 @@ def execute_tests(dir: String) = {
   // display aggregate
   val err_len = errors.length
   val all_len = statuses.length
-  print(err_len.toString + "/" + all_len.toString + " tests failed")
+  print(err_len.toString + "/" + all_len.toString + " tests failed\n")
   (err_len, all_len)
 }
 
 // excecute all the tests across the categories
 val all_results = cats.map(execute_tests)
 val agg_results = all_results.reduceLeft((a,b) => ((a _1)+(b _1),(a _2)+(b _2)))
-print("\nTotal: " + (agg_results _1).toString + "/" +
+print("Total: " + (agg_results _1).toString + "/" +
       (agg_results _2).toString + " tests failed\n")

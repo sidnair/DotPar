@@ -1,6 +1,4 @@
 func main:void() {
-    func f:number(func:number() g) {
-        return g();
-    }
-    println(f(func:number() { return 2; }));
+    number x = (func:number() { return 2; })();
+    println(x);
 }

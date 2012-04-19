@@ -16,6 +16,16 @@ func main:void() {
 
     if(!x) {
         println(true);
+    } elif(x) {
+        println(false);
+    } elif(x) {
+        println(true);
+    } else {
+        println(0);
+    }
+
+    if(!x) {
+        println(true);
     } elif(!x) {
         println(false);
     }

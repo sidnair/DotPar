@@ -7,8 +7,8 @@ func main:void() {
         return x;
     }
     println(g(3,4));
-    func g:number(number x, number y) {
+    func h:number(number x, number y) {
         return y;
     }
-    println(g(3,4));
+    println(h(3,4));
 }
