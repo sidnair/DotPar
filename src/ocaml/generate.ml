@@ -18,8 +18,9 @@ let rec gen_expression inds expression =
   | Declaration_expression(type_dec, lv, rv) ->
       "var " ^ (gen_expression inds lv) ^ ":" ^ (gen_type type_dec) ^
       "=" ^ (gen_expression inds rv)
-  (* | Array_literal(exprs) -> *)
-  (*     "[" ^ (String.concat ", " (List.map gen_expression exprs)) ^ "]" *)
+  | Array_literal(exprs) ->
+      "Array(" ^ (String.concat ", "
+                    (List.map (gen_expression inds) exprs)) ^ ")"
   (* | List_comprehension(expr, params, exprs, if_cond) -> *)
   (*     "[" ^ (gen_expression expr) ^ " for " ^ *)
   (*     (String.concat ", " (List.map gen_param params)) ^ " in " ^ *)
@@ -46,16 +47,27 @@ let rec gen_expression inds expression =
       | _ -> (gen_expression inds expr) ^ "(" ^
           (String.concat ", " (List.map (gen_expression inds) exprs)) ^ ")"
       )
-  (* | Array_access(expr, expr2) -> *)
-  (*     (gen_expression expr) ^ "[" ^ (gen_expression expr2) ^ "]" *)
-  (*       (\* *\) *)
+  | Array_access(expr, expr2) ->
+      (* uses a function-call index syntax *)
+      (gen_expression inds expr) ^ "(" ^ (gen_expression inds expr2) ^ ")"
+        (* --- *)
   | Variable(str) -> str
         (* constants *)
   | Char_literal(c) -> "'" ^ (String.make 1 c) ^ "'"
   | Number_literal(n) -> (string_of_float n)
-  | String_literal(s) -> "\"" ^ s ^ "\""
+  | String_literal(s) ->
+      let char_wrap c = 
+        "\'" ^ (String.make 1 c) ^ "\'"
+      in
+      let explode s =
+        let rec exp i l =
+          if (i < 0) then l else (s.[i] :: l) in
+        exp ((String.length s) - 1) []
+      in
+      "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "" (* ??? is this legal? *)
+        (* --- *)
   | Anonymous_function(type_def, params, block) ->
       "(new Function" ^ (string_of_int (List.length params)) ^
       (* ???  *)
@@ -111,7 +123,7 @@ and gen_basic_type btype =
 and gen_type var_type =
   match var_type with
     Basic_type(b) -> (gen_basic_type b)
-  (* | Array_type(a) -> (gen_type a) ^ "[]" *)
+  | Array_type(a) -> "Array[" ^ (gen_type a) ^ "]"
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
   | Func_type(ret_type, param_types) ->
@@ -209,8 +221,6 @@ and gen_statement inds stat =
           (gen_statements next_inds sts) ^
           inds ^ "}"
       )
-  | anything -> raise NotImplemented
-   
 
 and gen_statements inds statements =
   match statements with
