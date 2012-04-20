@@ -2,22 +2,23 @@
 (* Ripped off from AST reverser *)
 
 open Ast;;
-open Random;;
+open Printf;;
 
 exception NotImplemented;;
-let ind = "\t";;
+exception SemanticError;;
+let ind = "  ";;
 
 let rec gen_expression inds expression =
   let next_inds = (ind ^ inds) in
   match expression with
     Assignment_expression(lv, rv) ->
-      (gen_expression inds lv) ^ "=" ^ (gen_expression inds rv)
+      (gen_expression inds lv) ^ " = " ^ (gen_expression inds rv)
   | Declaration(type_dec, expr) ->
       "var " ^ (gen_expression inds expr) ^ ":" ^ (gen_type type_dec) ^
-      "=" ^ (gen_initial type_dec)
+      " = " ^ (gen_expression inds (gen_initial type_dec))
   | Declaration_expression(type_dec, lv, rv) ->
       "var " ^ (gen_expression inds lv) ^ ":" ^ (gen_type type_dec) ^
-      "=" ^ (gen_expression inds rv)
+      " = " ^ (gen_expression inds rv)
   | Array_literal(exprs) ->
       "Array(" ^ (String.concat ", "
                     (List.map (gen_expression inds) exprs)) ^ ")"
@@ -41,15 +42,16 @@ let rec gen_expression inds expression =
       (* match special functions *)
       (* !!! *)
       (match((gen_expression inds expr)) with
-      | "println" -> "print(" ^
+      | "println" -> "dotpar_println(" ^
           (String.concat ", " (List.map (gen_expression inds) exprs)) ^
-          ")\n" ^ inds ^ "print(\"\\n\")"
+          ")\n"
       | _ -> (gen_expression inds expr) ^ "(" ^
           (String.concat ", " (List.map (gen_expression inds) exprs)) ^ ")"
       )
   | Array_access(expr, expr2) ->
       (* uses a function-call index syntax *)
-      (gen_expression inds expr) ^ "(" ^ (gen_expression inds expr2) ^ ")"
+      (gen_expression inds expr) ^
+      "(dotpar_array_index(" ^ (gen_expression inds expr2) ^ "))"
         (* --- *)
   | Variable(str) -> str
         (* constants *)
@@ -61,30 +63,30 @@ let rec gen_expression inds expression =
       in
       let explode s =
         let rec exp i l =
-          if (i < 0) then l else (s.[i] :: l) in
-        exp ((String.length s) - 1) []
+          if (i < 0) then l else (s.[i] :: (exp (i - 1) l)) in
+        List.rev (exp ((String.length s) - 1) [])
       in
       "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "" (* ??? is this legal? *)
         (* --- *)
-  | Anonymous_function(type_def, params, block) ->
+  | Anonymous_function(ret_type, params, block) ->
       "(new Function" ^ (string_of_int (List.length params)) ^
-      (* ???  *)
+      (* ??? *)
       (let extract_type param = 
         match param with
         | Param(param_type, varname) -> param_type
       in
-      let type_list = (List.map extract_type params) @ [type_def] in
+      let type_list = (List.map extract_type params) @ [ret_type] in
       let fn_type = (String.concat ", " (List.map gen_type type_list)) in
-       "[" ^ fn_type ^ "]") ^
+      "[" ^ fn_type ^ "]") ^
       "{\n" ^ inds ^
       "def apply(" ^
       (String.concat ", " (List.map (gen_param inds) params)) ^
       ")" ^ 
-      (let ret_type = (gen_type type_def) in
-       if (String.length ret_type) > 0 then ":" ^ ret_type
-       else "") ^
+      (let type_str = (gen_type ret_type) in
+      if (String.length type_str) > 0 then ":" ^ type_str
+      else "") ^
       " = {\n" ^ inds ^
       (gen_statements next_inds block) ^
       inds ^ "}" ^
@@ -142,22 +144,35 @@ and gen_type var_type =
 (* this generates appropriate initial values for declarations *)
 and gen_initial_basic btype =
   match btype with
-  | Number_type -> "0.0"
-  | Char_type -> "'\\0'"
-  | Boolean_type -> "true"
-  | _ -> raise NotImplemented (* ??? no void *)
+  | Number_type -> Number_literal 0.0
+  | Char_type -> Char_literal '\000'
+  | Boolean_type -> Boolean_literal true
+  | _ -> raise SemanticError (* no void available *)
 and gen_initial type_dec =
   match type_dec with
   | Basic_type(b) -> (gen_initial_basic b)
-  | Array_type(a) -> "Array[" ^ (gen_type a) ^ "]"
+  | Array_type(a) -> Array_literal [(gen_initial a)]
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
-  (* | Func_type(ret_type, param_types) -> *)
-  (*     "func:" ^ (gen_type ret_type) ^ "(" ^ *)
-  (*     (String.concat ", " (List.map gen_type param_types)) ^ ")" *)
-  (* | Func_param_type(ret_type, params) -> *)
-  (*     "func:" ^ (gen_type ret_type) ^ "(" ^ *)
-  (*     (String.concat ", " (List.map gen_param params)) ^ ")" *)
+  | Func_type(ret_type, param_types) ->
+      (let rec range l u =
+        if ( l > u )
+        then []
+        else l::( range ( l + 1 ) u )
+      in
+      let make_param ptype name = Param(ptype, name) in
+      let make_var var = Variable ("param" ^ var) in
+      let params = (List.map2 make_param
+                      param_types
+                      (List.map make_var
+                         (List.map string_of_int
+                            (range 1 (List.length param_types)))))
+      in
+      Anonymous_function (ret_type, params,
+                          [Expression (gen_initial ret_type)]))
+  | Func_param_type(ret_type, params) ->
+      Anonymous_function (ret_type, params,
+                          [Expression (gen_initial ret_type)])
   | _ -> raise NotImplemented
 
 and gen_param inds parm =
@@ -190,7 +205,7 @@ and gen_selection inds select =
 and gen_statement inds stat =
   let next_inds = ind ^ inds in
   match stat with
-    Expression(e) -> (gen_expression inds e) ^ ";\n"
+    Expression(e) -> inds ^ (gen_expression inds e) ^ ";\n"
   | Statements(s) -> (gen_statements inds s) ^ "\n" ^ inds
   | Selection(s) -> (gen_selection inds s) ^ "\n"
   | Iteration(dec,check,incr, stats) ->
@@ -199,7 +214,7 @@ and gen_statement inds stat =
       next_inds ^ (gen_statements next_inds stats) ^
       next_inds ^ (gen_expression next_inds incr) ^
       inds ^ "}\n"
-  | Jump(j) -> "return " ^ (gen_expression inds j) ^ "\n"
+  | Jump(j) -> inds ^ "return " ^ (gen_expression inds j) ^ "\n"
   | Function_definition(name, ret_type, params, sts) ->
       (match name with
         "main" ->
@@ -228,7 +243,7 @@ and gen_statements inds statements =
       (gen_statement inds head) ^ inds ^ "\n" ^ (gen_statements inds tail)
   | _-> ""
 
-
+        (* just c-preprocess this *)
 (* and gen_import import = *)
 (* (\* include files *\) *)
 (*   match import with *)
@@ -243,8 +258,14 @@ let gen_program program =
   match program with
     (* leave out imports for now *)
     Program(imports, statements) ->
-      "object Main {\n" ^
-      (* (gen_imports imp) ^ "\n" ^ *)
-      (gen_statements ind statements) ^
-      "}\n"
+      (Printf.sprintf "object Main {
+%s
+%s
+%s
+}
+"
+  "" (* include builtins *)
+  (ind ^ "// imports")
+   (* (gen_imports imp) ^ "\n" ^ *)
+  (gen_statements (ind ^ ind) statements))
 ;;

@@ -54,7 +54,7 @@ and reverse_expression expr =
                               reverse_expression e1,
                               reverse_expression e2)
   | Array_literal(exprs) ->
-      Array_literal (List.rev exprs)
+      Array_literal (List.rev (List.map reverse_expression exprs))
   | List_comprehension(expr, params, exprs, if_cond) ->
       List_comprehension (reverse_expression expr,
                           List.rev params,
