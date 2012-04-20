@@ -63,7 +63,8 @@ def execute_tests(dir: String) = {
   // filter out the successes
   val errors = statuses.filter(e => (e _1).length > 0)
   // display the errors
-  errors.map(e => print("\t" + (e _1) + ":\n\t\tCompiled: " + (e _2).toString +
+  errors.map(e => print("\t" + (e _1) +
+                        ":\n\t\tCompiled: " + (e _2).toString +
                         "\n\t\tReturn Code: " + (e _3).toString +
                         "\n\t\tOutput: " +
                         """\n""".r.replaceAllIn((e _4), "\n\t\t\t") + "\n"))

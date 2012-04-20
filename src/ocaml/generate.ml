@@ -20,8 +20,8 @@ let rec gen_expression inds expression =
       "var " ^ (gen_expression inds lv) ^ ":" ^ (gen_type type_dec) ^
       " = " ^ (gen_expression inds rv)
   | Array_literal(exprs) ->
-      "Array(" ^ (String.concat ", "
-                    (List.map (gen_expression inds) exprs)) ^ ")"
+      "ArraySeq(" ^ (String.concat ", "
+                       (List.map (gen_expression inds) exprs)) ^ ")"
   (* | List_comprehension(expr, params, exprs, if_cond) -> *)
   (*     "[" ^ (gen_expression expr) ^ " for " ^ *)
   (*     (String.concat ", " (List.map gen_param params)) ^ " in " ^ *)
@@ -42,7 +42,19 @@ let rec gen_expression inds expression =
       (* match special functions *)
       (* !!! *)
       (match((gen_expression inds expr)) with
-      | "println" -> "dotpar_println(" ^
+      | "println" -> "Dotpar.dp_println(" ^
+          (String.concat ", " (List.map (gen_expression inds) exprs)) ^
+          ")\n"
+      | "each" -> "Dotpar.dp_each(" ^
+          (String.concat ", " (List.map (gen_expression inds) exprs)) ^
+          ")\n"
+      | "filter" -> "Dotpar.dp_filter(" ^
+          (String.concat ", " (List.map (gen_expression inds) exprs)) ^
+          ")\n"
+      | "map" -> "Dotpar.dp_map(" ^
+          (String.concat ", " (List.map (gen_expression inds) exprs)) ^
+          ")\n"
+      | "reduce" -> "Dotpar.dp_reduce(" ^
           (String.concat ", " (List.map (gen_expression inds) exprs)) ^
           ")\n"
       | _ -> (gen_expression inds expr) ^ "(" ^
@@ -51,7 +63,7 @@ let rec gen_expression inds expression =
   | Array_access(expr, expr2) ->
       (* uses a function-call index syntax *)
       (gen_expression inds expr) ^
-      "(dotpar_array_index(" ^ (gen_expression inds expr2) ^ "))"
+      "(Dotpar.dp_array_index(" ^ (gen_expression inds expr2) ^ "))"
         (* --- *)
   | Variable(str) -> str
         (* constants *)
@@ -66,7 +78,7 @@ let rec gen_expression inds expression =
           if (i < 0) then l else (s.[i] :: (exp (i - 1) l)) in
         List.rev (exp ((String.length s) - 1) [])
       in
-      "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
+      "ArraySeq(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "" (* ??? is this legal? *)
         (* --- *)
@@ -118,14 +130,14 @@ and gen_binop op =
 
 and gen_basic_type btype =
   match btype with
-    Void_type -> ""
+    Void_type -> "Unit"
   | Number_type -> "Double"
   | Char_type -> "Char"
   | Boolean_type -> "Boolean"
 and gen_type var_type =
   match var_type with
     Basic_type(b) -> (gen_basic_type b)
-  | Array_type(a) -> "Array[" ^ (gen_type a) ^ "]"
+  | Array_type(a) -> "ArraySeq[" ^ (gen_type a) ^ "]"
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
   | Func_type(ret_type, param_types) ->
@@ -144,10 +156,10 @@ and gen_type var_type =
 (* this generates appropriate initial values for declarations *)
 and gen_initial_basic btype =
   match btype with
+    Void_type -> Empty_expression
   | Number_type -> Number_literal 0.0
   | Char_type -> Char_literal '\000'
   | Boolean_type -> Boolean_literal true
-  | _ -> raise SemanticError (* no void available *)
 and gen_initial type_dec =
   match type_dec with
   | Basic_type(b) -> (gen_initial_basic b)
@@ -220,11 +232,10 @@ and gen_statement inds stat =
         "main" ->
           inds ^ "def main" ^ "(" ^
           (if List.length(params)==0 then
-            "args: Array[String]"
+            "args: Array[String]" (* only place with Arrays !!! *)
           else
             (String.concat ", " (List.map (gen_param inds) params))
-          ) ^ ")" ^
-          (gen_type ret_type) ^
+          ) ^ ")" ^ (* (gen_type ret_type) ^ !!! *)
           " {\n" ^ (gen_statements next_inds sts) ^ inds ^ "}"
       | anything ->
           let ret_type = (gen_type ret_type) in
@@ -255,17 +266,29 @@ and gen_statements inds statements =
 (* ;; *)
 
 let gen_program program =
+  let read_file filename =
+    let lines = ref [] in
+    let chan = open_in filename in
+    try
+      while true; do
+        lines := input_line chan :: !lines
+      done; []
+    with End_of_file ->
+      close_in chan;
+      List.rev !lines
+  in
   match program with
-    (* leave out imports for now *)
     Program(imports, statements) ->
-      (Printf.sprintf "object Main {
-%s
+      (Printf.sprintf "%s
+
+object Main {
 %s
 %s
 }
 "
-  "" (* include builtins *)
-  (ind ^ "// imports")
-   (* (gen_imports imp) ^ "\n" ^ *)
-  (gen_statements (ind ^ ind) statements))
+    (String.concat "\n"
+       (read_file "include/dotpar.scala")) (* include builtins *)
+    (ind ^ "// imports")
+    (* (gen_imports imp) ^ "\n" ^ *)
+    (gen_statements (ind ^ ind) statements))
 ;;

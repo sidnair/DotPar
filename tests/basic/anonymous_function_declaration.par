@@ -4,7 +4,7 @@ func main:void() {
     x = func:void() {};
 
     func:number(char) y;
-    y = func:number(char x) { return 0; }
+    y = func:number(char x) { return 0; };
 
     println(y('a'));
 }
