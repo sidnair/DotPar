@@ -20,8 +20,8 @@ let rec gen_expression inds expression =
       "var " ^ (gen_expression inds lv) ^ ":" ^ (gen_type type_dec) ^
       " = " ^ (gen_expression inds rv)
   | Array_literal(exprs) ->
-      "ArraySeq(" ^ (String.concat ", "
-                       (List.map (gen_expression inds) exprs)) ^ ")"
+      "Array(" ^ (String.concat ", "
+                    (List.map (gen_expression inds) exprs)) ^ ")"
   (* | List_comprehension(expr, params, exprs, if_cond) -> *)
   (*     "[" ^ (gen_expression expr) ^ " for " ^ *)
   (*     (String.concat ", " (List.map gen_param params)) ^ " in " ^ *)
@@ -78,7 +78,7 @@ let rec gen_expression inds expression =
           if (i < 0) then l else (s.[i] :: (exp (i - 1) l)) in
         List.rev (exp ((String.length s) - 1) [])
       in
-      "ArraySeq(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
+      "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "" (* ??? is this legal? *)
         (* --- *)
@@ -137,7 +137,7 @@ and gen_basic_type btype =
 and gen_type var_type =
   match var_type with
     Basic_type(b) -> (gen_basic_type b)
-  | Array_type(a) -> "ArraySeq[" ^ (gen_type a) ^ "]"
+  | Array_type(a) -> "Array[" ^ (gen_type a) ^ "]"
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
   | Func_type(ret_type, param_types) ->

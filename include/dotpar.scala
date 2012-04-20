@@ -7,9 +7,9 @@ object Dotpar {
   def dp_println(x: Any) = {
     def dotpar_string(y: Any):String = {
       y match {
-        case str: ArraySeq[Char] =>
+        case str: Array[Char] =>
           str.map(_.toString).reduceLeft(_+_)
-        case arr: ArraySeq[_] =>
+        case arr: Array[_] =>
           "[" + arr.map(dotpar_string(_)).reduceLeft(_+", "+_) + "]"
         case _ => y.toString
       }
@@ -28,19 +28,24 @@ object Dotpar {
   }
 
   // each
-  def dp_each[T](arr:ArraySeq[T], function:((T) => Any)) = {
+  def dp_each[T](arr:Array[T], function:((T) => Any)) = {
     arr foreach function
   }
   // filter
-  def dp_filter[T](arr:ArraySeq[T], function:((T) => Boolean)):ArraySeq[T] = {
+  def dp_filter[T](arr:Array[T], function:((T) => Boolean)):Array[T] = {
     arr.filter(function)
   }
   // map
-  def dp_map[T, TT](arr:ArraySeq[T], function:(T => TT)):ArraySeq[TT] = {
-    arr map function
+  def dp_map[T, TT](arr:Array[T], function:(T => TT))
+      (implicit m:ClassManifest[TT]):Array[TT] = {
+    (arr map function).toArray
   }
   // reduce
-  def dp_reduce[T](arr:ArraySeq[T], function:((T, T) => T)):T = {
-    arr reduceLeft function
+  def dp_reduce[T](arr:Array[T], function:((T, T) => T), start:T):Txs = {
+    if (arr.length == 0) {
+      start
+    } else {
+      arr reduceLeft function
+    }
   }
 }
