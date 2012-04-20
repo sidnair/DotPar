@@ -33,7 +33,7 @@
 
 (c-lang-defconst
  c-simple-stmt-kwds
- dotpar (append '("println" "each" "map" "reduce")
+ dotpar (append '("println" "each" "map" "reduce" "filter")
                 (c-lang-const c-simple-stmt-kwds)))
 
 
