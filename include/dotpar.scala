@@ -41,7 +41,7 @@ object Dotpar {
     (arr map function).toArray
   }
   // reduce
-  def dp_reduce[T](arr:Array[T], function:((T, T) => T), start:T):Txs = {
+  def dp_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
     if (arr.length == 0) {
       start
     } else {
