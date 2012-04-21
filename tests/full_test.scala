@@ -10,7 +10,8 @@ val DEBUG = true
 def list_files(dir_path: String): Array[File] = {
   val f = new File(dir_path)
   val these = f.listFiles
-  these.filter(f => """.*\.par$""".r.findFirstIn(f.getName).isDefined)
+  ((these filter { f => """.*\.par$""".r.findFirstIn(f.getName).isDefined })
+   filter { f => !""".*ignore.*""".r.findFirstIn(f.getName).isDefined })
 }
 
 val cats = List("basic", "arrays", "examples")

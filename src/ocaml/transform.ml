@@ -34,10 +34,10 @@ and reverse_statement statement =
                  reverse_expression check,
                  reverse_expression incr,
                  reverse_statements stats)
+  | Jump(j) -> Expression (reverse_expression j)
   | Function_definition(name, ret_type, params, sts) ->
       Function_definition (name, reverse_type ret_type, List.rev params,
                            reverse_statements sts)
-  | anything -> anything
 
 and reverse_expressions exprs =
   let rev_exprs = List.map reverse_expression exprs in

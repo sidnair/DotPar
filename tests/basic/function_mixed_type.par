@@ -1,0 +1,6 @@
+func main:void() {
+    func f:number(number x, char y) {
+        return x;
+    }
+    println(f(3,'a'));
+}
