@@ -22,15 +22,31 @@ let rec gen_expression inds expression =
   | Array_literal(exprs) ->
       "Array(" ^ (String.concat ", "
                     (List.map (gen_expression inds) exprs)) ^ ")"
-  (* | List_comprehension(expr, params, exprs, if_cond) -> *)
-  (*     "[" ^ (gen_expression expr) ^ " for " ^ *)
-  (*     (String.concat ", " (List.map gen_param params)) ^ " in " ^ *)
-  (*     (String.concat ", " (List.map gen_expression exprs)) ^ *)
-  (*     (match if_cond with *)
-  (*       Empty_expression -> "" *)
-  (*     | _ -> " if " ^ (gen_expression if_cond)) *)
-  (*     ^ "]" *)
-  (*       (\* unary operators *\) *)
+  | List_comprehension(expr, params, exprs, if_cond) ->
+      (if (List.length params) == 1 then
+        let if_cond_str = (gen_expression inds if_cond) in
+        "(" ^ (gen_expression inds (List.nth exprs 0)) ^
+        (if (String.length if_cond_str) > 0 then
+          ".filter({(" ^ (gen_param inds (List.nth params 0)) ^
+          ") => " ^ if_cond_str ^ "})"
+        else
+          "") ^
+        ".map({(" ^ (gen_param inds (List.nth params 0)) ^ 
+        ") => " ^ if_cond_str ^ "})" ^ ")"
+      else
+        let if_cond_str = (gen_expression inds if_cond) in
+        "(" ^ (gen_expression inds (List.nth exprs 0)) ^
+        (if (String.length if_cond_str) > 0 then
+          ".zipped.filter({(" ^
+          (String.concat "," (List.map (gen_param inds) params)) ^
+          ") => " ^ if_cond_str ^ "})"
+        else
+          "") ^
+        ".zipped.map({(" ^
+        (String.concat "," (List.map (gen_param inds) params)) ^ 
+        ") => " ^ if_cond_str ^ "})" ^ ")"
+      )
+        (* unary operators *)
   | Unop(op,expr) -> (gen_unop op) ^ (gen_expression inds expr)
         (* all binary operators *)
   | Binop(expr1,op,expr2) ->
@@ -106,7 +122,6 @@ let rec gen_expression inds expression =
   | Function_expression(state) ->
       (gen_statement inds state)
   | Empty_expression -> ""
-  | anything -> raise NotImplemented
 
 and gen_unop op =
   match op with
@@ -254,21 +269,10 @@ and gen_statements inds statements =
       (gen_statement inds head) ^ inds ^ "\n" ^ (gen_statements inds tail)
   | _-> ""
 
-        (* just c-preprocess this *)
-(* and gen_import import = *)
-(* (\* include files *\) *)
-(*   match import with *)
-(*     Import(s) -> "import " ^ s ^ ";\n" *)
-(* and gen_imports imports = *)
-(*   match imports with *)
-(*     head::tail -> (gen_import head) ^ (gen_imports tail) *)
-(*   | _-> "" *)
-(* ;; *)
-
 let gen_program program =
   let read_file filename =
     let lines = ref [] in
-    let chan = open_in filename in
+  let chan = open_in filename in
     try
       while true; do
         lines := input_line chan :: !lines
@@ -283,12 +287,9 @@ let gen_program program =
 
 object Main {
 %s
-%s
 }
 "
     (String.concat "\n"
        (read_file "include/dotpar.scala")) (* include builtins *)
-    (ind ^ "// imports")
-    (* (gen_imports imp) ^ "\n" ^ *)
     (gen_statements (ind ^ ind) statements))
 ;;
