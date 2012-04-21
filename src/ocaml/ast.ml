@@ -88,7 +88,7 @@ let rec string_of_expression expression =
       (string_of_type type_dec) ^ " " ^ (string_of_expression expr)
   | Declaration_expression(type_dec, rv, lv) ->
       (string_of_type type_dec) ^ " " ^ (string_of_expression rv) ^
-      "=" ^ (string_of_expression rv)
+      "=" ^ (string_of_expression lv)
   | Array_literal(exprs) ->
       "[" ^ (String.concat ", " (List.map string_of_expression exprs)) ^ "]"
   | List_comprehension(expr, params, exprs, if_cond) ->
