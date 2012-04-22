@@ -17,9 +17,13 @@ let _ =
   in
   (* DEBUG: reprint the AST *)
   Printf.printf "%s" (Ast.string_of_program ast);
-  (* Semantic analysis 
-  Translate.translate ast *)
 
+  (* Semantic analysis *)
+  let ast = Sem_check.translate ast
+  in
+  Printf.printf "%s" (Ast.string_of_program ast);
+
+  (* let table - Sem_checl.getTable *)
 
   (* Code generation *)
 
