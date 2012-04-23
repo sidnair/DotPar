@@ -15,15 +15,15 @@ let rec ast_generate stream =
       exit 1
   in
   (* Semantic transforms *)
-  let ast = Transform.reverse_tree ast
-  in
-  (* DEBUG: reprint the AST *)
-  (* Printf.printf "%s" (Ast.string_of_program ast); *)
+  let ast = Transform.reverse_tree ast in
 
   (* do import preprocessing *)
   let ast = insert_imports_program ast in
 
   (* Semantic analysis *)
+  let ast = Sem_check.translate ast in
+  (* DEBUG: reprint the AST *)
+  (* Printf.printf "%s" (Ast.string_of_program ast); *)
   
   ast
   (* Code generation comes after *)
