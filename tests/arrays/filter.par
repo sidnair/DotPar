@@ -1,0 +1,6 @@
+func main:void() {
+    char[] str = filter("hello world", func:boolean(char c){
+            c == 'e' || c == 'o';
+    });
+    println(str);
+}

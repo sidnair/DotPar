@@ -1,0 +1,5 @@
+func main:void() {
+    each("hello world", func:void(char c){
+            println(c);
+        });
+}

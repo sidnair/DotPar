@@ -1,0 +1,80 @@
+--------------------------------------------------------------------------------
+func main:void() {}
+----------------------------------------
+object Main {
+  def main(args: Array[String]) {
+  }       
+}
+
+
+
+--------------------------------------------------------------------------------
+func main:number() {
+     return 0;
+}
+----------------------------------------
+object Main {
+  def main(args: Array[String]) = {
+    System.exit(0.0.toInt);
+  }       
+}
+
+
+
+--------------------------------------------------------------------------------
+func main:number() {
+     number x = 2+2;
+     return x;
+}
+----------------------------------------
+object Main {
+  def main(args: Array[String]) = {
+    var x = 2.0 + 2.0;
+    System.exit(x.toInt);
+  }
+}
+
+
+
+--------------------------------------------------------------------------------
+func add:number(number a, number b) {
+     return a + b;
+}
+func main:number() {
+     number y = 4.14;
+     number z = 10.401;
+     return add(y,z);
+}
+----------------------------------------
+object Main {
+  def add(a: Double, b: Double):Double = {
+    return a+b;
+  }
+
+  def main(args: Array[String]) {
+    var y = 4.14;
+    var z = 10.401;
+    System.exit(add(y,z).toInt);
+  }
+}
+
+
+--------------------------------------------------------------------------------
+func main:number() {
+  number[] s = [1,2,3,4,5];
+  s = [a+4 for number:a in s if a>10];
+}
+----------------------------------------
+object Main {
+  def main(args: Array[String]) = {
+    var s:Array[Double] = Array(1.0, 2.0, 3.0, 4.0, 5.0);
+    s = (s.filter((a:Double) => a>10.0)).map((a:Double) => a+4)
+  }       
+}
+
+object Main {
+  def main(args: Array[String]) = {
+    var s:Array[Double] = Array(1.0, 2.0, 3.0, 4.0, 5.0);
+    s = (s.filter((a:Double) => a>10.0)).map((a:Double) => a+4)
+  }       
+}

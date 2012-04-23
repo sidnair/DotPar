@@ -224,8 +224,8 @@ selection_statement:
         { Selection {if_cond=$1.if_cond;
                      if_body=$1.if_body;
                      else_body=$3.else_body;
-                     elif_conds=$2.if_cond :: $2.elif_conds;
-                     elif_bodies=$2.if_body :: $2.elif_bodies;
+                     elif_conds=$2.elif_conds;
+                     elif_bodies=$2.elif_bodies;
                    } }
 
 if_statement:
@@ -254,20 +254,19 @@ else_statement:
 
 elifs:
   | ELIF LPAREN expression RPAREN compound_statement
-      { {if_cond=$3;
-         if_body=$5;
+      { {if_cond=Nil_literal;
+         if_body=[];
          else_body=[];
-         elif_conds=[];
-         elif_bodies=[];
+         elif_conds=[$3];
+         elif_bodies=[$5];
          } }
   | elifs ELIF LPAREN expression RPAREN compound_statement
-      { {if_cond=$4;
-         if_body=$6;
+      { {if_cond=Nil_literal;
+         if_body=[];
          else_body=[];
-         elif_conds=$1.if_cond :: $1.elif_conds;
-         elif_bodies=$1.if_body :: $1.elif_bodies;
+         elif_conds=$4 :: $1.elif_conds;
+         elif_bodies=$6 :: $1.elif_bodies;
          } }
-
 elifs_opt:
   | elifs { $1 }
   | { {if_cond=Nil_literal;

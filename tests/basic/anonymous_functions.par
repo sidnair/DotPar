@@ -1,0 +1,4 @@
+func main:void() {
+    number x = (func:number() { return 2; })();
+    println(x);
+}

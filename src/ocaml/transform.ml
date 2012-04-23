@@ -1,3 +1,4 @@
+(* Transform the AST so all the lists point the right way *)
 (* reverse:
    imports
    statements
@@ -33,10 +34,10 @@ and reverse_statement statement =
                  reverse_expression check,
                  reverse_expression incr,
                  reverse_statements stats)
+  | Jump(j) -> Expression (reverse_expression j)
   | Function_definition(name, ret_type, params, sts) ->
       Function_definition (name, reverse_type ret_type, List.rev params,
                            reverse_statements sts)
-  | anything -> anything
 
 and reverse_expressions exprs =
   let rev_exprs = List.map reverse_expression exprs in
@@ -53,7 +54,7 @@ and reverse_expression expr =
                               reverse_expression e1,
                               reverse_expression e2)
   | Array_literal(exprs) ->
-      Array_literal (List.rev exprs)
+      Array_literal (List.rev (List.map reverse_expression exprs))
   | List_comprehension(expr, params, exprs, if_cond) ->
       List_comprehension (reverse_expression expr,
                           List.rev params,

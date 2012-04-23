@@ -1,0 +1,4 @@
+func main:void() {
+    boolean[5] arr = [true, false, true, true, false];
+    println(arr);
+}

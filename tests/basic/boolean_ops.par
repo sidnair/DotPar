@@ -1,0 +1,6 @@
+func main:void() {
+    println(true && true);
+    println(true && false);
+    println(true || false);
+    println(false || false);
+}

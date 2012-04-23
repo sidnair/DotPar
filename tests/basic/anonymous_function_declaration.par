@@ -1,0 +1,10 @@
+func main:void() {
+    // check if void return types work
+    func:void() x;
+    x = func:void() {};
+
+    func:number(char) y;
+    y = func:number(char x) { return 0; };
+
+    println(y('a'));
+}

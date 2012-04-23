@@ -1,0 +1,5 @@
+import ignore_import;
+
+func main:void() {
+    println(h(3,4));
+}

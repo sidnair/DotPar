@@ -1,0 +1,9 @@
+func main:void() {
+    func sum:number(number[] a) {
+        func add:number(number x, number y) {
+            return x+y;
+        }
+        return reduce(a, add, 0);
+    }
+    println(sum([1,2,3,4,5,6]));
+}
