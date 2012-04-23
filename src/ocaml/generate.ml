@@ -270,17 +270,17 @@ and gen_statements inds statements =
   | _-> ""
 
 let gen_program program =
-  let read_file filename =
-    let lines = ref [] in
-    let chan = open_in filename in
-    try
-      while true; do
-        lines := input_line chan :: !lines
-      done; []
-    with End_of_file ->
-      close_in chan;
-      List.rev !lines
-  in
+  (* let read_file filename = *)
+  (*   let lines = ref [] in *)
+  (*   let chan = open_in filename in *)
+  (*   try *)
+  (*     while true; do *)
+  (*       lines := input_line chan :: !lines *)
+  (*     done; [] *)
+  (*   with End_of_file -> *)
+  (*     close_in chan; *)
+  (*     List.rev !lines *)
+  (* in *)
   match program with
     Program(imports, statements) ->
       (Printf.sprintf "

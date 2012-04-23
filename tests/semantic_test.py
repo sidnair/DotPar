@@ -287,7 +287,7 @@ DEBUG = False
 for i in range(len(tests)):
     test = tests[i]
     # run each test, check the return value
-    proc = subprocess.Popen(["????"],
+    proc = subprocess.Popen(["bin/dotpar"],
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)

@@ -11,15 +11,16 @@ compiler:
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
 	ocamlc -c transform.ml; \
-	ocamlc -c compile.ml; \
 	ocamlc -c generate.ml; \
 	ocamlyacc parser.mly; \
 	ocamlc -c parser.mli; \
 	ocamllex scanner.mll; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
+	ocamlc -c sem_check.ml; \
+	ocamlc -c compile.ml; \
 	ocamlc -c dotpar.ml; \
-	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo compile.cmo dotpar.cmo
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo sem_check.cmo compile.cmo dotpar.cmo
 
 clean_ocaml:
 	rm -f bin/dotpar
@@ -28,6 +29,8 @@ clean_ocaml:
 
 parser_test: compiler
 	python tests/parser_test.py
+semantic_test: compiler
+	python tests/semantic_test.py
 
 full_test: compiler
 	scala tests/full_test.scala
