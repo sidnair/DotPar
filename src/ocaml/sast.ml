@@ -39,7 +39,14 @@ let make_symbol_tabl sym_tabl =
   let init_table = List.fold_left (fun tableMaker (id, element) -> 
     StringMap.add id element tableMaker)
     StringMap.empty
-    [] 
+    []
+  in
+    let symbol_table = { 
+    table = init_table;
+    parent = sym_tabl;
+    property = false;}
+  in
+  symbol_table
     (* Utility to make an empty symbol tabl *)
 (***********************************************************************)
 
@@ -259,13 +266,11 @@ and check_func_def name ret_type params stats sym_tabl =
     (check_statements sts)
 
 and check_iter dec check incr stats parent_sym_tabl =
-  let symbol_table = { table = init_table;
-                       parent = parent_sym_tabl;
-                       property = false;}
-  check_expression dec symbol_table
-  check_expression check symbol_table
-  check_expression stats symbol_table
-  check_expression incr symbol_table
+  let symbol_table = make_symbol_table parent_sym_tabl in
+  (check_expression dec symbol_table)
+  (check_expression check symbol_table)
+  (check_expression stats symbol_table)
+  (check_expression incr symbol_table)
 
 and check_statement stat sym_tabl =
   match stat with
@@ -288,9 +293,7 @@ and check_statements statements sym_tabl =
 let generate_sast program =
   match program with
     Program(imp, stat) -> 
-   let symbol_table = { table    = init_table; 
-                         parent   = Nil; 
-                         property = false}
-    let sast = check_statements stat symbol_table
+  let symbol_table = make_symbol_table Nil in 
+  let sast = check_statements stat symbol_table in
     sast
 ;;
