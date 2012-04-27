@@ -48,6 +48,8 @@ let rec lookup_table table id =
 let rec check_expression expression =
   match expression with
     Assignment_expression(rv, lv) ->
+      (* if( (get_type rv) <> (get_type lv) ) then *)
+        (* doop doop doop *)
         if( (check_expression rv) <> (check_expression lv) ) then
             raise (Error "Assignment operation invalid, types do not match")
   | Declaration(type_dec, expr) ->
@@ -106,8 +108,11 @@ let rec check_expression expression =
       (List.map check_param params)
       (check_statements block)
   | Function_expression(state) ->
-      (check_statement state)
-      (* *)
+      (* check if it's a function definition *)
+      match state with
+      | Function_definition(name, ret_type, params, sts) ->
+          (* !!! recurse down here *)
+      | _ -> (Error "Illegal statement")
   | Empty_expression -> ""
   | _ -> raise (Error "Expression type not valid")
 
@@ -141,19 +146,45 @@ and compare_type type1 type2 =
 
 and check_operator type1 op type2 =
     match op with
-    Add -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Sub -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Mult -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Div -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Mod -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Eq -> "" 
-  | Neq -> ""
-  | Lt -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Leq -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Gt -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | Geq -> if (type1 <> "Number") then raise (Error "Operator applied invalid type")
-  | And -> if (type1 <> "Boolean") then raise (Error "Operator applied invalid type")
-  | Or -> if (type1 <> "Boolean") then raise (Error "Operator applied invalid type")
+    Add ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Sub ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Mult ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Div ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Mod ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Eq ->
+      if (type1 <> type2)
+      then raise (Error "Types do not match on both sides of the operator")
+  | Neq ->
+      if (type1 <> type2)
+      then raise (Error "Types do not match on both sides of the operator")
+  | Lt ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Leq ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Gt ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | Geq ->
+      if (type1 <> "Number" or type2 <> "Number")
+      then raise (Error "Operator applied invalid type")
+  | And ->
+      if (type1 <> "Boolean" or type2 <> "Boolean")
+      then raise (Error "Operator applied invalid type")
+  | Or ->
+      if (type1 <> "Boolean" or type2 <> "Boolean")
+      then raise (Error "Operator applied invalid type")
   | _ -> raise (Error "Unsupported Binary Operator")
 
 
@@ -206,7 +237,18 @@ and check_selection select =
 and check_statement stat =
   match stat with
     Expression(e) -> (check_expression e)
-  | Statements(s) -> (check_statements s)
+  | Statements(s) ->
+      (check_statements s)
+        (* nathan writes random shit *)
+        (* (let rec build_symbol_table statements parent_table = *)
+        (*   (match expr *)
+        (*   | Declaration(lexp, rexp) -> create/return new table + name *)
+        (* match lexp with *)
+        (* | Variable(str) -> add this *)
+        (* | Array_access -> get at the variable part *)
+        (*   | Declaration_expression -> *)
+        (*   | _ -> (\* do random shit *\) *)
+        (*   ) *)
   | Selection(s) -> (check_selection s)
   | Iteration(dec,check,incr, stats) ->
       (check_expression dec)
