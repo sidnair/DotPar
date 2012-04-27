@@ -1,4 +1,6 @@
 (* Check Semantics of the AST *)
+(* Ripped off rom Generator *)
+
 open Ast
 open Str
 
@@ -12,7 +14,6 @@ exception Unequal_type_args
 exception Func_side_effects
 exception Error of string
 
-(* Execution point *)
 module StringMap = Map.Make(String);;
 
 type symbol_table = {
@@ -34,6 +35,12 @@ let rec lookup_in table id iteration =
       Symbol_table(p) -> lookup_table p id
     | Nil    -> raise (Not_found id)
 
+let make_symbol_tabl sym_tabl = 
+  let init_table = List.fold_left (fun tableMaker (id, element) -> 
+    StringMap.add id element tableMaker)
+    StringMap.empty
+    [] 
+    (* Utility to make an empty symbol tabl *)
 (***********************************************************************)
 
 let rec check_expression expression =
@@ -100,10 +107,10 @@ let rec check_expression expression =
       (check_statements block)
   | Function_expression(state) ->
       (* check if it's a function definition *)
-      match state with
-      | Function_definition(name, ret_type, params, sts) ->
-          (* !!! recurse down here *)
-      | _ -> (Error "Illegal statement")
+      (match state with
+      Function_definition(name, ret_type, params, sts) ->
+          (check_func_def name ret_type params sts sym_tabl) 
+      | _ -> (Error "Illegal statement") )
   | Empty_expression -> ""
   | _ -> raise (Error "Expression type not valid")
 
@@ -181,92 +188,84 @@ and check_operator type1 op type2 =
 
 and check_basic_type btype =
   match btype with
-    Void_type -> "void"
-  | Number_type -> "number"
-  | Char_type -> "char"
-  | Boolean_type -> "bool"
+    Void_type -> "Void"
+  | Number_type -> "Number"
+  | Char_type -> "Char"
+  | Boolean_type -> "Boolean"
   | _ -> raise (Error "Unsupported Type")
 
-and check_type var_type =
+and check_var_type var_type =
   match var_type with
     Basic_type(b) -> (check_basic_type b)
-  | Array_type(a) -> (check_type a)
-  | Fixed_array_type(a,expr) ->
-      (check_type a)
-      (check_expression expr)
-  | Func_type(ret_type, param_types) ->
-      (check_type ret_type)
-      (List.map check_type param_types)
+  | Array_type(a) -> (check_basic_type a)  ^ "[]"
+  (*| Func_type(ret_type, param_types) ->*)
+      (*(check_var_type ret_type)*)
+      (*(List.map check_var_typeype param_types)*)
+  | Func_type(ret_type, params) -> 
+      List.map check_var_type param_types
+      check_var_type ret_type
   | Func_param_type(ret_type, params) ->
-      (check_type ret_type)
+      let extract_type param = 
+        match param with
+        | Param(param_type, varname) -> param_type
+      in
+      let type_list = (List.map extract type params) 
+      (check_var_type ret_type)
       (List.map check_param params)
   | _ -> raise (Error "Unsupported variable type")
 
-and check_param parm =
+and check_param parm sym_tabl=
   match parm with
     Param(param_type, varname) ->
-      (check_type param_type)
-      (compare_type param_type (check_expression varname))
+      try
+        ignore (look_up sym_tabl name 0);
+        raise Error("More than one function found with same identifier")
+      with Not_found _ ->
+        ""    
+    (*let build_table =  *)
+      (*[> !!! BUILD TABLE ^<]*)
 
-and is_bool var =
+and check_selection select sym_tabl =
+  let check_if_bool var =
+    check_expression car sym_tabl
     match var with
-        Boolean_type -> ""
-        | _ -> raise (Error "Conditinal not of boolean type")
+      Boolean_type -> true
+    | _ -> raise Error("Conditonal not a boolean")
+  in 
+  (check_if_bool select.if_cond) 
+  (check_expression select.if_cond sym_tabl)
+  (check_statements select.if_body sym_tabl)
+  (if ((List.length select.elif_conds) != 0) then
+    let check_elif cond body sym_tabl = 
+      (check_if_bool cond) 
+      (check_statements body sym_tabl)
+    in
+    (List.map2 check_elif select.elif_conds select.elif_bodies sym_tabl)
+  else "") 
+  (if(select.else_body != []) then 
+      (check_statements select.else_body sym_tabl)i
+  else "")
 
-and check_selection select =
-    is_bool select.if_cond
-    check_statements select.if_body
-      (if ((List.length select.elif_conds) != 0) then
-        let gen_elif cond body =
-            is_bool cond
-          check_statements body
-        in
-           (List.map2 gen_elif select.elif_conds select.elif_bodies)
-      (if (select.else_body != []) then
-        check_statements select.else_body)
-
-and build_symbol_table expr parent_table = 
-  match expr with 
-    Declaration(lexp, rexp) ->
-      let get_type lexp = 
-      match lexp with
-          Basic_type -> 
-          (match basic_type with
-       | Array_type of var_type
-        | Fixed_array_type of var_type * expression
-        | Func_type of var_type * var_type list
-        | Func_param_type of var_type * param list
-
-and get_basic_type basic_type = 
-  match basic_type with
-      Void_type
-    | Number_type
-    | Char_type
-    | Boolean_type 
-
-and get_var_type var_type =
-  match var_type with
-    Basic_type(b) -> get_basic_type b
-  | Array_type of var_type
-  | Fixed_array_type of var_type * expression
-  | Func_type of var_type * var_type list
-  | Func_param_type of var_type * param list
-
-
-(* create/return new table + namie match lexp with *)
-  | Variable(str) -> add this 
-  | Array_access -> get at the variable part 
-  | Declaration_expression -> 
-
-and check_func_def name ret_type params sts sym_tabl ->
-    try
-      ignore (look_up sym_tabl name 0);
-      raise Error("More than one function found with same identifier")
-    with Not_found _ ->
-     let build_tabl
+and check_func_def name ret_type params stats sym_tabl = 
+  try
+    ignore (look_up sym_tabl name 0);
+    raise Error("More than one function found with same identifier")
+  with Not_found _ ->
+    (*let build_table =  *)
+    (*[> !!! Build table <] *)
+    (*in*)
       (check_type ret_type)
     (List.map check_param params)
     (check_statements sts)
+
+and check_iter dec check incr stats parent_sym_tabl =
+  let symbol_table = { table = init_table;
+                       parent = parent_sym_tabl;
+                       property = false;}
+  check_expression dec symbol_table
+  check_expression check symbol_table
+  check_expression stats symbol_table
+  check_expression incr symbol_table
 
 and check_statement stat sym_tabl =
   match stat with
@@ -289,12 +288,9 @@ and check_statements statements sym_tabl =
 let generate_sast program =
   match program with
     Program(imp, stat) -> 
-      let init_table = List.fold_left (fun tableMaker (id, element) -> 
-          StringMap.add id element tableMaker)
-        StringMap.empty (* initial value *)
-      [] (* builtins *);;
-    let symbol_table = { table    = init_table; 
+   let symbol_table = { table    = init_table; 
                          parent   = Nil; 
                          property = false}
-    let _ = check_statements stat symbol_table
+    let sast = check_statements stat symbol_table
+    sast
 ;;
