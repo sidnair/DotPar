@@ -1,11 +1,11 @@
-(* translate into scala *)
+(* Check Semantics of the AST *)
 open Ast
 open Str
 
 (*define exceptions *)
 exception Symbol_undefined of string
 exception Func_id_not_found of string
-
+exception Not_found of string
 exception Unequal_number_args
 exception Unequal_type_args
 
@@ -16,34 +16,25 @@ exception Error of string
 module StringMap = Map.Make(String);;
 
 type symbol_table = {
-    table : string StringMap.t;
-    parent : symbol_table_ref;
-  }
+  table : string StringMap.t;
+  parent : symbol_table_ref;
+  property : bool;     
+}
+
 and symbol_table_ref = Symbol_table of symbol_table | Nil;;
 
-let table = List.fold_left
-    (fun tableMaker (id, element) -> StringMap.add id element tableMaker)
-    StringMap.empty (* initial value *)
-    [] (* builtins *);;
-let global_sym_table = { table = table; parent = Nil; };;
-
-let translate ast =
-  ast
-;;
-
+(* return the symbol_number recrusive, and how things we had to recurse *)
 (* lookup in string table *)
-let rec lookup_table table id =
+let rec lookup_in table id iteration =
   try
     StringMap.find id table.table
+    iteration = iteration + 1
   with Not_found ->
     match table.parent with
       Symbol_table(p) -> lookup_table p id
-    | Nil    -> raise (Symbol_undefined id)
-
-(* Build string table *)
+    | Nil    -> raise (Not_found id)
 
 (***********************************************************************)
-(* reverse string out for the AST *)
 
 let rec check_expression expression =
   match expression with
@@ -232,43 +223,78 @@ and check_selection select =
         in
            (List.map2 gen_elif select.elif_conds select.elif_bodies)
       (if (select.else_body != []) then
-        check_statements select.else_body))
+        check_statements select.else_body)
 
-and check_statement stat =
-  match stat with
-    Expression(e) -> (check_expression e)
-  | Statements(s) ->
-      (check_statements s)
-        (* nathan writes random shit *)
-        (* (let rec build_symbol_table statements parent_table = *)
-        (*   (match expr *)
-        (*   | Declaration(lexp, rexp) -> create/return new table + name *)
-        (* match lexp with *)
-        (* | Variable(str) -> add this *)
-        (* | Array_access -> get at the variable part *)
-        (*   | Declaration_expression -> *)
-        (*   | _ -> (\* do random shit *\) *)
-        (*   ) *)
-  | Selection(s) -> (check_selection s)
-  | Iteration(dec,check,incr, stats) ->
-      (check_expression dec)
-      (check_expression check)
-      (check_expression incr)
-      (check_statements stats)
-  | Jump(j) ->
-          (check_expression j)
-  | Function_definition(name, ret_type, params, sts) ->
+and build_symbol_table expr parent_table = 
+  match expr with 
+    Declaration(lexp, rexp) ->
+      let get_type lexp = 
+      match lexp with
+          Basic_type -> 
+          (match basic_type with
+       | Array_type of var_type
+        | Fixed_array_type of var_type * expression
+        | Func_type of var_type * var_type list
+        | Func_param_type of var_type * param list
+
+and get_basic_type basic_type = 
+  match basic_type with
+      Void_type
+    | Number_type
+    | Char_type
+    | Boolean_type 
+
+and get_var_type var_type =
+  match var_type with
+    Basic_type(b) -> get_basic_type b
+  | Array_type of var_type
+  | Fixed_array_type of var_type * expression
+  | Func_type of var_type * var_type list
+  | Func_param_type of var_type * param list
+
+
+(* create/return new table + namie match lexp with *)
+  | Variable(str) -> add this 
+  | Array_access -> get at the variable part 
+  | Declaration_expression -> 
+
+and check_func_def name ret_type params sts sym_tabl ->
+    try
+      ignore (look_up sym_tabl name 0);
+      raise Error("More than one function found with same identifier")
+    with Not_found _ ->
+     let build_tabl
       (check_type ret_type)
-      (List.map check_param params)
-      (check_statements sts)
-and check_statements statements =
+    (List.map check_param params)
+    (check_statements sts)
+
+and check_statement stat sym_tabl =
+  match stat with
+    Expression(e) -> (check_expression e sym_tabl)
+  | Statements(s) -> (check_statements s sym_tabl)
+  | Selection(s) -> (check_selection s sym_tabl)
+  | Iteration(dec,check,incr, stats) -> 
+      (check_iter dec check incr stats sym_tabl)
+  | Jump(j) -> (check_expression j)
+  | Function_definition(name, ret_type, params, sts) ->
+      (check_func_def name ret_type params sts sym_tabl)
+
+and check_statements statements sym_tabl =
   match statements with
     head::tail ->
-        (check_statement head)
-        (check_statements tail)
-  | _ -> ""
+      (check_statement head sym_tabl)
+      (check_statements tail sym_tabl)
+  | _ -> raise Error("Malformed statement")
 
-let check_program program =
+let generate_sast program =
   match program with
-    Program(imp, stat) -> (check_statements stat)
+    Program(imp, stat) -> 
+      let init_table = List.fold_left (fun tableMaker (id, element) -> 
+          StringMap.add id element tableMaker)
+        StringMap.empty (* initial value *)
+      [] (* builtins *);;
+    let symbol_table = { table    = init_table; 
+                         parent   = Nil; 
+                         property = false}
+    let _ = check_statements stat symbol_table
 ;;

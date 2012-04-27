@@ -21,11 +21,10 @@ let rec ast_generate stream =
   let ast = insert_imports_program ast in
 
   (* Semantic analysis *)
-  let ast = Sem_check.translate ast in
+  let ast = Sast.generate_sast ast in
   (* DEBUG: reprint the AST *)
-  (* Printf.printf "%s" (Ast.string_of_program ast); *)
+  Printf.printf "%s" (Ast.string_of_program ast);  
   
-  ast
   (* Code generation comes after *)
 
 (* import ------------------------------------------------------------  *)
