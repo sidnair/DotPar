@@ -191,17 +191,17 @@ and check_var_type var_type =
   match var_type with
     Basic_type(b) -> (check_basic_type b)
   | Array_type(a) -> (check_basic_type a)  ^ "[]"
-  (*| Func_type(ret_type, param_types) ->*)
-      (*(check_var_type ret_type)*)
-      (*(List.map check_var_type param_types)*)
- (*| Func_param_type(ret_type, params) ->*)
-      (*let extract_type param = *)
-        (*match param with*)
-        (*| Param(param_type, varname) -> param_type*)
-      (*in*)
-      (*let type_list = (List.map extract_type params) in*)
-      (*(check_var_type ret_type)*)
-      (*(List.map check_param params)*)
+  | Func_type(ret_type, param_types) ->
+      (check_var_type ret_type)
+      (List.map check_var_type param_types)
+ | Func_param_type(ret_type, params) ->
+    let extract_type param = 
+      match param with
+        Param(param_type, varname) -> param_type
+    in
+    let type_list = (List.map extract_type params) in
+    (check_var_type ret_type)
+    (List.map check_param params)
   | _ -> raise (Error "Unsupported variable type")
 
 and check_param parm sym_tabl =
@@ -239,9 +239,6 @@ and check_func_definition name ret_type params stats sym_tabl =
   with Not_found ->
     (* Double check this is what we want to do with func_types *)
     (add_to_symbol_table name (check_var_type ret_type) sym_tabl)
-  (* !!! let symbol_table =  *)
-     (*make_symbol_table sym_tabl*)
-     (*in*)
     List.map check_param params symbol_table
     check_statements stats symbol_table
 
