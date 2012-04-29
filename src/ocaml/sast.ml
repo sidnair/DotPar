@@ -17,22 +17,21 @@ module StringMap = Map.Make(String);;
 
 type symbol_table = {
   table : string StringMap.t;
-  parent : symbol_table_ref;
+  parent : symbol_table;
   property : bool;     
 }
 
-and symbol_table_ref = Symbol_table of symbol_table | Nil;;
+let ht = Hashtbl.create 100;;
 
 let rec lookup_in table id iteration =
   try
-   (* Make sure this is returning the find !!! *) 
+   (* Returns the variables type !!! *) 
     StringMap.find id table.table
-      (* iteration = iteration + 1 *)
   with Not_found ->
     match table.parent with
-      Symbol_table(p) -> lookup_in p id (iteration + 1)
-    | Nil    -> raise (Not_found)
-
+    symbol_table -> lookup_in symbol_table id (iteration + 1) 
+    | _ -> raise (Not_found) 
+    
 let add_to_symbol_table id id_type sym_tabl = 
   StringMap.add id_type id sym_tabl.table
   (* !!! Check thistuff to given sym_tabl*)
@@ -53,10 +52,9 @@ let make_symbol_table sym_tabl =
 (***********************************************************************)
 
 let rec check_expression expression sym_tabl =
-  (fun check_expression_table (expr) -> 
-    check_expression expr sym_tabl)
-  (fun check_param_table (param) ->
-    check_param param sym_tabl)
+  let check_expression_table expr = check_expression expr sym_tabl in
+  let check_param_table param =  
+    check_param param sym_tabl in
   (match expression with
   | Assignment_expression(left, right) ->
       (try
@@ -90,28 +88,39 @@ let rec check_expression expression sym_tabl =
       );
       raise (Error "Variable previous defined")
   | Declaration_expression(type_dec, left, right) ->
-      try
-        (match left with
-          Variable(v) ->
-            ignore(lookup_in sym_tabl v 0);
-        | _ -> raise (Error "SHITS FUCKED YO")
-        );
-        raise (Error "Variable previous defined") 
-      with Not_found ->
-        compare_type type_dec (check_expression right sym_tabl);
-        add_to_symbol_table var (check_var_type type_dec) sym_tabl
+    (match left with
+      Variable(v) ->  
+        (try 
+          ignore (lookup_in sym_tabl v 0);
+          sym_tabl.table
+        with Not_found ->
+        (compare_type 
+          (check_var_type type_dec) 
+          (check_expression right sym_tabl))
+        add_to_symbol_table v (check_var_type type_dec) sym_tabl)
+    | _ -> raise (Error "ERROR")
+    );
+    raise (Error "Variable perviously defined") 
   | Array_literal(exprs) ->
-    let check_expression_table expr = 
-      check_expression expr sym_tabl
-    in
-    (List.fold_left compare_type exprs.hd  
-      (List.map check_expression_table exprs))
-  | List_comprehension(expr, params, exprs, if_cond) ->
-    let symbol_table = make_symbol_table sym_tabl in
-    (check_expression expr symbol_table)
-    (List.map check_param_table params)
-    (List.fold_left compare_type exprs.hd  
-      (List.map check_expression_table exprs))
+     (try
+        (let get_literal_type expr =
+          (match expr with
+            Variable(v) -> (lookup_in sym_tabl v 0) 
+          | _ -> check_expression expr sym_tabl
+          );
+        in
+          (*(List.fold_left compare_type *)
+            (get_literal_type (List.hd exprs))  
+            (*(List.map get_literal_type exprs)*)
+        )
+      with Not_found -> raise (Error "Variable undefined")
+      )
+ | List_comprehension(expr, params, exprs, if_cond) ->
+     let symbol_table = make_symbol_table sym_tabl in
+     (check_expression expr symbol_table);
+     (List.map check_param_table params);
+    (*(List.fold_left compare_type (List.hd exprs) *)
+      (*(List.map check_expression_table exprs))*)
     (match if_cond with
         Empty_expression -> ""
       | _ -> (check_expression if_cond symbol_table))
@@ -123,8 +132,26 @@ let rec check_expression expression sym_tabl =
         op
         (check_expression expr2 sym_tabl))
   | Function_call(expr, exprs) ->
-      (check_expression expr sym_tabl)
-      List.map check_expression_table exprs
+      (* match expr with variable, and if found, retrieve param list
+       * from when function was defined by global hash
+       * and check params to the function all *)
+      (let rec get_func_name expr =
+          (match expr with
+          | Variable(v) -> 
+              (try 
+                ignore( lookup_in sym_tabl v 0);
+                (List.map2 compare_type 
+                  (Hashtbl.find ht v)
+                  (List.map check_expression_table exprs));
+                sym_tabl.table
+              with Not_found -> 
+                raise (Error "Function not declared")
+              )
+          | _ -> (get_func_name expr) 
+          )
+        in
+        (get_func_name expr)
+      )
   | Array_access(expr, expr2) ->
          (* Check to make sure expr2 is inbounds with expr *)
       (check_expression expr sym_tabl)
@@ -143,7 +170,7 @@ let rec check_expression expression sym_tabl =
       (match state with
       Function_definition(name, ret_type, params, sts) ->
           (check_func_def name ret_type params sts sym_tabl) 
-      | _ -> (Error "Illegal statement") )
+      | _ -> raise (Error "Illegal statement") )
   | Empty_expression -> ""
   | _ -> raise (Error "Expression type not valid"))
 
@@ -153,7 +180,7 @@ and check_unop op type1 sym_tabl =
             then raise (Error "Operator applied invalid type")
   | Not -> if (type1 <> "Boolean")
             then raise (Error "Operator applied to invalid type")
-  | _ -> rasie ("Unsupported Unary Operator")
+  | _ -> raise (Error "Unsupported Unary Operator")
 
 (* just have to compare types *)
 and compare_type type1 type2 =
@@ -239,7 +266,7 @@ and check_param parm sym_tabl =
 and check_cond cond = 
   match cond with
     Boolean_type -> true
-  | _ -> raise Error ("Conditional not valid")
+  | _ -> raise (Error "Conditional not valid")
 
 and check_selection select sym_tabl = 
   (check_expression select.if_cond sym_tabl)
@@ -259,21 +286,23 @@ and check_selection select sym_tabl =
 and check_func_definition name ret_type params stats sym_tabl = 
   try
     ignore (lookup_in sym_tabl name 0)
-    raise Error("More than one function found with same identifier")
+    raise (Error "More than one function found with same identifier")
   with Not_found ->
     (* Double check this is what we want to do with func_types *)
     (add_to_symbol_table name (check_var_type ret_type) sym_tabl)
-    List.map check_param params symbol_table
-    check_statements stats symbol_table
-
+    (Hashtbl.add ht name (List.map check_param params symbol_table))
+    (check_statements stats symbol_table);
+    
 and check_iter dec check incr stats parent_sym_tabl =
-  let symbol_table = make_symbol_table parent_sym_tabl in
-  (check_expression dec symbol_table)
-  (check_expression check symbol_table)
-  (check_statements stats symbol_table)
-  (check_expression incr symbol_table)
-    (* !!! Iteration stuff + symbol_table *)
-(* Check to make sure check is bool *)
+  let st1 = make_symbol_table parent_sym_tabl in
+  (check_expression dec st1)
+  st2 = make_symbol_table st1 
+  (check_expression check st2)
+  st3 = make_symbol_table st2
+  (check_statements stats st3)
+  st4 = make_symbol_table st3
+  (check_expression incr st4)
+  (* Check to make sure check is bool *)
 
 and check_statement stat sym_tabl =
   match stat with
@@ -285,13 +314,13 @@ and check_statement stat sym_tabl =
   | Jump(j) -> (check_expression j)
   | Function_definition(name, ret_type, params, sts) ->
       (check_func_def name ret_type params sts sym_tabl)
-
+  | _ -> raise (Error "Malformed statement")
 and check_statements statements sym_tabl =
   match statements with
     head::tail ->
       (check_statement head sym_tabl)
       (check_statements tail sym_tabl)
-  | _ -> raise Error("Malformed statement")
+  | _ -> raise (Error "Malformed statement")
 
 let generate_sast program =
   match program with
