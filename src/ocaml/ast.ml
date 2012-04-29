@@ -28,8 +28,9 @@ type expression =
   | Boolean_literal of bool
   | Nil_literal
       (* *)
+  (* !!! | Anonymous_function of var_type * param list * statements * symbol_table_ref (\* Attach symbol_table *\) *)
   | Anonymous_function of var_type * param list * statements
-  | Function_expression of statement (* hacky as hell, but whatever *)
+  | Function_expression of statement (* hacky as hell, but whatever *) (* Attach symbol_table *)
       (* *)
   | Empty_expression
 

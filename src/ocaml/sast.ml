@@ -25,16 +25,16 @@ and symbol_table_ref = Symbol_table of symbol_table | Nil;;
 
 let rec lookup_in table id iteration =
   try
-   (* Make sure this si returning the find !!! *) 
+   (* Make sure this is returning the find !!! *) 
     StringMap.find id table.table
-    iteration = iteration + 1
+      (* iteration = iteration + 1 *)
   with Not_found ->
     match table.parent with
-      Symbol_table(p) -> lookup_table p id
-    | Nil    -> raise (Not_found id)
+      Symbol_table(p) -> lookup_in p id (iteration + 1)
+    | Nil    -> raise (Not_found)
 
 let add_to_symbol_table id id_type sym_tabl = 
-  Stringmap.add id_type id sym_tabl 
+  StringMap.add id_type id sym_tabl.table
   (* !!! Check thistuff to given sym_tabl*)
 
 let make_symbol_table sym_tabl = 
@@ -58,24 +58,48 @@ let rec check_expression expression sym_tabl =
   (fun check_param_table (param) ->
     check_param param sym_tabl)
   (match expression with
-    Assignment_expression(left, right) ->
-      try
-        let var = lookup_in sym_tabl left 0 in 
-        compare_type var (check_expression right sym_tabl)
-      with Not_found -> raise Error("Variable undefined")  
+  | Assignment_expression(left, right) ->
+      (try
+        (let rec get_left_side expr =
+          (match expr with
+            Variable(v) ->
+              let var = lookup_in sym_tabl v 0 in
+              compare_type var (check_expression right sym_tabl);
+              var (* return new symbol table? *)
+          | Array_access(name, index) ->
+              (get_left_side name)
+                (* compare_type var (check_expression right sym_tabl) *)
+          | _ -> raise (Error "FUCK YOUUUUUUUUUUU")
+          )
+        in
+        (get_left_side left)
+        )
+      with Not_found -> raise (Error "Variable undefined")
+      )
   | Declaration(type_dec, var) ->
-    try
-         ignore(lookup_in sym_tabl var 0) 
-        raise Error("Variable previous defined") 
-      with Not_found -> 
-        add_to_symbol_table var (check_var_type type_dec) sym_tabl
+      (match var with
+        Variable(v) ->
+          (try
+            ignore (lookup_in sym_tabl v 0);
+            sym_tabl.table (* hack to work atm *)
+          with Not_found ->
+            (* raise (Error "aoeu") *)
+            add_to_symbol_table v (check_var_type type_dec) sym_tabl
+          )
+      | _ -> raise (Error "SHITS FUCKED YO")
+      );
+      raise (Error "Variable previous defined")
   | Declaration_expression(type_dec, left, right) ->
-    try
-      ignore(lookup_in sym_tabl left 0) 
-      raise Error("Variable previous defined") 
-    with Not_found ->
-      compare_type type_dec (check_expression right sym_tabl)
-      add_to_symbol_table var (check_var_type type_dec) sym_tabl
+      try
+        (match left with
+          Variable(v) ->
+            ignore(lookup_in sym_tabl v 0);
+        | _ -> raise (Error "SHITS FUCKED YO")
+        );
+        raise (Error "Variable previous defined") 
+      with Not_found ->
+        compare_type type_dec (check_expression right sym_tabl);
+        add_to_symbol_table var (check_var_type type_dec) sym_tabl
   | Array_literal(exprs) ->
     let check_expression_table expr = 
       check_expression expr sym_tabl
@@ -248,6 +272,7 @@ and check_iter dec check incr stats parent_sym_tabl =
   (check_expression check symbol_table)
   (check_statements stats symbol_table)
   (check_expression incr symbol_table)
+    (* !!! Iteration stuff + symbol_table *)
 (* Check to make sure check is bool *)
 
 and check_statement stat sym_tabl =
@@ -255,7 +280,7 @@ and check_statement stat sym_tabl =
     Expression(e) -> (check_expression e sym_tabl)
   | Statements(s) -> (check_statements s sym_tabl)
   | Selection(s) -> (check_selection s sym_tabl)
-  | Iteration(dec,check,incr, stats) -> 
+  | Iteration(dec,check,incr, stats) ->
       (check_iter dec check incr stats sym_tabl)
   | Jump(j) -> (check_expression j)
   | Function_definition(name, ret_type, params, sts) ->
@@ -271,7 +296,7 @@ and check_statements statements sym_tabl =
 let generate_sast program =
   match program with
     Program(imp, stat) -> 
-  let symbol_table = make_symbol_table Nil in 
+  let symbol_table = make_symbol_table Nil in
   let sast = check_statements stat symbol_table in
     sast
 ;;
