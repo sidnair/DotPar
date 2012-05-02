@@ -19,18 +19,18 @@ let rec ast_generate stream =
 
   (* do import preprocessing *)
   let ast = insert_imports_program ast in
-
+  
   (* Semantic analysis *)
-  let ast = Sast.generate_sast ast in
+  (*let sym = Sast.generate_sast ast in*)
   (* DEBUG: reprint the AST *)
   Printf.printf "%s" (Ast.string_of_program ast);  
-  
+  ast 
   (* Code generation comes after *)
 
-(* import ------------------------------------------------------------  *)
+ (*import ------------------------------------------------------------  *)
 and insert_import import =
-(* include files *)
-(* !!! TODO: import only once *)
+ (*include files *)
+ (*!!! TODO: import only once *)
   match import with
     Import(s) ->
       let filename = s ^ ".par" in

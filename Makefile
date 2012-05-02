@@ -18,10 +18,10 @@ compiler:
 	ocamllex scanner.mll; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
-	ocamlc -c sast.ml; \
+	ocamlc -c semantic.ml; \
 	ocamlc -c compile.ml; \
 	ocamlc -c dotpar.ml; \
-	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo sast.cmo compile.cmo dotpar.cmo
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo semantic.cmo compile.cmo dotpar.cmo
 
 clean_ocaml:
 	rm -f bin/dotpar
