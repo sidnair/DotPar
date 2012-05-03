@@ -151,7 +151,7 @@ let rec string_of_expression expression =
       (String.concat ", " (List.map string_of_param params)) ^ ")" ^
       "{" ^
       (string_of_statements block) ^ "}"
-  | Function_expression(state) ->
+  | Function_expression(state, sym_tabl) ->
       (string_of_statement state)
       (* *)
   | Empty_expression -> ""
