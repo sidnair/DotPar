@@ -12,6 +12,11 @@
 
 open Ast;;
 
+let extract_type_from_param param =
+  match param with
+    Param (vtype, expr) -> vtype
+;;
+
 let rec reverse_tree tree =
   match tree with
     Program(imports, statements) ->
@@ -89,8 +94,12 @@ and reverse_selection select = {
 and reverse_type type_def = 
   match type_def with
   | Func_type(vt, vts) ->
-      Func_type (vt, List.rev vts)
+      Func_type (reverse_type vt, (List.map reverse_type (List.rev vts)))
+        (* convert param list to type list *)
   | Func_param_type(vt, params) ->
-      Func_param_type (vt, List.rev params)
+      Func_type (reverse_type vt,
+                 (List.map reverse_type
+                    (List.map extract_type_from_param
+                       (List.rev params))))
   | anything -> anything
 ;;
