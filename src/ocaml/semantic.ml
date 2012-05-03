@@ -125,8 +125,22 @@ let rec check_expression e sym_tabl =
     let t = get_type (List.hd exprs) sym_tabl in
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
     t
-  (* TODO *)
-  | List_comprehension (expr, params, exprs, expr1) -> ""
+  | List_comprehension (expr, params, exprs, expr1) -> 
+    let symbol_table = make_symbol_table sym_tabl in
+    let check_param_table param = check_param param symbol_table in
+    let get_type_table e = 
+      let temp_str = get_type e symbol_table in
+        String.sub temp_str 0 ((String.length temp_str) - 2) in
+    (try
+      ignore(List.map2 compare_type
+        (List.map check_param_table params)
+        (List.map get_type_table exprs));
+      let t = get_type expr1 symbol_table in
+      match t with
+        | ""  -> t 
+        | "Boolean" -> t 
+        | _ -> raise (Error "Bad filter in List Comp")
+    with Invalid_argument "" -> raise (Error "Poorly formed List Comp")) 
   | Unop (op, expr) ->
       let t = (get_type expr sym_tabl) in
       ignore(check_unop op t);
@@ -185,7 +199,8 @@ let rec check_expression e sym_tabl =
 and get_type expression sym_tabl =
   (match expression with 
   | Array_literal (exprs) -> (get_type (List.nth exprs 0) sym_tabl) ^ "[]"
-  | List_comprehension (expr, params, exprs, expr1) -> (get_type expr sym_tabl)
+  | List_comprehension (expr, params, exprs, expr1) -> 
+      (get_type expr sym_tabl)
         (* assume the subexpressions match *)
   | Unop (op, expr) ->
       (match op with
@@ -219,11 +234,13 @@ and get_type expression sym_tabl =
   | Boolean_literal (b) -> "Boolean"
   | Anonymous_function (var_type, params, stats) -> ""
   | Function_expression (stat) -> ""
+  | Empty_expression -> ""
   | _ -> raise (Error "WHAT THE FUCK IS THIS SHIT")
   )
 
 and compare_type type1 type2 =
   debug ("Comparing two types...\n");
+  debug ("Comparing " ^ type1 ^ " with " ^ type2 ^ "\n"); 
   if type1 <> type2 then raise (Error "Type Mismatch")
   else type1
 
