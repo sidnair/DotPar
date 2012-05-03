@@ -20,12 +20,13 @@ let rec ast_generate stream =
 
   (* do import preprocessing *)
   let ast = insert_imports_program ast in
+  (* Printf.printf "%s" (Ast.repr_of_program ast); *)
   
   (* Semantic analysis *)
   ignore( Semantic.generate_sast ast );
   (* DEBUG: reprint the AST *)
-  Printf.printf "%s" (Ast.string_of_program ast);  
-  ast 
+  Printf.printf "%s" (Ast.string_of_program ast);
+  ast
   (* Code generation comes after *)
 
  (*import ------------------------------------------------------------  *)
