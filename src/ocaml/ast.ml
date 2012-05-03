@@ -248,3 +248,195 @@ let string_of_program program =
     Program(imp, stat) ->
       (string_of_imports imp) ^ "\n" ^ (string_of_statements stat)
 ;;
+
+
+(************************************************************)
+(* print out a non-sissy ast repr *)
+
+let gind = "    ";;
+
+let rec repr0 name =
+  "<" ^ name ^ ">"
+and repr1 ind name str1 =
+  "<" ^ name ^ "\n" ^ ind ^ str1 ^ ">"
+and repr2 ind name str1 str2 =
+  repr1 ind name (String.concat ("\n" ^ ind) [str1; str2])
+and repr3 ind name str1 str2 str3 =
+  repr1 ind name (String.concat ("\n" ^ ind) [str1; str2; str3])
+and repr4 ind name str1 str2 str3 str4 =
+  repr1 ind name (String.concat ("\n" ^ ind) [str1; str2; str3; str4])
+and repr5 ind name str1 str2 str3 str4 str5 =
+  repr1 ind name (String.concat ("\n" ^ ind) [str1; str2; str3; str4; str5])
+;;
+
+let repr_list ind fn list =
+  "[" ^ (String.concat ("\n" ^ ind) (List.map fn list)) ^ "]"
+
+let rec repr_of_expression ind expression =
+  let ind = ind ^ gind in
+  match expression with
+    Assignment_expression(rv, lv) ->
+      (repr2 ind "Assign"
+         (repr_of_expression ind rv) (repr_of_expression ind lv))
+  | Declaration(type_dec, expr) ->
+      (repr2 ind "Declare"
+         (repr_of_type ind type_dec) (repr_of_expression ind expr))
+  | Declaration_expression(type_dec, rv, lv) ->
+      (repr3 ind "Declare+Assign"
+         (repr_of_type ind type_dec)
+         (repr_of_expression ind rv)
+         (repr_of_expression ind lv))
+  | Array_literal(exprs) ->
+      (repr1 ind "Array Literal"
+         (repr_of_expressions ind exprs))
+  | List_comprehension(expr, params, exprs, if_cond, table) ->
+      (repr4 ind "ListComperehension"
+         (repr_of_expression ind expr)
+         (repr_of_params ind params)
+         (repr_of_expressions ind exprs)
+         (repr_of_expression ind if_cond))
+        (* unary operators *)
+  | Unop(op,expr) ->
+      (repr2 ind "UnaryOperation"
+         (repr_of_unop ind op) (repr_of_expression ind expr))
+        (* all binary operators *)
+  | Binop(expr1,op,expr2) ->
+      (repr3 ind "BinaryOperation"
+         (repr_of_expression ind expr1)
+         (repr_of_binop ind op)
+         (repr_of_expression ind expr2))
+        (* postfix *)
+  | Function_call(expr, exprs) ->
+      (repr2 ind "FunctionCall"
+         (repr_of_expression ind expr)
+         (repr_of_expressions ind exprs))
+  | Array_access(expr, expr2) ->
+      (repr2 ind "ArrayAccess"
+         (repr_of_expression ind expr)
+         (repr_of_expression ind expr2))
+        (* *)
+  | Variable(str) -> (repr1 ind "Variable" str)
+        (* constants *)
+  | Char_literal(c) -> (repr1 ind "CharLiteral" (String.make 1 c))
+  | Number_literal(n) -> (repr1 ind "NumberLiteral" (string_of_float n))
+  | String_literal(s) -> (repr1 ind "StringLiteral" s)
+  | Boolean_literal(b) ->
+      (repr1 ind "BooleanLiteral"
+         (if (b) then "true" else "false"))
+  | Nil_literal -> repr0 "NilLiteral"
+      (* *)
+  | Anonymous_function(type_def, params, block, table) ->
+      (repr3 ind "AnonymousFunction"
+         (repr_of_type ind type_def)
+         (repr_of_params ind params)
+         (repr_of_statements ind block))
+  | Function_expression(state) ->
+      (repr1 ind "NamedFunction"
+         (repr_of_statement ind state))
+      (* *)
+  | Empty_expression -> repr0 "EmptyExpression"
+and repr_of_expressions ind exprs =
+  let ind = ind ^ gind in
+  (repr_list ind (repr_of_expression ind) exprs)
+
+and repr_of_unop ind op =
+  match op with
+    Neg -> "Negative"
+  | Not -> "Not"
+and repr_of_binop ind op =
+  match op with
+    Add -> "+"
+  | Sub -> "-"
+  | Mult -> "*"
+  | Div -> "/"
+  | Mod -> "%"
+  | Eq -> "=="
+  | Neq -> "!="
+  | Lt -> "<"
+  | Leq -> "<="
+  | Gt -> ">"
+  | Geq -> ">="
+  | And -> "&&"
+  | Or -> "||"
+
+and repr_of_basic_type ind btype =
+  match btype with
+    Void_type -> repr0 "VoidType"
+  | Number_type -> repr0 "NumberType"
+  | Char_type -> repr0 "CharType"
+  | Boolean_type -> repr0 "BooleanType"
+and repr_of_type ind var_type =
+  let ind = ind ^ gind in
+  match var_type with
+    Basic_type(b) -> repr1 ind "BasicType" (repr_of_basic_type ind b)
+  | Array_type(a) -> repr1 ind "ArrayType" (repr_of_type ind a)
+  | Fixed_array_type(a,expr) ->
+      repr2 ind "ArrayTypeFixed"
+        (repr_of_type ind a)
+        (repr_of_expression ind expr)
+  | Func_type(ret_type, param_types) ->
+      repr2 ind "FunctionType"
+        (repr_of_type ind ret_type)
+        (repr_of_types ind param_types)
+  | Func_param_type(ret_type, params) ->
+      repr2 ind "FunctionType+Param"
+        (repr_of_type ind ret_type)
+        (repr_of_params ind params)
+and repr_of_types ind types =
+  repr_list ind (repr_of_type ind) types
+
+and repr_of_param ind parm =
+  let ind = ind ^ gind in
+  match parm with
+    Param(param_type, varname) ->
+      (repr2 ind "Parameter"
+         (repr_of_type ind param_type) (repr_of_expression ind varname))
+and repr_of_params ind params =
+  repr_list ind (repr_of_param ind) params
+
+and repr_of_selection ind select =
+  let ind = ind ^ gind in
+  (repr5 ind "If"
+     (repr_of_expression ind select.if_cond)
+     (repr_of_statements ind select.if_body)
+     (* maybe print these out in pairs? *)
+     (repr_of_expressions ind select.elif_conds)
+     (repr_list ind (repr_of_statements ind) select.elif_bodies)
+     (repr_of_statements ind select.else_body))
+
+and repr_of_statement ind stat =
+  let ind = ind ^ gind in
+  match stat with
+    Expression(e) -> (repr1 ind "Expression" (repr_of_expression ind e)) ^ "\n"
+  | Statements(s) -> (repr1 ind "Statements" (repr_of_statements ind s)) ^ "\n"
+  | Selection(s) -> (repr1 ind "If" (repr_of_selection ind s)) ^ "\n"
+  | Iteration(dec,check,incr, stats, table) ->
+      (repr4 ind "For"
+         (repr_of_expression ind dec)
+         (repr_of_expression ind check)
+         (repr_of_expression ind incr)
+         (repr_of_statements ind stats))
+  | Jump(j) -> (repr1 ind "Return" (repr_of_expression ind j)) ^ "\n"
+  | Function_definition(name, ret_type, params, sts, table) ->
+      (repr4 ind "Function_Definition"
+         name
+         (repr_of_type ind ret_type)
+         (repr_of_params ind params)
+         (repr_of_statements ind sts))
+and repr_of_statements ind statements =
+  repr_list ind (repr_of_statement ind) statements
+
+and repr_of_import ind import =
+  (let ind = ind ^ gind in
+  match import with
+    Import(s) -> repr1 ind "Import " s)
+and repr_of_imports ind imports =
+  repr_list ind (repr_of_import ind) imports
+;;
+
+let repr_of_program program =
+  match program with
+    Program(imp, stat) ->
+      (repr2 gind "Program"
+         (repr_of_imports gind imp) (repr_of_statements gind stat)) ^ "\n"
+;;

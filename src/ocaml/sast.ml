@@ -4,9 +4,6 @@
 open Ast
 open Str
 
-
-
-
 (* define exceptions *)
 exception Symbol_undefined of string
 exception Func_id_not_found of string

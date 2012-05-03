@@ -13,6 +13,7 @@ type symbol_table = {
   mutable pure : bool
 } 
 
+(* utility function *)
 let debug str = 
   if true then print_string (str) else ()
 
