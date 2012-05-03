@@ -33,6 +33,7 @@ tests = [
   number x =5;
   number y;
   y = x+2;
+}
 """, True),
 
 ("""func main:void() {
@@ -73,7 +74,7 @@ tests = [
 # scope checking
 ("""func main:void() {
     number y;
-    for(x = 10; x < y; x = x +1) {
+    for(number x = 10; x < y; x = x +1) {
       y = x;
     }
 
@@ -81,7 +82,7 @@ tests = [
   }""", True),
 
 ("""func main:void() {
-    for(x = 10; x < y; x = x +1) {
+    for(number x = 10; x < y; x = x +1) {
       number y = x;
     }
 

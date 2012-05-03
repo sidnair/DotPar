@@ -187,12 +187,12 @@ and get_type expression sym_tabl =
       | Div -> "Number"
       | Mod -> "Number"
             (* these relational guys shouldn't be just numbers !!! *)
-      | Eq -> "Number"
-      | Neq -> "Number"
-      | Lt -> "Number"
-      | Leq -> "Number"
-      | Gt -> "Number"
-      | Geq -> "Number"
+      | Eq -> "Boolean"
+      | Neq -> "Boolean"
+      | Lt -> "Boolean"
+      | Leq -> "Boolean"
+      | Gt -> "Boolean"
+      | Geq -> "Boolean"
       | And -> "Boolean"
       | Or -> "Boolean")
         (* extract the return value *)
@@ -323,7 +323,7 @@ and check_selection select sym_tabl =
 
 and check_iter dec check incr stats sym_tabl = 
   ignore(check_expression dec sym_tabl); 
-  if ( (check_expression check sym_tabl) <> "Boolean") then 
+  if ( (get_type check sym_tabl) <> "Boolean") then 
     raise (Error "Conditonal in iteration not of type Boolean");
     ignore(check_expression incr sym_tabl);
   ignore(check_statements stats (make_symbol_table sym_tabl));
@@ -360,7 +360,7 @@ and check_statements stats sym_tabl =
   | hd :: tl -> 
       ignore(check_statement hd sym_tabl);
       ignore(check_statements tl sym_tabl);
-  | _ -> raise (Error "Poorly formed statement")
+  | [] -> () 
 
 let generate_sast program = 
   match program with
