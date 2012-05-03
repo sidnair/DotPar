@@ -13,9 +13,14 @@ type symbol_table = {
   mutable pure : bool
 } 
 
-let rec lookup id sym_table iter =  
+let debug str = 
+  if true then print_string (str) else ()
+
+let rec lookup id sym_table iter = 
+  debug("Looking for "^ id ^" ...\n");
   try 
     let t = StringMap.find id sym_table.table in 
+  debug("Found " ^ id ^ " ...\n");
     (t, iter) 
   with Not_found ->
     match sym_table.parent with 
@@ -23,10 +28,12 @@ let rec lookup id sym_table iter =
     | _ -> raise Not_found 
 
 let add_to_symbol_table id id_type sym_table = 
+  debug("Adding " ^ id ^ " to symbol_table \n");
   sym_table.table <- StringMap.add id id_type sym_table.table;
   ()
   
 let make_symbol_table p_table = 
+  debug("Making a symbol_table... \n");
   let s_table = {
     table = StringMap.empty;
     parent = Some(p_table);
@@ -57,6 +64,7 @@ let make_symbol_table p_table =
 let ht = Hashtbl.create 100;;
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
+  debug("Checking an expression... \n");
   (match e with 
   | Assignment_expression (left, right) ->
     (match left with
@@ -87,8 +95,12 @@ let rec check_expression e sym_tabl =
           raise (Error "Variable previously defined");
         with Not_found ->
           let t1 = check_var_type var_type in
-          ignore(add_to_symbol_table v t1 sym_tabl);
-          t1 
+          if t1 = "Void" then raise 
+            (Error "Cannot declare a variable of type void")  
+          else begin
+            ignore(add_to_symbol_table v t1 sym_tabl);
+            t1
+          end
         )
       | _ -> raise (Error "Invalid Declaration Type")
     ) 
@@ -113,8 +125,22 @@ let rec check_expression e sym_tabl =
     let t = get_type (List.hd exprs) sym_tabl in
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
     t
-  (* TODO *)
-  | List_comprehension (expr, params, exprs, expr1) -> ""
+  | List_comprehension (expr, params, exprs, expr1) -> 
+    let symbol_table = make_symbol_table sym_tabl in
+    let check_param_table param = check_param param symbol_table in
+    let get_type_table e = 
+      let temp_str = get_type e symbol_table in
+        String.sub temp_str 0 ((String.length temp_str) - 2) in
+    (try
+      ignore(List.map2 compare_type
+        (List.map check_param_table params)
+        (List.map get_type_table exprs));
+      let t = get_type expr1 symbol_table in
+      match t with
+        | ""  -> t 
+        | "Boolean" -> t 
+        | _ -> raise (Error "Bad filter in List Comp")
+    with Invalid_argument "" -> raise (Error "Poorly formed List Comp")) 
   | Unop (op, expr) ->
       let t = (get_type expr sym_tabl) in
       ignore(check_unop op t);
@@ -173,7 +199,8 @@ let rec check_expression e sym_tabl =
 and get_type expression sym_tabl =
   (match expression with 
   | Array_literal (exprs) -> (get_type (List.nth exprs 0) sym_tabl) ^ "[]"
-  | List_comprehension (expr, params, exprs, expr1) -> (get_type expr sym_tabl)
+  | List_comprehension (expr, params, exprs, expr1) -> 
+      (get_type expr sym_tabl)
         (* assume the subexpressions match *)
   | Unop (op, expr) ->
       (match op with
@@ -207,22 +234,27 @@ and get_type expression sym_tabl =
   | Boolean_literal (b) -> "Boolean"
   | Anonymous_function (var_type, params, stats) -> ""
   | Function_expression (stat) -> ""
+  | Empty_expression -> ""
   | _ -> raise (Error "WHAT THE FUCK IS THIS SHIT")
   )
 
 and compare_type type1 type2 =
+  debug ("Comparing two types...\n");
+  debug ("Comparing " ^ type1 ^ " with " ^ type2 ^ "\n"); 
   if type1 <> type2 then raise (Error "Type Mismatch")
   else type1
 
 and check_unop op type1 =
-  match op with
+  ignore(debug ("Checking a unop ...\n")); 
+  (match op with
     Neg -> if (type1 <> "Number") 
             then raise (Error "Operator applied invalid type") else ""
   | Not -> if (type1 <> "Boolean")
-            then raise (Error "Operator applied to invalid type") else ""
+            then raise (Error "Operator applied to invalid type") else "")
 
 and check_operator type1 op type2 =
-    match op with
+  debug ("Checking an operator...\n");   
+  (match op with
     Add ->
       if (type1 <> "Number" or type2 <> "Number")
       then raise (Error "Operator applied invalid type")
@@ -261,10 +293,11 @@ and check_operator type1 op type2 =
       then raise (Error "Operator applied invalid type")
   | Or ->
       if (type1 <> "Boolean" or type2 <> "Boolean")
-      then raise (Error "Operator applied invalid type")
+      then raise (Error "Operator applied invalid type"))
   (*| _ -> raise (Error "Unsupported Binary Operator")*)
 
 and check_basic_type btype =
+  debug("Checking basic type...\n");
   match btype with
     Void_type -> "Void"
   | Number_type -> "Number"
@@ -273,15 +306,22 @@ and check_basic_type btype =
   (*| _ -> raise (Error "Unsupported Type")*)
 
 and check_var_type var_type : string =
+  
+  debug("Checking var_types...\n"); 
+    
   match var_type with
-    Basic_type(b) -> (check_basic_type b)
-  | Array_type(a) -> (check_var_type a)  ^ "[]"
+  |  Basic_type(b) -> (check_basic_type b)
+  | Array_type(a) -> 
+      let t = (check_var_type a) in
+      if t = "Void" then raise 
+            (Error "Cannot declare an array of type void")  
+          else t ^ "[]"
   | Func_type(ret_type, param_types) ->
       ignore(List.map check_var_type param_types);
-      (check_var_type ret_type);
- (* TODO
-  * | Func_param_type(ret_type, params) ->*)
-    (*let extract_type param = *)
+      "func_" ^ (check_var_type ret_type);
+  | Func_param_type(ret_type, params) ->
+  raise (Error "This SHIT IS FUCKED") 
+      (*let extract_type param = *)
       (*match param with*)
         (*Param(param_type, varname) -> param_type*)
     (*in*)
@@ -291,13 +331,18 @@ and check_var_type var_type : string =
   | _ -> raise (Error "Unsupported variable type")
 
 and check_param parm sym_tabl = 
+  debug ("Checking params...\n");
   match parm with
     Param(param_type, varname) ->
       match varname with
       | Variable(v) ->
-        let t = check_var_type param_type in
-        ignore(add_to_symbol_table v t sym_tabl);
-        t
+        (let t = check_var_type param_type in
+        if t = "Void" then raise 
+            (Error "Cannot pass param of type void")  
+          else begin 
+            ignore(add_to_symbol_table v t sym_tabl);
+            t
+          end)
       | _ -> raise (Error "Param type invalid")
 
 and check_boolean v = 
@@ -305,8 +350,9 @@ and check_boolean v =
   | "Boolean" -> ""
   | _ -> raise (Error "Type found where Boolean expected")
 
-and check_selection select sym_tabl = 
-  ignore(check_boolean (check_expression select.if_cond sym_tabl));
+and check_selection select sym_tabl =
+  debug ("Checking a selection block... \n");
+  ignore(check_boolean (get_type select.if_cond sym_tabl));
   ignore(check_statements select.if_body (make_symbol_table sym_tabl));
   if ((List.length select.elif_conds) != 0) then
     let check_elif cond body = 
@@ -331,6 +377,7 @@ and check_iter dec check incr stats sym_tabl =
 (* TODO 
  * Need to check function type matchs used return type *)
 and check_func_def (name : string) ret_type params stats sym_tabl =
+  debug ("Checking a func def...\n");
   try
     ignore (lookup name sym_tabl 0);
     raise (Error "Function previously declared")
@@ -339,11 +386,54 @@ and check_func_def (name : string) ret_type params stats sym_tabl =
     ignore(add_to_symbol_table name v sym_tabl); 
     let check_param_table param = check_param param sym_tabl in
     (Hashtbl.add ht name (List.map check_param_table params));
-   
-    (* TODO bunch of nested matches *)  
-    ignore(check_statements stats (make_symbol_table sym_tabl));
+    let com_bools x y = x || y in 
+    let rec match_jump_types stat =
+      debug ("Looking for jumps in " ^ name ^ "...\n");
+    (match stat with
+    | Statements(s) ->
+        debug("Statements\n");
+        List.fold_left 
+        com_bools
+        false 
+        (List.map match_jump_types s) 
+    | Selection(s) ->
+        debug("Selections\n");
+        List.fold_left 
+        com_bools 
+        false
+        (List.map match_jump_types 
+        (List.concat [s.if_body; s.else_body; (List.concat s.elif_bodies)]) 
+        )
+    | Iteration(d,c,i,s) ->
+        debug("Iteration\n");
+        List.fold_left 
+        com_bools 
+        false 
+        (List.map match_jump_types s) 
+    | Jump(j) ->
+        debug("Jumping!\n");
+        ignore(compare_type (get_type j sym_tabl) v);
+        true
+    | Expression(e) -> 
+        debug("Expression\n");
+        false 
+    | _ -> 
+        debug("Catch all\n");
+        false)
+    in
+    let b =
+      List.fold_left 
+        com_bools 
+        false 
+        (List.map match_jump_types stats)
+    in
+    if b then debug("True \n") else print_string("False \n"); 
+    if b && (v = "Void")  then raise (Error "Void method contains return")
+    else if (not b) && (v <> "Void") then raise (Error "Non-void method must
+    contain return statement") else v 
 
-and check_statement stat sym_tabl = 
+and check_statement stat sym_tabl =
+  debug ("Checking Statement... \n");
   match stat with
   | Expression(e) -> ignore (check_expression e sym_tabl);
   | Statements(s) -> ignore (check_statements s sym_tabl);
@@ -351,11 +441,14 @@ and check_statement stat sym_tabl =
   | Iteration(dec, check, incr, stats) -> 
       ignore(check_iter dec check incr stats sym_tabl);
   | Jump(j) -> ignore (check_expression j sym_tabl);
+  debug ("Check jump...\n");
   | Function_definition(name, ret_type, params, sts) ->
       ignore(check_func_def name ret_type params sts sym_tabl);
-  (*| _ -> raise (Error "Malformed statement")*)
+      ignore(check_statements sts sym_tabl);
+      (*| _ -> raise (Error "Malformed statement")*)
 
 and check_statements stats sym_tabl =
+  debug "Checking Statements... \n";
   match stats with 
   | hd :: tl -> 
       ignore(check_statement hd sym_tabl);
