@@ -87,8 +87,12 @@ let rec check_expression e sym_tabl =
           raise (Error "Variable previously defined");
         with Not_found ->
           let t1 = check_var_type var_type in
-          ignore(add_to_symbol_table v t1 sym_tabl);
-          t1 
+          if t1 = "Void" then raise 
+            (Error "Cannot declare a variable of type void")  
+          else begin
+            ignore(add_to_symbol_table v t1 sym_tabl);
+            t1
+          end
         )
       | _ -> raise (Error "Invalid Declaration Type")
     ) 
@@ -275,13 +279,17 @@ and check_basic_type btype =
 and check_var_type var_type : string =
   match var_type with
     Basic_type(b) -> (check_basic_type b)
-  | Array_type(a) -> (check_var_type a)  ^ "[]"
+  | Array_type(a) -> 
+      let t = (check_var_type a) in
+      if t = "Void" then raise 
+            (Error "Cannot declare an array of type void")  
+          else t ^ "[]"
   | Func_type(ret_type, param_types) ->
       ignore(List.map check_var_type param_types);
       (check_var_type ret_type);
- (* TODO
-  * | Func_param_type(ret_type, params) ->*)
-    (*let extract_type param = *)
+  | Func_param_type(ret_type, params) ->
+  raise (Error "This SHIT IS FUCKED") 
+      (*let extract_type param = *)
       (*match param with*)
         (*Param(param_type, varname) -> param_type*)
     (*in*)
@@ -296,8 +304,12 @@ and check_param parm sym_tabl =
       match varname with
       | Variable(v) ->
         let t = check_var_type param_type in
-        ignore(add_to_symbol_table v t sym_tabl);
-        t
+        if t = "Void" then raise 
+            (Error "Cannot pass param of type void")  
+          else begin 
+            ignore(add_to_symbol_table v t sym_tabl);
+            t
+          end
       | _ -> raise (Error "Param type invalid")
 
 and check_boolean v = 
@@ -306,7 +318,7 @@ and check_boolean v =
   | _ -> raise (Error "Type found where Boolean expected")
 
 and check_selection select sym_tabl = 
-  ignore(check_boolean (check_expression select.if_cond sym_tabl));
+  ignore(check_boolean (get_type select.if_cond sym_tabl));
   ignore(check_statements select.if_body (make_symbol_table sym_tabl));
   if ((List.length select.elif_conds) != 0) then
     let check_elif cond body = 
