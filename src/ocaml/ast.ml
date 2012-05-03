@@ -40,7 +40,7 @@ type expression =
   | Nil_literal
       (* *)
   | Anonymous_function of var_type * param list * statements * symbol_table
-  | Function_expression of statement  (* hacky as hell, but whatever *)
+  | Function_expression of statement (* hacky, but whatever *)
       (* *)
   | Empty_expression
 
@@ -151,7 +151,7 @@ let rec string_of_expression expression =
       (String.concat ", " (List.map string_of_param params)) ^ ")" ^
       "{" ^
       (string_of_statements block) ^ "}"
-  | Function_expression(state, sym_tabl) ->
+  | Function_expression(state) ->
       (string_of_statement state)
       (* *)
   | Empty_expression -> ""
