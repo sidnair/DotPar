@@ -1,4 +1,5 @@
 open Ast;;
+open Semantic;;
 
 let rec ast_generate stream =
   let lexbuf = Lexing.from_channel stream in 
@@ -21,7 +22,7 @@ let rec ast_generate stream =
   let ast = insert_imports_program ast in
   
   (* Semantic analysis *)
-  (*let sym = Sast.generate_sast ast in*)
+  ignore( Semantic.generate_sast ast );
   (* DEBUG: reprint the AST *)
   Printf.printf "%s" (Ast.string_of_program ast);  
   ast 

@@ -325,8 +325,7 @@ and check_iter dec check incr stats sym_tabl =
   ignore(check_expression dec sym_tabl); 
   if ( (check_expression check sym_tabl) <> "Boolean") then 
     raise (Error "Conditonal in iteration not of type Boolean");
-  if ((check_expression incr sym_tabl) <> "Number") then
-    raise (Error "Increment in iteration is not of type Number");
+    ignore(check_expression incr sym_tabl);
   ignore(check_statements stats (make_symbol_table sym_tabl));
 
 (* TODO 
