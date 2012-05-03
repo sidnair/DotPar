@@ -3,12 +3,6 @@
 open Str;;
 module StringMap = Map.Make(String);;
 
-type symbol_table = { 
-  mutable table : string StringMap.t;
-  mutable parent: symbol_table option; 
-  mutable children : symbol_table list;
-  mutable pure : bool
-} 
 
 type unop = Neg | Not
 type binop =
@@ -16,7 +10,27 @@ type binop =
   | Eq | Neq | Lt | Leq | Gt | Geq
   | And | Or
 
-type expression =
+type basic_type =
+    Void_type
+  | Number_type
+  | Char_type
+  | Boolean_type
+
+and var_type =
+    Basic_type of basic_type
+  | Array_type of var_type
+  | Fixed_array_type of var_type * expression
+  | Func_type of var_type * var_type list
+  | Func_param_type of var_type * param list
+
+and symbol_table = { 
+  mutable table : var_type StringMap.t;
+  mutable parent: symbol_table option; 
+  mutable children : symbol_table list;
+  mutable pure : bool
+}
+
+and expression =
     Assignment_expression of expression * expression
   | Declaration of var_type * expression
   | Declaration_expression of var_type * expression * expression
@@ -43,19 +57,6 @@ type expression =
   | Function_expression of statement (* hacky, but whatever *)
       (* *)
   | Empty_expression
-
-and basic_type =
-    Void_type
-  | Number_type
-  | Char_type
-  | Boolean_type
-
-and var_type =
-    Basic_type of basic_type
-  | Array_type of var_type
-  | Fixed_array_type of var_type * expression
-  | Func_type of var_type * var_type list
-  | Func_param_type of var_type * param list
 
 and param = Param of var_type * expression
 
@@ -271,8 +272,18 @@ and repr5 ind name str1 str2 str3 str4 str5 =
 
 let repr_list ind fn list =
   "[" ^ (String.concat ("\n" ^ ind) (List.map fn list)) ^ "]"
+;;
 
-let rec repr_of_expression ind expression =
+let rec repr_table ind table =
+  let repr_entry key data folded =
+    folded ^ "\n" ^ ind ^ key ^ (repr_of_type ind data)
+  in
+  "[Table\n" ^ ind ^
+  (StringMap.fold repr_entry table.table "")
+  ^ "]"
+
+(* the actual ast repr *)
+and repr_of_expression ind expression =
   let ind = ind ^ gind in
   match expression with
     Assignment_expression(rv, lv) ->
@@ -290,7 +301,8 @@ let rec repr_of_expression ind expression =
       (repr1 ind "Array Literal"
          (repr_of_expressions ind exprs))
   | List_comprehension(expr, params, exprs, if_cond, table) ->
-      (repr4 ind "ListComperehension"
+      (repr5 ind "ListComperehension"
+         (repr_table ind table)
          (repr_of_expression ind expr)
          (repr_of_params ind params)
          (repr_of_expressions ind exprs)
@@ -326,7 +338,8 @@ let rec repr_of_expression ind expression =
   | Nil_literal -> repr0 "NilLiteral"
       (* *)
   | Anonymous_function(type_def, params, block, table) ->
-      (repr3 ind "AnonymousFunction"
+      (repr4 ind "AnonymousFunction"
+         (repr_table ind table)
          (repr_of_type ind type_def)
          (repr_of_params ind params)
          (repr_of_statements ind block))
@@ -394,6 +407,7 @@ and repr_of_param ind parm =
 and repr_of_params ind params =
   repr_list ind (repr_of_param ind) params
 
+    (* !!! add function table printing *)
 and repr_of_selection ind select =
   let ind = ind ^ gind in
   (repr5 ind "If"
@@ -407,18 +421,24 @@ and repr_of_selection ind select =
 and repr_of_statement ind stat =
   let ind = ind ^ gind in
   match stat with
-    Expression(e) -> (repr1 ind "Expression" (repr_of_expression ind e)) ^ "\n"
-  | Statements(s) -> (repr1 ind "Statements" (repr_of_statements ind s)) ^ "\n"
-  | Selection(s) -> (repr1 ind "If" (repr_of_selection ind s)) ^ "\n"
+    Expression(e) ->
+      (repr1 ind "Expression" (repr_of_expression ind e)) ^ "\n" ^ ind
+  | Statements(s) ->
+      (repr1 ind "Statements" (repr_of_statements ind s)) ^ "\n" ^ ind
+  | Selection(s) ->
+      (repr1 ind "If" (repr_of_selection ind s)) ^ "\n" ^ ind
   | Iteration(dec,check,incr, stats, table) ->
-      (repr4 ind "For"
+      (repr5 ind "For"
+         (repr_table ind table)
          (repr_of_expression ind dec)
          (repr_of_expression ind check)
          (repr_of_expression ind incr)
          (repr_of_statements ind stats))
-  | Jump(j) -> (repr1 ind "Return" (repr_of_expression ind j)) ^ "\n"
+  | Jump(j) ->
+      (repr1 ind "Return" (repr_of_expression ind j)) ^ "\n" ^ ind
   | Function_definition(name, ret_type, params, sts, table) ->
-      (repr4 ind "Function_Definition"
+      (repr5 ind "Function_Definition"
+         (repr_table ind table)
          name
          (repr_of_type ind ret_type)
          (repr_of_params ind params)

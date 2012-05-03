@@ -26,11 +26,6 @@ let () =
     let ast_switch = switch "--ast" args in
     let gen_switch = switch "--scala" args in
     generate self_switch ast_switch gen_switch
-
-    (* Printf.printf "debug\t %B.\n" debug; *)
-    (* Printf.printf "self\t %B.\n" self; *)
-    (* Printf.printf "ast\t %B.\n" ast; *)
-    (* Printf.printf "gen\t %B.\n" gen; *)
   else
     generate false false false
 ;;
