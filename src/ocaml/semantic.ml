@@ -13,7 +13,6 @@ type symbol_table = {
   mutable pure : bool
 } 
 
-
 let rec lookup id sym_table iter =  
   try 
     let t = StringMap.find id sym_table.table in 
@@ -40,12 +39,12 @@ let make_symbol_table p_table =
 (* This method is very experimental *)
 (*let rec get_symbol_table root id iter = *)
   (*let rec wrap_get_sym_table root id iter tail = *)
-    (*try ignore(StringMap.find id root.table);*)
+    (*(try ignore(StringMap.find id root.table);*)
       (*root*)
     (*with Not_found ->*)
-      (*match tail with *)
-      (*| [] -> ()   *)
-      (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl*)
+      (*(match tail with *)
+      (*| [] ->    *)
+      (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl))*)
   (*in*)
   (*try*)
     (*ignore(StringMap.find id root.table);*)
@@ -54,6 +53,7 @@ let make_symbol_table p_table =
     (*match root.children with*)
     (*| [] -> raise (Not_found)*)
     (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl*)
+
 let ht = Hashtbl.create 100;;
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
@@ -113,19 +113,60 @@ let rec check_expression e sym_tabl =
     let t = get_type (List.hd exprs) sym_tabl in
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
     t
+  (* TODO *)
   | List_comprehension (expr, params, exprs, expr1) -> ""
-  | Unop (op, expr) -> ""
-  | Binop (expr, op, expr1) -> ""
-  | Function_call (expr, exprs) -> ""
-  | Array_access (expr, expr1) -> ""
-  | Variable (v) -> ""
-  | Char_literal (c) -> ""
-  | Number_literal (f) -> ""
-  | String_literal (str) -> ""
-  | Boolean_literal (b) -> ""
-  | Nil_literal -> ""
-  | Anonymous_function (var_type, params, stats) -> ""
-  | Function_expression (stat) -> ""
+  | Unop (op, expr) ->
+      let t = (get_type expr sym_tabl) in
+      ignore(check_unop op t);
+      t
+  | Binop (expr, op, expr1) -> 
+      let t = (get_type expr sym_tabl) in
+      let t2 = (get_type expr1 sym_tabl) in
+      ignore(check_operator t op t2);
+      t2
+  | Function_call (expr, exprs) ->
+    let get_type_table expr = 
+      get_type expr sym_tabl
+    in 
+    (match expr with
+      | Variable(v) ->
+          (try
+            let (t, iter) = lookup v sym_tabl 0 in 
+          ignore (List.map2 compare_type 
+                  (Hashtbl.find ht v)
+                  (List.map get_type_table exprs));
+          t
+          with Not_found -> raise (Error "Function not found")
+          ) 
+      | _ -> raise (Error "Malformed function call")) 
+  | Array_access (name, right) -> 
+    (match name with 
+      | Variable(v) -> 
+        let (t, iter) = lookup v sym_tabl 0 in
+        let index_t = get_type right sym_tabl in
+        if index_t <> "Number" then raise (Error "Invalid Array Access")
+        else begin 
+        t
+        end
+      | _ -> raise (Error "Malformed Array Statement"))
+  | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t 
+  | Char_literal (c) -> "Char" 
+  | Number_literal (f) -> "Number"
+  | String_literal (str) -> "String"
+  | Boolean_literal (b) -> "Boolean"
+  | Nil_literal -> "Nil"
+  | Anonymous_function (var_type, params, stats) ->
+      let check_param_table param = check_param param sym_tabl in 
+      ignore(List.map check_param_table params);
+      check_var_type var_type
+      (* TODO Match Jump Statement with Return Type *)
+  | Function_expression (stat) ->
+      (match stat with
+      | Function_definition(name, ret_type, params, sts) ->
+      ignore(check_func_def name ret_type params sts sym_tabl);
+      let t = (check_var_type ret_type) in 
+      t
+      | _ -> raise (Error "Malformed Function expression"))
   | Empty_expression -> ""
   )
 
@@ -155,7 +196,7 @@ and compare_type type1 type2 =
   if type1 <> type2 then raise (Error "Type Mismatch")
   else type1
 
-and check_unop op type1 sym_tabl =
+and check_unop op type1 =
   match op with
     Neg -> if (type1 <> "Number") 
             then raise (Error "Operator applied invalid type") else ""
@@ -235,9 +276,10 @@ and check_param parm sym_tabl =
   match parm with
     Param(param_type, varname) ->
       match varname with
-      | Variable(v) -> 
-      ignore(add_to_symbol_table v (check_var_type param_type) 
-        sym_tabl);
+      | Variable(v) ->
+        let t = check_var_type param_type in
+        ignore(add_to_symbol_table v t sym_tabl);
+        t
       | _ -> raise (Error "Param type invalid")
 
 and check_boolean v = 
@@ -245,9 +287,6 @@ and check_boolean v =
   | "Boolean" -> ""
   | _ -> raise (Error "Type found where Boolean expected")
 
-(* TODO Would it be better to write a recursive selection statement? 
- * How are we checking to make sure we don't have a hanging else statement
- * or an improper something or other*)
 and check_selection select sym_tabl = 
   ignore(check_boolean (check_expression select.if_cond sym_tabl));
   ignore(check_statements select.if_body (make_symbol_table sym_tabl));
@@ -283,9 +322,8 @@ and check_func_def (name : string) ret_type params stats sym_tabl =
   with Not_found ->
     let v = check_var_type ret_type in
     ignore(add_to_symbol_table name v sym_tabl); 
-    let check_sym_params param  =
-      check_param param sym_tabl in
-    (Hashtbl.add ht name (List.map check_sym_params params));
+    let check_param_table param = check_param param sym_tabl in
+    (Hashtbl.add ht name (List.map check_param_table params));
    
     (* TODO bunch of nested matches *)  
     ignore(check_statements stats (make_symbol_table sym_tabl));
