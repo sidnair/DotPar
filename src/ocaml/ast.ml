@@ -1,5 +1,15 @@
 (* Abstract syntax tree definitions *)
 
+open Str;;
+module StringMap = Map.Make(String);;
+
+type symbol_table = { 
+  mutable table : string StringMap.t;
+  mutable parent: symbol_table option; 
+  mutable children : symbol_table list;
+  mutable pure : bool
+} 
+
 type unop = Neg | Not
 type binop =
     Add | Sub | Mult | Div | Mod
@@ -11,7 +21,8 @@ type expression =
   | Declaration of var_type * expression
   | Declaration_expression of var_type * expression * expression
   | Array_literal of expression list
-  | List_comprehension of expression * param list * expression list * expression
+  | List_comprehension of expression * param list * expression list * 
+    expression * symbol_table
         (* unary operators *)
   | Unop of unop * expression
         (* all binary operators *)
@@ -28,9 +39,8 @@ type expression =
   | Boolean_literal of bool
   | Nil_literal
       (* *)
-  (* !!! | Anonymous_function of var_type * param list * statements * symbol_table_ref (\* Attach symbol_table *\) *)
-  | Anonymous_function of var_type * param list * statements
-  | Function_expression of statement (* hacky as hell, but whatever *) (* Attach symbol_table *)
+  | Anonymous_function of var_type * param list * statements * symbol_table
+  | Function_expression of statement  (* hacky as hell, but whatever *)
       (* *)
   | Empty_expression
 
@@ -47,24 +57,28 @@ and var_type =
   | Func_type of var_type * var_type list
   | Func_param_type of var_type * param list
 
-and param =
-    Param of var_type * expression
+and param = Param of var_type * expression
 
 and selection_statement = {
     if_cond : expression;
     if_body : statements;
+    if_sym_tabl : symbol_table;
     else_body : statements;
+    else_sym_tabl : symbol_table;
     elif_conds : expression list;
     elif_bodies : statements list;
+    elif_sym_tabl : symbol_table list;
   }
 
 and statement =
     Expression of expression
   | Statements of statements (* compound statements *)
   | Selection of selection_statement
-  | Iteration of expression * expression * expression * statements
+  | Iteration of expression * expression * expression * statements *
+    symbol_table
   | Jump of expression
-  | Function_definition of string * var_type * param list * statements
+  | Function_definition of string * var_type * param list * statements *
+    symbol_table
 
 and statements = statement list
 
@@ -75,6 +89,16 @@ and imports = import list
 ;;
 
 type program = Program of imports * statements;;
+
+(***********************************************************************)
+let make_symbol_table = 
+  let s_table = {
+    table = StringMap.empty;
+    parent = None;
+    children = [];
+    pure = false;
+  } in
+  s_table 
 
 (***********************************************************************)
 (* reverse string out for the AST *)
@@ -92,7 +116,7 @@ let rec string_of_expression expression =
       "=" ^ (string_of_expression lv)
   | Array_literal(exprs) ->
       "[" ^ (String.concat ", " (List.map string_of_expression exprs)) ^ "]"
-  | List_comprehension(expr, params, exprs, if_cond) ->
+  | List_comprehension(expr, params, exprs, if_cond, s) ->
       "[" ^ (string_of_expression expr) ^ " for " ^
       (String.concat ", " (List.map string_of_param params)) ^ " in " ^
       (String.concat ", " (List.map string_of_expression exprs)) ^
@@ -122,7 +146,7 @@ let rec string_of_expression expression =
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "nil" (* is this legal? *)
       (* *)
-  | Anonymous_function(type_def, params, block) ->
+  | Anonymous_function(type_def, params, block, sym_tabl) ->
       "func:" ^ (string_of_type type_def) ^ "(" ^
       (String.concat ", " (List.map string_of_param params)) ^ ")" ^
       "{" ^
@@ -196,13 +220,13 @@ and string_of_statement stat =
     Expression(e) -> (string_of_expression e) ^ ";\n"
   | Statements(s) -> (string_of_statements s) ^ "\n"
   | Selection(s) -> (string_of_selection s) ^ "\n"
-  | Iteration(dec,check,incr, stats) ->
+  | Iteration(dec,check,incr, stats, sym_tabl) ->
       "for(" ^ (string_of_expression dec) ^ "," ^
       (string_of_expression check) ^ "," ^
       (string_of_expression incr) ^ ")" ^
       "{" ^ (string_of_statements stats) ^ "}\n"
   | Jump(j) -> "return " ^ (string_of_expression j) ^ ";\n"
-  | Function_definition(name, ret_type, params, sts) ->
+  | Function_definition(name, ret_type, params, sts, sym_tabl) ->
       "func " ^ name ^ ":" ^ (string_of_type ret_type) ^
       "(" ^ (String.concat ", " (List.map string_of_param params)) ^ ")" ^
       "{\n" ^ (string_of_statements sts) ^ "}\n"

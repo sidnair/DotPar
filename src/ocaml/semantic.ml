@@ -125,7 +125,7 @@ let rec check_expression e sym_tabl =
     let t = get_type (List.hd exprs) sym_tabl in
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
     t
-  | List_comprehension (expr, params, exprs, expr1) -> 
+  | List_comprehension (expr, params, exprs, expr1, s) -> 
     let symbol_table = make_symbol_table sym_tabl in
     let check_param_table param = check_param param symbol_table in
     let get_type_table e = 
@@ -181,14 +181,14 @@ let rec check_expression e sym_tabl =
   | String_literal (str) -> "String"
   | Boolean_literal (b) -> "Boolean"
   | Nil_literal -> "Nil"
-  | Anonymous_function (var_type, params, stats) ->
+  | Anonymous_function (var_type, params, stats, s_t) ->
       let check_param_table param = check_param param sym_tabl in 
       ignore(List.map check_param_table params);
       check_var_type var_type
       (* TODO Match Jump Statement with Return Type *)
   | Function_expression (stat) ->
       (match stat with
-      | Function_definition(name, ret_type, params, sts) ->
+      | Function_definition(name, ret_type, params, sts, s_t) ->
       ignore(check_func_def name ret_type params sts sym_tabl);
       let t = (check_var_type ret_type) in 
       t
@@ -199,7 +199,7 @@ let rec check_expression e sym_tabl =
 and get_type expression sym_tabl =
   (match expression with 
   | Array_literal (exprs) -> (get_type (List.nth exprs 0) sym_tabl) ^ "[]"
-  | List_comprehension (expr, params, exprs, expr1) -> 
+  | List_comprehension (expr, params, exprs, expr1, s_t) -> 
       (get_type expr sym_tabl)
         (* assume the subexpressions match *)
   | Unop (op, expr) ->
@@ -232,7 +232,7 @@ and get_type expression sym_tabl =
   | Number_literal (f) -> "Number"
   | String_literal (str) -> "Char[]"
   | Boolean_literal (b) -> "Boolean"
-  | Anonymous_function (var_type, params, stats) -> ""
+  | Anonymous_function (var_type, params, stats, s_t) -> ""
   | Function_expression (stat) -> ""
   | Empty_expression -> ""
   | _ -> raise (Error "WHAT THE FUCK IS THIS SHIT")
@@ -404,7 +404,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl =
         (List.map match_jump_types 
         (List.concat [s.if_body; s.else_body; (List.concat s.elif_bodies)]) 
         )
-    | Iteration(d,c,i,s) ->
+    | Iteration(d,c,i,s, s_t) ->
         debug("Iteration\n");
         List.fold_left 
         com_bools 
@@ -438,11 +438,11 @@ and check_statement stat sym_tabl =
   | Expression(e) -> ignore (check_expression e sym_tabl);
   | Statements(s) -> ignore (check_statements s sym_tabl);
   | Selection(s) -> ignore (check_selection s sym_tabl);
-  | Iteration(dec, check, incr, stats) -> 
+  | Iteration(dec, check, incr, stats, s_t) -> 
       ignore(check_iter dec check incr stats sym_tabl);
   | Jump(j) -> ignore (check_expression j sym_tabl);
   debug ("Check jump...\n");
-  | Function_definition(name, ret_type, params, sts) ->
+  | Function_definition(name, ret_type, params, sts, s_t) ->
       ignore(check_func_def name ret_type params sts sym_tabl);
       ignore(check_statements sts sym_tabl);
       (*| _ -> raise (Error "Malformed statement")*)

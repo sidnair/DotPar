@@ -22,7 +22,7 @@ let rec gen_expression inds expression =
   | Array_literal(exprs) ->
       "Array(" ^ (String.concat ", "
                     (List.map (gen_expression inds) exprs)) ^ ")"
-  | List_comprehension(expr, params, exprs, if_cond) ->
+  | List_comprehension(expr, params, exprs, if_cond, s) ->
       (if (List.length params) == 1 then
         let if_cond_str = (gen_expression inds if_cond) in
         "(" ^ (gen_expression inds (List.nth exprs 0)) ^
@@ -98,7 +98,7 @@ let rec gen_expression inds expression =
   | Boolean_literal(b) -> (if (b) then "true" else "false")
   | Nil_literal -> "" (* ??? is this legal? *)
         (* --- *)
-  | Anonymous_function(ret_type, params, block) ->
+  | Anonymous_function(ret_type, params, block, sym_tab) ->
       "(new Function" ^ (string_of_int (List.length params)) ^
       (* ??? *)
       (let extract_type param = 
@@ -196,10 +196,12 @@ and gen_initial type_dec =
                             (range 1 (List.length param_types)))))
       in
       Anonymous_function (ret_type, params,
-                          [Expression (gen_initial ret_type)]))
+                          [Expression (gen_initial ret_type)],
+                          make_symbol_table;))
   | Func_param_type(ret_type, params) ->
       Anonymous_function (ret_type, params,
-                          [Expression (gen_initial ret_type)])
+                          [Expression (gen_initial ret_type)],
+                          make_symbol_table;)
   | _ -> raise NotImplemented
 
 and gen_param inds parm =
@@ -235,14 +237,14 @@ and gen_statement inds stat =
     Expression(e) -> inds ^ (gen_expression inds e) ^ ";\n"
   | Statements(s) -> (gen_statements inds s) ^ "\n" ^ inds
   | Selection(s) -> (gen_selection inds s) ^ "\n"
-  | Iteration(dec,check,incr, stats) ->
+  | Iteration(dec,check,incr, stats, sym_tab) ->
       inds ^ (gen_expression inds dec) ^ "\n" ^
       inds ^ "while(" ^ (gen_expression inds check) ^ ") {\n" ^
       next_inds ^ (gen_statements next_inds stats) ^
       next_inds ^ (gen_expression next_inds incr) ^
       inds ^ "}\n"
   | Jump(j) -> inds ^ "return " ^ (gen_expression inds j) ^ "\n"
-  | Function_definition(name, ret_type, params, sts) ->
+  | Function_definition(name, ret_type, params, sts, sym_tab) ->
       (match name with
         "main" ->
           inds ^ "def main" ^ "(" ^

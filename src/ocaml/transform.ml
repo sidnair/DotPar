@@ -34,16 +34,17 @@ and reverse_statement statement =
     Expression(e) -> Expression (reverse_expression e)
   | Statements(s) -> Statements (reverse_statements s)
   | Selection(s) -> Selection (reverse_selection s)
-  | Iteration(dec,check,incr, stats) ->
+  | Iteration(dec,check,incr, stats, sym_tab) ->
       Iteration (reverse_expression dec,
                  reverse_expression check,
                  reverse_expression incr,
-                 reverse_statements stats)
+                 reverse_statements stats,
+                 sym_tab)
   | Jump(j) -> Jump (reverse_expression j)
-  | Function_definition(name, ret_type, params, sts) ->
+  | Function_definition(name, ret_type, params, sts, sym_tab) ->
       Function_definition (name, reverse_type ret_type,
                            (List.map reverse_param (List.rev params)),
-                           reverse_statements sts)
+                           reverse_statements sts, sym_tab)
 
 and reverse_expressions exprs =
   let rev_exprs = List.map reverse_expression exprs in
@@ -61,11 +62,11 @@ and reverse_expression expr =
                               reverse_expression e2)
   | Array_literal(exprs) ->
       Array_literal (List.rev (List.map reverse_expression exprs))
-  | List_comprehension(expr, params, exprs, if_cond) ->
+  | List_comprehension(expr, params, exprs, if_cond, s) ->
       List_comprehension (reverse_expression expr,
                           List.rev params,
                           reverse_expressions exprs,
-                          reverse_expression if_cond)
+                          reverse_expression if_cond, s)
   | Unop(op, expr) -> Unop (op, reverse_expression expr)
   | Binop(e1, op, e2) ->
       Binop (reverse_expression e1, op, reverse_expression e2)
@@ -75,10 +76,10 @@ and reverse_expression expr =
   | Array_access(e1, e2) ->
       Array_access (reverse_expression e1, reverse_expression e2)
       (* *)
-  | Anonymous_function(vtype, params, stats) ->
+  | Anonymous_function(vtype, params, stats, sym_tab) ->
       Anonymous_function (reverse_type vtype,
                           (List.map reverse_param (List.rev params)),
-                          reverse_statements stats)
+                          reverse_statements stats, sym_tab)
   | Function_expression(stat) ->
       Function_expression (reverse_statement stat)
   | anything -> anything
@@ -91,6 +92,9 @@ and reverse_param param =
 and reverse_selection select = {
   if_cond = reverse_expression select.if_cond;
   if_body = reverse_statements select.if_body;
+  if_sym_tabl = select.if_sym_tabl;
+  else_sym_tabl = select.else_sym_tabl;
+  elif_sym_tabl = select.elif_sym_tabl;
   else_body = reverse_statements select.else_body;
   elif_conds = reverse_expressions select.elif_conds;
   elif_bodies = 
