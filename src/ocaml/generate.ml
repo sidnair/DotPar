@@ -237,7 +237,7 @@ and gen_statement inds stat =
   | Selection(s) -> (gen_selection inds s) ^ "\n"
   | Iteration(dec,check,incr, stats) ->
       inds ^ (gen_expression inds dec) ^ "\n" ^
-      "while(" ^ (gen_expression inds check) ^ ") {\n" ^
+      inds ^ "while(" ^ (gen_expression inds check) ^ ") {\n" ^
       next_inds ^ (gen_statements next_inds stats) ^
       next_inds ^ (gen_expression next_inds incr) ^
       inds ^ "}\n"
@@ -270,25 +270,12 @@ and gen_statements inds statements =
   | _-> ""
 
 let gen_program program =
-  (* let read_file filename = *)
-  (*   let lines = ref [] in *)
-  (*   let chan = open_in filename in *)
-  (*   try *)
-  (*     while true; do *)
-  (*       lines := input_line chan :: !lines *)
-  (*     done; [] *)
-  (*   with End_of_file -> *)
-  (*     close_in chan; *)
-  (*     List.rev !lines *)
-  (* in *)
   match program with
     Program(imports, statements) ->
       (Printf.sprintf "
 import scala.collection.mutable.ArraySeq
 
 object Dotpar {
-  // ??? print?
-
   // multiplexed print
   def dp_println(x: Any) = {
     def dotpar_string(y: Any):String = {
@@ -340,7 +327,5 @@ object Main {
 %s
 }
 "
-    (* (String.concat "\n" *)
-    (*    (read_file "include/dotpar.scala")) (\* include builtins *\) *)
     (gen_statements (ind ^ ind) statements))
 ;;
