@@ -20,7 +20,7 @@ let extract_type_from_param param =
 let rec reverse_tree tree =
   match tree with
     Program(imports, statements) ->
-      Program (reverse_imports(imports), reverse_statements(statements))
+      Program (reverse_imports imports, reverse_statements statements)
 
 and reverse_imports imports =
   List.rev imports
@@ -41,7 +41,8 @@ and reverse_statement statement =
                  reverse_statements stats)
   | Jump(j) -> Expression (reverse_expression j)
   | Function_definition(name, ret_type, params, sts) ->
-      Function_definition (name, reverse_type ret_type, List.rev params,
+      Function_definition (name, reverse_type ret_type,
+                           (List.map reverse_param (List.rev params)),
                            reverse_statements sts)
 
 and reverse_expressions exprs =
@@ -75,11 +76,17 @@ and reverse_expression expr =
       Array_access (reverse_expression e1, reverse_expression e2)
       (* *)
   | Anonymous_function(vtype, params, stats) ->
-      Anonymous_function (reverse_type vtype, List.rev params,
+      Anonymous_function (reverse_type vtype,
+                          (List.map reverse_param (List.rev params)),
                           reverse_statements stats)
   | Function_expression(stat) ->
       Function_expression (reverse_statement stat)
   | anything -> anything
+
+and reverse_param param =
+  match param with
+    Param(param_type, varname) ->
+      Param (reverse_type param_type, varname)
 
 and reverse_selection select = {
   if_cond = reverse_expression select.if_cond;
