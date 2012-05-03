@@ -172,24 +172,42 @@ let rec check_expression e sym_tabl =
 
 and get_type expression sym_tabl =
   (match expression with 
-  | Assignment_expression (expr, expr1) -> ""
-  | Declaration (var_type, expr) -> ""
-  | Declaration_expression (var_type, expr, expr1) -> ""
-  | Array_literal (exprs) -> ""
-  | List_comprehension (expr, params, exprs, expr1) -> ""
-  | Unop (op, expr) -> ""
-  | Binop (expr, op, expr1) -> ""
-  | Function_call (expr, exprs) -> ""
-  | Array_access (expr, expr1) -> ""
-  | Variable (v) -> ""
-  | Char_literal (c) -> ""
-  | Number_literal (f) -> ""
-  | String_literal (str) -> ""
-  | Boolean_literal (b) -> ""
-  | Nil_literal -> ""
+  | Array_literal (exprs) -> (get_type (List.nth exprs 0) sym_tabl) ^ "[]"
+  | List_comprehension (expr, params, exprs, expr1) -> (get_type expr sym_tabl)
+        (* assume the subexpressions match *)
+  | Unop (op, expr) ->
+      (match op with
+      | Neg -> "Number"
+      | Not -> "Boolean")
+  | Binop (expr, op, expr1) ->
+      (match op with
+        Add -> "Number"
+      | Sub -> "Number"
+      | Mult -> "Number"
+      | Div -> "Number"
+      | Mod -> "Number"
+            (* these relational guys shouldn't be just numbers !!! *)
+      | Eq -> "Number"
+      | Neq -> "Number"
+      | Lt -> "Number"
+      | Leq -> "Number"
+      | Gt -> "Number"
+      | Geq -> "Number"
+      | And -> "Boolean"
+      | Or -> "Boolean")
+        (* extract the return value *)
+  | Function_call (expr, exprs) -> (* (get_type expr ) *) ""
+        (* strip a layer off *)
+  | Array_access (expr, expr1) -> (* (get_type expr ) *) ""
+        (* get the type from the symbol table *)
+  | Variable (v) -> (fst (lookup v sym_tabl 0))
+  | Char_literal (c) -> "Char"
+  | Number_literal (f) -> "Number"
+  | String_literal (str) -> "Char[]"
+  | Boolean_literal (b) -> "Boolean"
   | Anonymous_function (var_type, params, stats) -> ""
   | Function_expression (stat) -> ""
-  | Empty_expression -> ""
+  | _ -> raise (Error "WHAT THE FUCK IS THIS SHIT")
   )
 
 and compare_type type1 type2 =
@@ -306,11 +324,9 @@ and check_selection select sym_tabl =
 and check_iter dec check incr stats sym_tabl = 
   ignore(check_expression dec sym_tabl); 
   if ( (check_expression check sym_tabl) <> "Boolean") then 
-    raise (Error "Conditonal in iteration not of type Boolean")
-  else ""; 
+    raise (Error "Conditonal in iteration not of type Boolean");
   if ((check_expression incr sym_tabl) <> "Number") then
-    raise (Error "Increment in iteration is not of type Number")
-  else ""; 
+    raise (Error "Increment in iteration is not of type Number");
   ignore(check_statements stats (make_symbol_table sym_tabl));
 
 (* TODO 
