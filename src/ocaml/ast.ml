@@ -91,8 +91,6 @@ type program = Program of imports * statements * symbol_table
 
 ;;
 
-
-(***********************************************************************)
 let make_symbol_table p = 
   {
     table = StringMap.empty;
@@ -101,7 +99,6 @@ let make_symbol_table p =
     pure = false;
   }
 
-(***********************************************************************)
 (* reverse string out for the AST *)
 
 (* let ind = "  ";; *)

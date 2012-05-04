@@ -7,9 +7,13 @@ let debug str =
 
 let _ =
   let generate self_switch ast_switch gen_switch =
-    let ast = ast_generate stdin self_switch ast_switch in
-    let prog_str = (Generate.gen_program ast) in
-    (if (not (ast_switch or self_switch) or gen_switch) then
+    let ast = ast_generate stdin in
+    let prog_str = Generate.gen_program ast in
+    (if self_switch then
+      Printf.printf "%s" (Ast.string_of_program ast));
+    (if ast_switch then
+      Printf.printf "%s" (Ast.repr_of_program ast));
+    (if gen_switch or not (ast_switch or self_switch) then
       Printf.printf "%s" prog_str)
   in
   (* check if there are any switches *)

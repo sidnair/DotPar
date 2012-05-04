@@ -1,7 +1,7 @@
 open Ast;;
 open Semantic;;
 
-let rec ast_generate stream self_switch ast_switch =
+let rec ast_generate stream =
   let lexbuf = Lexing.from_channel stream in 
   let ast =
     try
@@ -15,44 +15,31 @@ let rec ast_generate stream self_switch ast_switch =
       Printf.fprintf stderr "Parsing error at line %d, char %d\n." l c;
       exit 1
   in
-  (* Semantic transforms *)
+  (* Perform semantic transformations, import preprocessing, and semantic
+   * analysis. The code generation to Scala happens separately. *)
   let ast = Transform.reverse_tree ast in
-
-  (* do import preprocessing *)
-  let ast = insert_imports_program ast self_switch ast_switch in
-  
-  (* Semantic analysis *)
+  let ast = insert_imports_program ast in
   ignore( Semantic.generate_sast ast );
-  (* DEBUG: print the AST *)
-  (if self_switch then
-    Printf.printf "%s" (Ast.string_of_program ast));
-  (if ast_switch then
-    Printf.printf "%s" (Ast.repr_of_program ast));
   ast
-  (* Code generation comes after *)
 
- (*import ------------------------------------------------------------  *)
-and insert_import import self_switch ast_switch =
- (*include files *)
- (*!!! TODO: import only once *)
+(* TODO: import only once *)
+and insert_import import =
   match import with
     Import(s) ->
       let filename = s ^ ".par" in
       let file = open_in filename in
-      (ast_generate file self_switch ast_switch)
-and insert_imports imports self_switch ast_switch =
+      (ast_generate file)
+and insert_imports imports =
   let programs =
-    List.map (fun x -> (insert_import x self_switch ast_switch)) imports in
-  let get_statements program = 
+    List.map (fun x -> (insert_import x)) imports in
+  let get_statements program =
     match program with
-      Program(imports, statements, symbol_table) ->
-        statements in
+    | Program(imports, statements, symbol_table) -> statements in
   let statements = List.map get_statements programs in
   let join a b = a @ b in
-  List.fold_left join [] statements
-and insert_imports_program program self_switch ast_switch =
+  List.fold_left @ [] statements
+and insert_imports_program program =
   match program with
     Program(imports, statements, symbol_table) ->
-      let import_statements = (insert_imports imports self_switch ast_switch) in
+      let import_statements = (insert_imports imports) in
       (Program ([], (import_statements @ statements), symbol_table))
-;;
