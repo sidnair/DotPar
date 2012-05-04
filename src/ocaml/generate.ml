@@ -197,11 +197,11 @@ and gen_initial type_dec =
       in
       Anonymous_function (ret_type, params,
                           [Expression (gen_initial ret_type)],
-                          make_symbol_table;))
+                          (make_symbol_table None);))
   | Func_param_type(ret_type, params) ->
       Anonymous_function (ret_type, params,
                           [Expression (gen_initial ret_type)],
-                          make_symbol_table;)
+                          (make_symbol_table None);)
   | _ -> raise NotImplemented
 
 and gen_param inds parm =

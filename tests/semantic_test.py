@@ -89,6 +89,21 @@ tests = [
     y = y +1;
   }""", False),
 
+("""func main:void() {
+    number x = 0;
+    func foo:number(number z) {
+      if( x == 0 ) {
+        number y = 2;
+    } else {
+        number y = 4;
+    }
+    return y;
+    }
+    number z = foo(x);
+}""", False),
+    
+
+
 # disallow declarations of variables of type void
 ("""func main:void() {
   void x;

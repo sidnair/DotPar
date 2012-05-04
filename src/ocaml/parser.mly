@@ -40,7 +40,7 @@ open Printf %}
 %%
 
 program:
-  | lines { Program (fst($1), snd($1), make_symbol_table) }
+  | lines { Program (fst($1), snd($1), (make_symbol_table None);) }
 
 lines:
   | imports_opt external_declaration { ($1, [$2]) }
@@ -124,10 +124,10 @@ array_expression:
 
 list_comprehension:
   | array_expression FOR paren_parameter_list_opt IN array_expression if_comp
-  { List_comprehension ($1, $3, [$5], $6, make_symbol_table) }
+  { List_comprehension ($1, $3, [$5], $6, (make_symbol_table None);) }
   | array_expression FOR paren_parameter_list_opt IN
       opt_paren_multi_array_expression_list if_comp
-      { List_comprehension ($1, $3, $5, $6, make_symbol_table) }
+      { List_comprehension ($1, $3, $5, $6, (make_symbol_table None);) }
 
 /* optionally will have parentheses. part of list comprehension */
 if_comp:
@@ -235,9 +235,9 @@ if_statement:
   | IF LPAREN expression RPAREN compound_statement
       { {if_cond=$3;
          if_body=$5;
-         if_sym_tabl=make_symbol_table;
+         if_sym_tabl=(make_symbol_table None);
          else_body=[];
-         else_sym_tabl=make_symbol_table;
+         else_sym_tabl=(make_symbol_table None);
          elif_conds=[];
          elif_bodies=[];
          elif_sym_tabl=[];
@@ -247,17 +247,17 @@ else_statement:
   | ELSE compound_statement
       { {if_cond=Nil_literal;
          if_body=[];
-         if_sym_tabl=make_symbol_table;
+         if_sym_tabl=(make_symbol_table None);
          else_body=$2;
-         else_sym_tabl=make_symbol_table;
+         else_sym_tabl=(make_symbol_table None);
          elif_conds=[];
          elif_bodies=[];
          elif_sym_tabl=[];
          } }
   | { {if_cond=Nil_literal;
        if_body=[];
-       if_sym_tabl=make_symbol_table;
-       else_sym_tabl=make_symbol_table;
+       if_sym_tabl=(make_symbol_table None);
+       else_sym_tabl=(make_symbol_table None);
        else_body=[];
        elif_conds=[];
        elif_bodies=[];
@@ -268,29 +268,29 @@ elifs:
   | ELIF LPAREN expression RPAREN compound_statement
       { {if_cond=Nil_literal;
          if_body=[];
-         if_sym_tabl=make_symbol_table;
-         else_sym_tabl=make_symbol_table;
+         if_sym_tabl=(make_symbol_table None);
+         else_sym_tabl=(make_symbol_table None);
          else_body=[];
          elif_conds=[$3];
          elif_bodies=[$5];
-         elif_sym_tabl=[make_symbol_table];
+         elif_sym_tabl=[(make_symbol_table None);];
          } }
   | elifs ELIF LPAREN expression RPAREN compound_statement
       { {if_cond=Nil_literal;
          if_body=[];
-         if_sym_tabl=make_symbol_table;
-         else_sym_tabl=make_symbol_table;
+         if_sym_tabl=(make_symbol_table None);
+         else_sym_tabl=(make_symbol_table None);
          else_body=[];
          elif_conds=$4 :: $1.elif_conds;
          elif_bodies=$6 :: $1.elif_bodies;
-         elif_sym_tabl=make_symbol_table :: $1.elif_sym_tabl;
+         elif_sym_tabl=(make_symbol_table None) :: $1.elif_sym_tabl;
          } }
 elifs_opt:
   | elifs { $1 }
   | { {if_cond=Nil_literal;
        if_body=[];
-       if_sym_tabl=make_symbol_table;
-       else_sym_tabl=make_symbol_table;
+       if_sym_tabl=(make_symbol_table None);
+       else_sym_tabl=(make_symbol_table None);
        else_body=[];
        elif_conds=[];
        elif_bodies=[];
@@ -300,11 +300,11 @@ elifs_opt:
 iteration_statement:
   | FOR LPAREN expression SEMI expression SEMI expression RPAREN
       compound_statement
-      { Iteration ($3, $5, $7, $9, make_symbol_table;) }
+      { Iteration ($3, $5, $7, $9, (make_symbol_table None);) }
   /* declaration already has a SEMI */
   | FOR LPAREN declaration expression SEMI expression RPAREN
       compound_statement
-      { Iteration ($3, $4, $6, $8, make_symbol_table;) }
+      { Iteration ($3, $4, $6, $8, (make_symbol_table None);) }
 
 jump_statement:
   | RETURN expression SEMI { Jump $2 }
@@ -318,12 +318,12 @@ statement:
 
 anonymous_function_definition:
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN compound_statement
-      { Anonymous_function ($3, $5, $7, make_symbol_table) }
+  { Anonymous_function ($3, $5, $7, (make_symbol_table None);) }
 
 function_definition:
   | FUNC IDENTIFIER COLON type_specifier LPAREN parameter_list RPAREN
       compound_statement
-      { Function_definition ($2, $4, $6, $8, make_symbol_table) }
+      { Function_definition ($2, $4, $6, $8, (make_symbol_table None);) }
 
 /* Top level */
 external_declaration:

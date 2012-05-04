@@ -5,6 +5,7 @@ module StringMap = Map.Make(String);;
 
 
 type unop = Neg | Not
+
 type binop =
     Add | Sub | Mult | Div | Mod
   | Eq | Neq | Lt | Leq | Gt | Geq
@@ -89,16 +90,20 @@ and imports = import list
 
 ;;
 
-type program = Program of imports * statements * symbol_table;;
+type program = Program of imports * statements * symbol_table
+
+;;
+
 
 (***********************************************************************)
-let make_symbol_table = 
+let make_symbol_table p = 
   let s_table = {
     table = StringMap.empty;
-    parent = None;
+    parent = p;
     children = [];
     pure = false;
-  } in
+  } 
+  in
   s_table 
 
 (***********************************************************************)
