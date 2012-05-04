@@ -195,7 +195,7 @@ let rec check_expression e sym_tabl =
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
-        ignore(check_func_def name ret_type params sts symbol_table);
+        ignore(check_func_def name ret_type params sts symbol_table sym_tabl);
         let t = (check_var_type ret_type) in 
         t
       | _ -> raise (Error "Malformed Function expression"))
@@ -406,14 +406,14 @@ and check_iter dec check incr stats sym_tabl =
     end
 (* TODO 
  * Need to check function type matchs used return type *)
-and check_func_def (name : string) ret_type params stats sym_tabl =
+and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
   debug ("Checking a func def...\n");
   try
     ignore (lookup name sym_tabl 0);
     raise (Error "Function previously declared")
   with Not_found ->
     let v = check_var_type ret_type in
-    ignore(add_to_symbol_table name v sym_tabl); 
+    ignore(add_to_symbol_table name v p_s_tabl); 
     let check_param_table param = check_param param sym_tabl in
     (* TODO *)
     (Hashtbl.add ht name (List.map check_param_table params));
@@ -501,7 +501,7 @@ and check_statement stat sym_tabl =
       debug ("Check jump...\n");
   | Function_definition(name, ret_type, params, sts, symbol_table) ->
       ignore(link_tables sym_tabl symbol_table);
-      ignore(check_func_def name ret_type params sts symbol_table);
+      ignore(check_func_def name ret_type params sts symbol_table sym_tabl);
       ignore(check_statements sts symbol_table);
       (*| _ -> raise (Error "Malformed statement")*)
 
