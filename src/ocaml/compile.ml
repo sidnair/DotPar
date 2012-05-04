@@ -37,7 +37,7 @@ and insert_imports imports =
     | Program(imports, statements, symbol_table) -> statements in
   let statements = List.map get_statements programs in
   let join a b = a @ b in
-  List.fold_left @ [] statements
+  List.fold_left join [] statements
 and insert_imports_program program =
   match program with
     Program(imports, statements, symbol_table) ->
