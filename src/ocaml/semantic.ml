@@ -22,7 +22,8 @@ let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
   try
     let t = StringMap.find id sym_table.table in 
-  debug("Found " ^ id ^ " ...\n");
+  
+    debug("Found " ^ id ^ " ...\n");
     (t, iter) 
   with Not_found ->
     match sym_table.parent with 
@@ -31,6 +32,7 @@ let rec lookup id sym_table iter =
 
 let add_to_symbol_table id id_type sym_table = 
   debug("Adding " ^ id ^ " to symbol_table \n");
+  (Printf.printf "%s" (repr_of_type " " id_type));
   sym_table.table <- StringMap.add id id_type sym_table.table;
   ()
   
@@ -170,7 +172,7 @@ let rec check_expression e sym_tabl =
         if not (require_number index_t) 
           then raise (Error "Invalid Array Access")
         else begin 
-        t
+          t
         end
       | _ -> raise (Error "Malformed Array Statement"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t 
@@ -231,8 +233,19 @@ and get_type expression sym_tabl =
       let get_type_table t = get_type t sym_tabl in
       Func_type((get_type expr sym_tabl), (List.map get_type_table exprs))
       (* strip a layer off *)
-  | Array_access (expr, expr1) -> 
-      Array_type(get_type expr sym_tabl)
+  | Array_access (name, index) -> 
+      (match name with 
+        | Variable(v) -> 
+          let (t, iter) = lookup v sym_tabl 0 in
+          let index_t = get_type index sym_tabl in
+          if not (require_number index_t) 
+            then raise (Error "Invalid Array Access")
+          else begin 
+            (match t with 
+            | Array_type(a) -> a
+            | _ -> t)
+          end
+        | _ -> raise (Error "Invalid Array Name")) 
   | Variable (v) -> (fst (lookup v sym_tabl 0))
   | Char_literal (c) -> Basic_type(Char_type)
   | Number_literal (f) -> Basic_type(Number_type)
@@ -323,13 +336,12 @@ and check_basic_type btype =
   (*| _ -> raise (Error "Unsupported Type")*)
 
 and check_var_type var_type =
-  
   debug("Checking var_types...\n"); 
   match var_type with
   | Basic_type(b) -> Basic_type((check_basic_type b))
   | Array_type(a) ->
       let rec build_array t1 iter =
-        if (iter = -1) then t1 else
+        if (iter = 0) then t1 else
           (build_array (Array_type(t1)) (iter - 1));
       in
       let rec det_array t1 iter = 
@@ -343,7 +355,7 @@ and check_var_type var_type =
         in
         let temp = (det_array a 0) in
         (Printf.printf "%s" (repr_of_type " " temp));
-        temp
+        (Array_type(temp))
   | Func_type(ret_type, param_types) ->
       Func_type((check_var_type ret_type),  
         (List.map check_var_type param_types))
@@ -358,9 +370,9 @@ and check_var_type var_type =
     (*(List.map check_param params)*)
   | _ -> raise (Error "Unsupported variable type")
 
-and check_param parm sym_tabl = 
+and check_param param sym_tabl = 
   debug ("Checking params...\n");
-  match parm with
+  match param with
     Param(param_type, varname) ->
       match varname with
       | Variable(v) ->
@@ -410,9 +422,15 @@ and check_iter dec check incr stats sym_tabl =
 
 and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
   debug ("Checking a func def...\n");
+  let check_anon_name a_name =
+    if  name = "anon" then raise Not_found 
+    else begin  
+      ignore (lookup name sym_tabl 0);
+      raise (Error "Function with same name decalred in same scope")
+    end 
+  in 
   try
-    ignore (lookup name sym_tabl 0);
-    raise (Error "Function with same name decalred in same scope")
+    (check_anon_name name) 
   with Not_found ->
     let v = check_var_type ret_type in 
     let check_param_table param = 

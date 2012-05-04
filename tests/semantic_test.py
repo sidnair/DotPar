@@ -149,6 +149,24 @@ tests = [
   foo([1, 2]);
 }""", True),
 ("""func main:void() {
+  number[] x = [1,2,3];
+  char y = x[1];
+}""", False),
+
+("""func main:void() {
+  number[] x = [1,2,3];
+  number y = x[1];
+}""", True),
+("""func main:void() {
+  number[] x = [1,2,3];
+  number[] y = x[1];
+}""", False),
+("""func main:void() {
+  number[][] x = [[1,2,3]];
+  number[] y = x[1];
+}""", True),
+
+("""func main:void() {
   func foo:void(number[][] x) {}
   number[] y = [1,2];
   foo(y);
@@ -179,7 +197,22 @@ tests = [
   foo(bar);
 }""", True),
 
+#Anon Functions
 
+("""func main:void() {
+func foo:void(func:void(number) x) {}
+foo(func:void(number y) { y=y*y; });
+}""", True),
+
+("""func main:void() {
+func foo:void(func:number(number) x) {}
+foo(func:number(number y) { return y*y; });
+}""", True),
+
+("""func main:void() {
+func foo:void(func:void(number) x) {}
+foo(func:number(number y) { return y*y; })
+}""", False),
 ("""func main:void() {
   func foo:void(number x) {}
   foo('a');
@@ -212,8 +245,6 @@ tests = [
 ("""func main:void() {
   true && false;
 }""", True),
-
-
 ("""func main:void() {
   10 + 'a';
 }""", False),
