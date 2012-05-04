@@ -24,7 +24,7 @@ and var_type =
   | Func_type of var_type * var_type list
   | Func_param_type of var_type * param list
 
-and symbol_table = { 
+and symbol_table = {
   mutable table : var_type StringMap.t;
   mutable parent: symbol_table option; 
   mutable children : symbol_table list;
@@ -45,18 +45,15 @@ and expression =
         (* postfix *)
   | Function_call of expression * expression list
   | Array_access of expression * expression
-        (* *)
   | Variable of string
-        (* constants *)
+  (* constants *)
   | Char_literal of char
   | Number_literal of float
   | String_literal of string
   | Boolean_literal of bool
   | Nil_literal
-      (* *)
   | Anonymous_function of var_type * param list * statements * symbol_table
   | Function_expression of statement (* hacky, but whatever *)
-      (* *)
   | Empty_expression
 
 and param = Param of var_type * expression
@@ -97,14 +94,12 @@ type program = Program of imports * statements * symbol_table
 
 (***********************************************************************)
 let make_symbol_table p = 
-  let s_table = {
+  {
     table = StringMap.empty;
     parent = p;
     children = [];
     pure = false;
-  } 
-  in
-  s_table 
+  }
 
 (***********************************************************************)
 (* reverse string out for the AST *)
