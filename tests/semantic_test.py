@@ -149,6 +149,22 @@ tests = [
   foo([1, 2]);
 }""", True),
 ("""func main:void() {
+  func foo:void(number[][] x) {}
+  number[] y = [1,2];
+  foo(y);
+}""", False),
+("""func main:void() {
+  func foo:void(number[][] x) {}
+  number[][] y = [[1,2]];
+  foo(y);
+}""", True),
+
+("""func main:void() {
+  func foo:void(number x) {}
+  foo([1,2]);
+}""", False),
+
+("""func main:void() {
   func foo:void(boolean x) {}
   foo(true);
 }""", True),

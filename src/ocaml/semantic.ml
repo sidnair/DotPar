@@ -1,14 +1,9 @@
 (*
  * LIST OF SHIT THAT IS BROKEN
- * SYMBOL_TABLE
- *    FIND WAY TO LINK THEM
  * LIST COMPREHENSIONS
  *    ALL OF IT
  * 
- * SELECTION STATEMENTS NOT MATCHING 
  * HAVE TO ADD SYMBOL_TABLES TO ELIF BODIES 
- * PASSING OF FUNCTIONS NOT WORKING, FUNC_TYPEs
- * TYPE CHECKING OF FUNC PARAMS
  *)
 
 
@@ -63,7 +58,6 @@ let link_tables p_table c_table =
     (*| [] -> raise (Not_found)*)
     (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl*)
 
-let ht = Hashtbl.create 100;;
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
   debug("Checking an expression... \n");
@@ -155,18 +149,19 @@ let rec check_expression e sym_tabl =
       t2
   | Function_call (expr, exprs) ->
     let get_type_table expr = 
-      get_type expr sym_tabl
+        get_type expr sym_tabl
     in 
     (match expr with
       | Variable(v) ->
           (try
             let (t, iter) = lookup v sym_tabl 0 in 
-          ignore (List.map2 compare_type 
-                  (Hashtbl.find ht v)
-                  (List.map get_type_table exprs));
-          t
-          with Not_found -> raise (Error "Function not found")
-          ) 
+            (match t with
+            | Func_type(ret_type, var_types) ->  
+              ignore (List.map2 compare_type var_types      
+              (List.map get_type_table exprs));
+            t
+            | _ -> raise (Error "Invalid params in func call"))
+          with Not_found -> raise (Error "Function not found")) 
       | _ -> raise (Error "Malformed function call")) 
   | Array_access (name, right) -> 
     (match name with 
@@ -261,6 +256,8 @@ and get_type expression sym_tabl =
 
 and compare_type type1 type2 =
   debug ("Comparing two types...\n");
+  Printf.printf "%s\n" (repr_of_type " " type1);
+  Printf.printf "%s\n" (repr_of_type " " type2);
   if not (type1 = type2) then raise (Error "Type Mismatch")
   else type1
 
@@ -329,20 +326,25 @@ and check_basic_type btype =
 and check_var_type var_type =
   
   debug("Checking var_types...\n"); 
-    
   match var_type with
   | Basic_type(b) -> Basic_type((check_basic_type b))
-  | Array_type(a) -> 
-      let rec det_array t1 = 
+  | Array_type(a) ->
+      let rec build_array t1 iter =
+        if (iter = -1) then t1 else
+          (build_array (Array_type(t1)) (iter - 1));
+      in
+      let rec det_array t1 iter = 
         (match t1 with 
-        | Array_type(a1) -> det_array a1 
+        | Array_type(a1) -> det_array a1 (iter + 1) 
         | Basic_type(b) -> 
             (if (require_void (Basic_type(b))) then raise 
             (Error "Cannot declare an array of type void")   
-            else Basic_type(b))
+            else (build_array (Basic_type(b)) iter))
         | _ -> raise (Error "Incorrect type found in array"))
         in
-        (det_array a)
+        let temp = (det_array a 0) in
+        (Printf.printf "%s" (repr_of_type " " temp));
+        temp
   | Func_type(ret_type, param_types) ->
       Func_type((check_var_type ret_type),  
         (List.map check_var_type param_types))
@@ -410,13 +412,13 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
   debug ("Checking a func def...\n");
   try
     ignore (lookup name sym_tabl 0);
-    raise (Error "Function previously declared")
+    raise (Error "Function with same name decalred in same scope")
   with Not_found ->
-    let v = check_var_type ret_type in
-    ignore(add_to_symbol_table name v p_s_tabl); 
-    let check_param_table param = check_param param sym_tabl in
-    (* TODO *)
-    (Hashtbl.add ht name (List.map check_param_table params));
+    let v = check_var_type ret_type in 
+    let check_param_table param = 
+      (check_param param sym_tabl) in
+    ignore(add_to_symbol_table name 
+      (Func_type(v, (List.map check_param_table params))) p_s_tabl); 
     let com_bools x y = x || y in 
     let rec match_jump_types stat =
       debug ("Looking for jumps in " ^ name ^ "...\n");
