@@ -458,7 +458,7 @@ and check_statements stats sym_tabl =
 
 let generate_sast program = 
   match program with
-  | Program(imp, stat) -> 
+  | Program(imp, stat, symbol_table) -> 
     let s_table = {
       table = StringMap.empty;
       parent = None;

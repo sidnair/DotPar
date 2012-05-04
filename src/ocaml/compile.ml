@@ -45,14 +45,14 @@ and insert_imports imports self_switch ast_switch =
     List.map (fun x -> (insert_import x self_switch ast_switch)) imports in
   let get_statements program = 
     match program with
-      Program(imports, statements) ->
+      Program(imports, statements, symbol_table) ->
         statements in
   let statements = List.map get_statements programs in
   let join a b = a @ b in
   List.fold_left join [] statements
 and insert_imports_program program self_switch ast_switch =
   match program with
-    Program(imports, statements) ->
+    Program(imports, statements, symbol_table) ->
       let import_statements = (insert_imports imports self_switch ast_switch) in
-      (Program ([], (import_statements @ statements)))
+      (Program ([], (import_statements @ statements), symbol_table))
 ;;

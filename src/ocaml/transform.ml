@@ -19,8 +19,9 @@ let extract_type_from_param param =
 
 let rec reverse_tree tree =
   match tree with
-    Program(imports, statements) ->
-      Program (reverse_imports imports, reverse_statements statements)
+    Program(imports, statements, symbol_table) ->
+      Program (reverse_imports imports, reverse_statements statements,
+      symbol_table)
 
 and reverse_imports imports =
   List.rev imports

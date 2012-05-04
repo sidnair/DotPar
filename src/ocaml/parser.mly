@@ -40,7 +40,7 @@ open Printf %}
 %%
 
 program:
-  | lines { Program (fst($1), snd($1)) }
+  | lines { Program (fst($1), snd($1), make_symbol_table) }
 
 lines:
   | imports_opt external_declaration { ($1, [$2]) }

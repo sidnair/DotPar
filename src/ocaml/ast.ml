@@ -89,7 +89,7 @@ and imports = import list
 
 ;;
 
-type program = Program of imports * statements;;
+type program = Program of imports * statements * symbol_table;;
 
 (***********************************************************************)
 let make_symbol_table = 
@@ -246,7 +246,7 @@ and string_of_imports imports =
 ;;
 let string_of_program program =
   match program with
-    Program(imp, stat) ->
+    Program(imp, stat, symbol_table) ->
       (string_of_imports imp) ^ "\n" ^ (string_of_statements stat)
 ;;
 
@@ -456,7 +456,7 @@ and repr_of_imports ind imports =
 
 let repr_of_program program =
   match program with
-    Program(imp, stat) ->
+    Program(imp, stat, symbol_table) ->
       (repr2 gind "Program"
          (repr_of_imports gind imp) (repr_of_statements gind stat)) ^ "\n"
 ;;

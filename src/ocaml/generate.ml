@@ -273,7 +273,7 @@ and gen_statements inds statements =
 
 let gen_program program =
   match program with
-    Program(imports, statements) ->
+    Program(imports, statements, symbol_table) ->
       (Printf.sprintf "
 import scala.collection.mutable.ArraySeq
 
