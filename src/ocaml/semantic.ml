@@ -2,8 +2,7 @@
  * LIST OF SHIT THAT IS BROKEN
  * LIST COMPREHENSIONS
  *    ALL OF IT
- * 
- * HAVE TO ADD SYMBOL_TABLES TO ELIF BODIES 
+ * Anon Functions?
  *)
 
 
@@ -183,6 +182,7 @@ let rec check_expression e sym_tabl =
   | Anonymous_function (var_type, params, stats, s_t) ->
       ignore(link_tables sym_tabl s_t);
       let check_param_table param = check_param param s_t in 
+      ignore(check_statements stats s_t);
       ignore(List.map check_param_table params);
       check_var_type var_type
       (* TODO Match Jump Statement with Return Type *)
@@ -194,9 +194,8 @@ let rec check_expression e sym_tabl =
         let t = (check_var_type ret_type) in 
         t
       | _ -> raise (Error "Malformed Function expression"))
- (*Does this make sense???*) 
+ (* TODO Does this make sense???*) 
   | Empty_expression -> Basic_type(Void_type) 
-  
   )
 
 and get_type expression sym_tabl =
@@ -384,14 +383,16 @@ and check_selection select sym_tabl =
   ignore( check_boolean (get_type select.if_cond sym_tabl));
   ignore( check_statements select.if_body select.if_sym_tabl);
   if ((List.length select.elif_conds) != 0) then
-    let check_elif cond body = 
-      ignore(check_boolean (get_type cond sym_tabl));
-      ignore(check_statements body sym_tabl);
+    let check_elif cond body s_t = 
+      ignore(check_boolean (get_type cond s_t));
+      ignore(check_statements body s_t);
     in
-
-
-    (* TODO TODO !!! HAVE TO ADD SYMBOL TABLES TO ELIF BODIES LISTS *)
-    ignore(List.map2 check_elif select.elif_conds select.elif_bodies);
+    for i=0 to (List.length select.elif_conds) do
+      (check_elif 
+        (List.nth select.elif_conds i)
+        (List.nth select.elif_bodies i)
+        (List.nth select.elif_sym_tabl i));
+    done;
   else begin 
     if (List.length select.else_body) != 0 then 
       ignore(check_statements select.else_body select.else_sym_tabl) 
@@ -406,8 +407,7 @@ and check_iter dec check incr stats sym_tabl =
       ignore(check_expression incr sym_tabl);
       ignore(check_statements stats sym_tabl);
     end
-(* TODO 
- * Need to check function type matchs used return type *)
+
 and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
   debug ("Checking a func def...\n");
   try
@@ -423,26 +423,20 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
     let rec match_jump_types stat =
       debug ("Looking for jumps in " ^ name ^ "...\n");
     (match stat with
-    | Statements(s) ->
-        debug("Statements\n");
+    | Statements(s) -> debug("Statements\n");
         List.fold_left com_bools false (List.map match_jump_types s) 
-    | Selection(s) ->
-        debug("Selections\n");
+    | Selection(s) -> debug("Selections\n");
         List.fold_left com_bools false (List.map match_jump_types 
           (List.concat [s.if_body; s.else_body; 
           (List.concat s.elif_bodies)]) )
-    | Iteration(d,c,i,s, s_t) ->
-        debug("Iteration\n");
+    | Iteration(d,c,i,s, s_t) -> debug("Iteration\n");
         List.fold_left com_bools false (List.map match_jump_types s) 
-    | Jump(j) ->
-        debug("Jumping!\n");
+    | Jump(j) -> debug("Jumping!\n");
         ignore(compare_type (get_type j sym_tabl) v); 
         true
-    | Expression(e) -> 
-        debug("Expression\n");
+    | Expression(e) -> debug("Expression\n");
         false 
-    | _ -> 
-        debug("Catch all\n");
+    | _ -> debug("Catch all\n");
         false)
     in
     let b =
@@ -482,10 +476,6 @@ and require_bool type1 =
         | Boolean_type -> true
         | _ -> false)
   | _ -> false
-(*and require_func type1 =*)
-  (*match type1 with*)
-  (*| FuncType -> true*)
-  (*| _ -> false*)
 
 and check_statement stat sym_tabl =
   debug ("Checking Statement... \n");
@@ -505,7 +495,6 @@ and check_statement stat sym_tabl =
       ignore(link_tables sym_tabl symbol_table);
       ignore(check_func_def name ret_type params sts symbol_table sym_tabl);
       ignore(check_statements sts symbol_table);
-      (*| _ -> raise (Error "Malformed statement")*)
 
 and check_statements stats sym_tabl =
   debug "Checking Statements... \n";
@@ -518,5 +507,6 @@ and check_statements stats sym_tabl =
 let generate_sast program = 
   match program with
   | Program(imp, stat, symbol_table) -> 
-    ignore(check_statements stat symbol_table)
+      ignore(check_statements stat symbol_table);
+      Program(imp, stat, symbol_table)
 ;;
