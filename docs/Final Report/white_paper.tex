@@ -1,15 +1,15 @@
 \section{Motivation}
-Moore’s Law, the trend that the number of transistors that can fit on
+Moore's Law, the trend that the number of transistors that can fit on
 a chip doubles every 2 years, has held true for half a century,
 driving innovations in all areas of technology. But recently chip
 manufacturers have moved away from ever-increasing clock speeds, the
-usual manifestation of Moore’s law, and instead increase the number of
+usual manifestation of Moore's law, and instead increase the number of
 cores in CPUs to manage power dissipation.
 
 As consumer and business demands for speed grow, programs must now be
 written to take advantage of multiple cores in order to utilize the
 power of CPUs. However, the imperative programming paradigm that has
-prevailed in the programming community isn’t conducive to safe,
+prevailed in the programming community isn't conducive to safe,
 parallel programming. Parallel programming is difficult and
 synchronization bugs are notoriously difficult to fix.
 
@@ -25,11 +25,11 @@ can lead to deadlock and race conditions, both of which are extremely
 hard to debug.
 
 \subsection{Task-based Concurrency and the Actor Model}
-Task-based concurrency, used in languages like Ada and X10, doesn’t
+Task-based concurrency, used in languages like Ada and X10, doesn't
 expose threads to the programmer. Simple computations, not threads are
 the unit of parallelization. The actor model, present in SmallTalk and
 Scala, treats different threads as actors that communicate with each
-other via message passing. Since the actors don’t share state, this is
+other via message passing. Since the actors don't share state, this is
 much less error prone than locking since race conditions can be
 avoided entirely. These models can be elegant, but they still require
 manual division of labor on the part of the programmer, which
