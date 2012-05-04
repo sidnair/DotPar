@@ -281,9 +281,9 @@ let repr_list ind fn list =
 
 let rec repr_table ind table =
   let repr_entry key data folded =
-    folded ^ "\n" ^ ind ^ key ^ (repr_of_type ind data)
+    folded ^ "\n" ^ ind ^ key ^ ": " ^ (repr_of_type ind data)
   in
-  "[Table\n" ^ ind ^
+  "[Table" ^
   (StringMap.fold repr_entry table.table "")
   ^ "]"
 
@@ -415,13 +415,22 @@ and repr_of_params ind params =
     (* !!! add function table printing *)
 and repr_of_selection ind select =
   let ind = ind ^ gind in
-  (repr5 ind "If"
-     (repr_of_expression ind select.if_cond)
-     (repr_of_statements ind select.if_body)
+  (repr3 ind "Selection(if)"
+     (let ind = ind ^ gind in
+     (repr3 ind "If"
+        (repr_table ind select.if_sym_tabl)
+        (repr_of_expression ind select.if_cond)
+        (repr_of_statements ind select.if_body)))
      (* maybe print these out in pairs? *)
-     (repr_of_expressions ind select.elif_conds)
-     (repr_list ind (repr_of_statements ind) select.elif_bodies)
-     (repr_of_statements ind select.else_body))
+     (let ind = ind ^ gind in
+     (repr3 ind "Elifs"
+        (repr_list ind (repr_table ind) select.elif_sym_tabl)
+        (repr_of_expressions ind select.elif_conds)
+        (repr_list ind (repr_of_statements ind) select.elif_bodies)))
+     (let ind = ind ^ gind in
+     (repr2 ind "Else"
+        (repr_table ind select.else_sym_tabl)
+        (repr_of_statements ind select.else_body))))
 
 and repr_of_statement ind stat =
   let ind = ind ^ gind in
