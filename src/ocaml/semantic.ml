@@ -1,9 +1,3 @@
-(*
- * LIST OF SHIT THAT IS BROKEN
- * LIST COMPREHENSIONS
- *    ALL OF IT
- *)
-
 open Ast;;
 open Str;;
 
