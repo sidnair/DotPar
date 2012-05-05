@@ -270,7 +270,7 @@ and gen_statement inds stat =
 and gen_statements inds statements =
   match statements with
     head::tail ->
-      (gen_statement inds head) ^ inds ^ "\n" ^ (gen_statements inds tail)
+      (gen_statement inds head) ^ (gen_statements inds tail)
   | _-> ""
 
 let gen_program program =
