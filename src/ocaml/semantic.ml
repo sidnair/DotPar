@@ -82,8 +82,11 @@ let rec check_expression e sym_tabl =
     (match var with
       | Variable(v) ->
         (try
-          ignore(lookup v sym_tabl 0);
-          raise (Error "Variable previously defined");
+          let typ, iter = lookup v sym_tabl 0 in
+          if (iter > 0) then raise Not_found 
+          else begin
+            raise (Error "Variable previously defined in the same scope");
+          end
         with Not_found ->
           let t1 = check_var_type var_type in
           if (require_void t1) then raise 
@@ -99,8 +102,11 @@ let rec check_expression e sym_tabl =
     (match var with
       | Variable(v) -> 
           (try
-            ignore(lookup v sym_tabl 0);
-            raise (Error "Variable perviously defined");
+            let typ, iter = lookup v sym_tabl 0 in
+            if (iter > 0) then raise Not_found
+            else begin
+              raise (Error "Variable perviously defined in the same scope");
+            end
           with Not_found ->
             let t = check_var_type var_type in
             let t2 = get_type right sym_tabl in
@@ -165,11 +171,11 @@ let rec check_expression e sym_tabl =
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found")) 
       | _ -> raise (Error "Malformed function call")) 
-  | Array_access (name, right) -> 
+  | Array_access (name, index) -> 
     (match name with 
       | Variable(v) -> 
         let (t, iter) = lookup v sym_tabl 0 in
-        let index_t = get_type right sym_tabl in
+        let index_t = get_type index sym_tabl in
         if not (require_number index_t) 
           then raise (Error "Invalid Array Access")
         else begin 
@@ -188,7 +194,6 @@ let rec check_expression e sym_tabl =
       ignore(check_statements stats s_t);
       ignore(List.map check_param_table params);
       check_var_type var_type
-      (* TODO Match Jump Statement with Return Type *)
   | Function_expression (stat) ->
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
@@ -197,7 +202,6 @@ let rec check_expression e sym_tabl =
         let t = (check_var_type ret_type) in 
         t
       | _ -> raise (Error "Malformed Function expression"))
- (* TODO Does this make sense???*) 
   | Empty_expression -> Basic_type(Void_type) 
   )
 
@@ -264,7 +268,7 @@ and get_type expression sym_tabl =
         (List.map check_params_table params))
       | _ -> raise (Error "Function expression invalid"))
   | Empty_expression -> Basic_type(Void_type)
-  | _ -> raise (Error "WHAT THE FUCK IS THIS SHIT")
+  | _ -> raise (Error "Error in Semantic Analysis. Unknown Type Found")
   )
 
 and compare_type type1 type2 =
@@ -414,15 +418,18 @@ and check_iter dec check incr stats sym_tabl =
 
 and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
   debug ("Checking a func def...\n");
-  let check_anon_name a_name =
-    if  name = "anon" then raise Not_found 
-    else begin  
-      ignore (lookup name sym_tabl 0);
-      raise (Error "Function with same name decalred in same scope")
-    end 
-  in 
+  let check_local_scope a_name =
+    let (t, iter) = lookup a_name p_s_tabl 0 in
+    if (iter > 0) then raise Not_found
+    else begin
+      raise (Error "Function of same name previous declared in local scope");
+    end
+  in
   try
-    (check_anon_name name) 
+    if name = "anon" then raise Not_found
+    else begin
+      check_local_scope name
+    end
   with Not_found ->
     let v = check_var_type ret_type in 
     let check_param_table param = 

@@ -36,6 +36,12 @@ tests = [
 }
 """, True),
 
+("""main:void() {
+  number x = 10;
+  number z = x + y;
+  }
+""", False),
+
 ("""func main:void() {
   number x = 5;
   y = x + 2;
@@ -80,13 +86,49 @@ tests = [
 
     y = y +1;
   }""", True),
+("""func main:void() {
+    number y;
+    number z = 0;
+    for(number x = 10; x < y; x = x +1) {
+      y = x;
+      number z = 1;
+    }
+    y = y +1;
+  }""", True),
+("""func main:void() {
+    number y;
+    number z = 0;
+    for(number x = 10; x < y; x = x +1) {
+      y = x;
+      number z = 1;
+      number z = 0;
+    }
+    y = y +1;
+  }""", False),
+("""func main:void() {
+    
+    number z = 0;
+    for(number x = 10; x < y; x = x +1) {
+      y = x;
+      number z = 1;
+      number z = 0;
+    }
+    y = y +1;
+  }""", False),
+
 
 ("""func main:void() {
+    func foo:void() { }
     for(number x = 10; x < y; x = x +1) {
-      number y = x;
+      func foo:void() { }
     }
-
-    y = y +1;
+  }""", True),
+("""func main:void() {
+    func foo:void() { }
+    for(number x = 10; x < y; x = x +1) {
+      func foo:void() { }
+      func foo:void() { } 
+    }
   }""", False),
 
 ("""func main:void() {
