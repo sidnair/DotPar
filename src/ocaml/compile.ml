@@ -2,6 +2,15 @@ open Ast;;
 open Semantic;;
 
 let rec ast_generate stream =
+  let ast = parse_ast stream in
+  (* Perform semantic transformations, import preprocessing, and semantic
+   * analysis. The code generation to Scala happens elsewhere. *)
+  let ast = Transform.reverse_tree ast in
+  let ast = insert_imports_program ast in
+  ignore(Semantic.generate_sast ast);
+  ast
+
+and parse_ast stream =
   let lexbuf = Lexing.from_channel stream in 
   let ast =
     try
@@ -15,11 +24,6 @@ let rec ast_generate stream =
       Printf.fprintf stderr "Parsing error at line %d, char %d\n." l c;
       exit 1
   in
-  (* Perform semantic transformations, import preprocessing, and semantic
-   * analysis. The code generation to Scala happens elsewhere. *)
-  let ast = Transform.reverse_tree ast in
-  let ast = insert_imports_program ast in
-  ignore(Semantic.generate_sast ast);
   ast
 
 (* TODO: import only once *)
