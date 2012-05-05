@@ -1,5 +1,6 @@
 open Ast;;
 open Semantic;;
+open Parallelizer;;
 
 let rec ast_generate stream =
   let lexbuf = Lexing.from_channel stream in 
@@ -20,6 +21,7 @@ let rec ast_generate stream =
   let ast = Transform.reverse_tree ast in
   let ast = insert_imports_program ast in
   ignore(Semantic.generate_sast ast);
+  let ast = Parallelizer.parallelize ast in
   ast
 
 (* TODO: import only once *)
