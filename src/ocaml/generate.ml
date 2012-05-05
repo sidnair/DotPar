@@ -331,4 +331,4 @@ object Main {
 %s
 }
 "
-    (gen_statements (ind ^ ind) statements))
+    (gen_statements ind statements))
