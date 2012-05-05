@@ -16,10 +16,10 @@ let rec ast_generate stream =
       exit 1
   in
   (* Perform semantic transformations, import preprocessing, and semantic
-   * analysis. The code generation to Scala happens separately. *)
+   * analysis. The code generation to Scala happens elsewhere. *)
   let ast = Transform.reverse_tree ast in
   let ast = insert_imports_program ast in
-  ignore( Semantic.generate_sast ast );
+  ignore(Semantic.generate_sast ast);
   ast
 
 (* TODO: import only once *)
