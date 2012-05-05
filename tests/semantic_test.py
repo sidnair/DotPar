@@ -36,6 +36,12 @@ tests = [
 }
 """, True),
 
+("""main:void() {
+  number x = 10;
+  number z = x + y;
+  }
+""", False),
+
 ("""func main:void() {
   number x = 5;
   y = x + 2;
