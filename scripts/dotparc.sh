@@ -3,6 +3,7 @@
 # locations, uniq'd by pid
 Compile_dir=/tmp/dotpar_compile$$
 Scala_file=$Compile_dir/main.scala
+Lib_file=lib/dotpar.scala
 Manifest_file=$Compile_dir/manifest.mf
 Class_files=$Compile_dir/classes/
 Program_lib=$Compile_dir/program_lib
@@ -39,7 +40,7 @@ then
 fi
 
 # do the compilation
-scalac -d $Class_files $Scala_file
+scalac -d $Class_files $Lib_file $Scala_file
 if [ $? -ne 0 ]
 then
     echo "Scalac compilation failed"
