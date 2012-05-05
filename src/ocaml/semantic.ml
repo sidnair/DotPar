@@ -2,9 +2,7 @@
  * LIST OF SHIT THAT IS BROKEN
  * LIST COMPREHENSIONS
  *    ALL OF IT
- * Anon Functions?
  *)
-
 
 open Ast;;
 open Str;;
@@ -15,13 +13,14 @@ exception Variable_not_defined of string
 module StringMap = Map.Make(String);;
 
 (* utility function *)
+
 let debug str = 
   if true then print_string (str) else ()
 
 let rec lookup id sym_table iter = 
   debug("Looking for "^ id ^" ...\n");
   try
-    let t = StringMap.find id sym_table.table in 
+    let t = StringMap.find id sym_table.table in
     debug("Found " ^ id ^ " ...\n");
     (t, iter) 
   with Not_found ->
@@ -31,7 +30,7 @@ let rec lookup id sym_table iter =
 
 let add_to_symbol_table id id_type sym_table = 
   debug("Adding " ^ id ^ " to symbol_table \n");
-  (Printf.printf "%s" (repr_of_type " " id_type));
+  debug(repr_of_type " " id_type ^ "\n");
   sym_table.table <- StringMap.add id id_type sym_table.table;
   ()
   
@@ -40,6 +39,7 @@ let link_tables p_table c_table =
   c_table.parent <- Some(p_table);
   p_table.children <- c_table :: p_table.children;
   ()
+
 (* This method is very experimental *)
 (*let rec get_symbol_table root id iter = *)
   (*let rec wrap_get_sym_table root id iter tail = *)
@@ -66,7 +66,7 @@ let rec check_expression e sym_tabl =
     (match left with
       | Variable(v) ->
         let (t, iter) = lookup v sym_tabl 0 in
-        let t1 = get_type right sym_tabl in
+        let t1 = check_expression right sym_tabl in
         ignore(compare_type t t1);
         t1 
       | Array_access(name, index) ->
@@ -123,30 +123,38 @@ let rec check_expression e sym_tabl =
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
     t
   | List_comprehension (expr, params, exprs, expr1, symbol_table) -> 
-      (get_type expr sym_tabl)
-    (*ignore(link_tables sym_tabl symbol_table);*)
-    (*let check_param_table param = check_param param symbol_table in*)
-    (*let get_type_table e = *)
-      (*let temp_str = get_type e symbol_table in*)
-    (*(try*)
-      (*ignore(List.map2 compare_type*)
-        (*(List.map check_param_table params)*)
-        (*(List.map get_type_table exprs));*)
-      (*let t = get_type expr1 symbol_table in*)
-      (*match t with*)
-        (*| Empty_Expression  -> t *)
-        (*| Boolean_type -> t *)
-        (*| _ -> raise (Error "Bad filter in List Comp")*)
-    (*with Invalid_argument "" -> raise (Error "Poorly formed List Comp")) *)
+    ignore(link_tables sym_tabl symbol_table);
+    let check_param_table param = check_param param symbol_table in
+    let get_type_table e = 
+      match (get_type e symbol_table) with
+      | Array_type(a) -> a
+      | _ -> (get_type e symbol_table)   
+    in 
+    (try
+      ignore(List.map2 compare_type 
+        (List.map check_param_table params)
+        (List.map get_type_table exprs));
+      ignore(compare_type (get_type_table expr) 
+        (check_param_table (List.hd params)));
+      let fil = check_expression expr1 symbol_table in
+      debug(repr_of_type "  " fil);
+      if (require_bool fil || require_void fil) then  
+        (*returning this *)
+        (get_type_table expr)
+      else begin
+        raise (Error "Bad filter in List Comp")
+      end
+    with Invalid_argument "" -> 
+        raise (Error "Mismatched on types in List comp"))
   | Unop (op, expr) ->
-      let t = (get_type expr sym_tabl) in
-      ignore(check_unop op t);
-      t
+    let t = (get_type expr sym_tabl) in
+    ignore(check_unop op t);
+    (get_type (Unop(op, expr)) sym_tabl)
   | Binop (expr, op, expr1) -> 
-      let t = (get_type expr sym_tabl) in
-      let t2 = (get_type expr1 sym_tabl) in
-      ignore(check_operator t op t2);
-      t2
+    let t = (get_type expr sym_tabl) in
+    let t2 = (get_type expr1 sym_tabl) in
+    ignore(check_operator t op t2);
+    (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
     let get_type_table expr = 
         get_type expr sym_tabl
@@ -266,9 +274,8 @@ and get_type expression sym_tabl =
   )
 
 and compare_type type1 type2 =
-  debug ("Comparing two types...\n");
-  Printf.printf "%s\n" (repr_of_type " " type1);
-  Printf.printf "%s\n" (repr_of_type " " type2);
+  debug ("Comparing two types...\n" ^ (repr_of_type " " type1)
+  ^ (repr_of_type " " type2));
   if not (type1 = type2) then raise (Error "Type Mismatch")
   else type1
 
@@ -353,20 +360,12 @@ and check_var_type var_type =
         | _ -> raise (Error "Incorrect type found in array"))
         in
         let temp = (det_array a 0) in
-        (Printf.printf "%s" (repr_of_type " " temp));
         (Array_type(temp))
   | Func_type(ret_type, param_types) ->
       Func_type((check_var_type ret_type),  
         (List.map check_var_type param_types))
   | Func_param_type(ret_type, params) ->
-  raise (Error "This SHIT IS FUCKED") 
-      (*let extract_type param = *)
-      (*match param with*)
-        (*Param(param_type, varname) -> param_type*)
-    (*in*)
-    (*let type_list = (List.map extract_type params) in*)
-    (*(check_var_type ret_type)*)
-    (*(List.map check_param params)*)
+    raise (Error "Function paramater types not supported ") 
   | _ -> raise (Error "Unsupported variable type")
 
 and check_param param sym_tabl = 
@@ -396,10 +395,10 @@ and check_selection select sym_tabl =
   if ((List.length select.elif_conds) != 0) then
     let check_elif cond body s_t = 
       ignore(check_boolean (get_type cond s_t));
-      ignore(check_statements body s_t);
+      ignore(check_statements body s_t); 
     in
-    for i=0 to (List.length select.elif_conds) do
-      (check_elif 
+    for i=0 to (List.length select.elif_conds)-1 do
+      (check_elif  
         (List.nth select.elif_conds i)
         (List.nth select.elif_bodies i)
         (List.nth select.elif_sym_tabl i));
