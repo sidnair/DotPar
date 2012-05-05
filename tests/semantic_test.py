@@ -332,11 +332,54 @@ foo(func:number(number y) { return y*y; })
   number[] yy = [1, 2];
   [x*y for number x in xx,yy];
 }""", False),
+
 ("""func main:void() {
   number[] xx = [1, 2];
   number[] yy = [1, 2];
   [x*y for number x, number y in xx];
 }""", False),
+
+("""func main:void() {
+  number[] xx = [1, 2];
+  number[] yy = [1, 2];
+  [x*y for number x, number y in xx,yy if (x!=1)];
+}""", True),
+("""func main:void() {
+  number[] xx = [1, 2];
+  number[] yy = [1, 2];
+  [x*y for number x, number y in xx,yy if (x==1)];
+}""", True),
+
+("""func fib:number(number n) {
+  if (n == 0) {
+    return 0;
+  }
+  elif (n == 1) {
+    return 1;
+  } else {
+    return fib(n-1) + fib(n-2);
+  } 
+}""",True),
+
+("""
+function fizzBuzz:void() {
+  char[] fb = "FizzBuzz";
+  char[] f = "Fizz";
+  char[] b = "Buzz";
+  for (number i = 1; i < 101; i = i + 1){
+    if (i % 15 == 0){
+      println(fb);
+    } elif(i % 3 == 0) {
+      println(f);
+    } elif(i % 5 == 0) {
+      println(b);
+    } else {
+      println(i);
+    }
+  }
+}
+""",True),
+
 ]
 
 ################################################################################
