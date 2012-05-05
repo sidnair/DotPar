@@ -282,10 +282,6 @@ let gen_program program =
 let gen_program program =
   match program with
     Program(imports, statements, symbol_table) ->
-      let boilerplate = format_of_string "
-object Main {
-  %s
-}
-"
+      let boilerplate = format_of_string ("object Main {\n  %s\n}")
      in
      (Printf.sprintf boilerplate (gen_statements ind statements))
