@@ -82,13 +82,12 @@ let rec gen_expression inds expression =
       (* uses a function-call index syntax *)
       (gen_expression inds expr) ^
       "(Dotpar.dp_array_index(" ^ (gen_expression inds expr2) ^ "))"
-        (* --- *)
   | Variable(str) -> str
-        (* constants *)
+  (* constants *)
   | Char_literal(c) -> "'" ^ (String.make 1 c) ^ "'"
   | Number_literal(n) -> (string_of_float n)
   | String_literal(s) ->
-      let char_wrap c = 
+      let char_wrap c =
         "\'" ^ (String.make 1 c) ^ "\'"
       in
       let explode s =
@@ -98,11 +97,11 @@ let rec gen_expression inds expression =
       in
       "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
   | Boolean_literal(b) -> (if (b) then "true" else "false")
-  | Nil_literal -> "" (* ??? is this legal? *)
+  | Nil_literal -> "" (* TODO: ??? is this legal? *)
         (* --- *)
   | Anonymous_function(ret_type, params, block, sym_tab) ->
       "(new Function" ^ (string_of_int (List.length params)) ^
-      (* ??? *)
+      (* TODO: ??? *)
       (let extract_type param = 
         match param with
         | Param(param_type, varname) -> param_type
@@ -272,9 +271,6 @@ and gen_statements inds statements =
     head::tail ->
       (gen_statement inds head) ^ (gen_statements inds tail)
   | _-> ""
-
-
-
 
 let gen_program program =
   match program with
