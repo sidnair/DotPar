@@ -3,7 +3,6 @@
 open Str;;
 module StringMap = Map.Make(String);;
 
-
 type unop = Neg | Not
 
 type binop =
@@ -59,15 +58,15 @@ and expression =
 and param = Param of var_type * expression
 
 and selection_statement = {
-    if_cond : expression;
-    if_body : statements;
-    if_sym_tabl : symbol_table;
-    else_body : statements;
-    else_sym_tabl : symbol_table;
-    elif_conds : expression list;
-    elif_bodies : statements list;
-    elif_sym_tabl : symbol_table list;
-  }
+  if_cond : expression;
+  if_body : statements;
+  if_sym_tabl : symbol_table;
+  else_body : statements;
+  else_sym_tabl : symbol_table;
+  elif_conds : expression list;
+  elif_bodies : statements list;
+  elif_sym_tabl : symbol_table list;
+}
 
 and statement =
     Expression of expression

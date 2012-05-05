@@ -22,7 +22,6 @@ let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
   try
     let t = StringMap.find id sym_table.table in 
-  
     debug("Found " ^ id ^ " ...\n");
     (t, iter) 
   with Not_found ->
@@ -527,4 +526,3 @@ let generate_sast program =
   | Program(imp, stat, symbol_table) -> 
       ignore(check_statements stat symbol_table);
       Program(imp, stat, symbol_table)
-;;

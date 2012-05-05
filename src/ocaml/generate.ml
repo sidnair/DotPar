@@ -6,7 +6,9 @@ open Printf;;
 
 exception NotImplemented;;
 exception SemanticError;;
-let ind = "  ";;
+
+(* Use two spaces for indentation in the generated Scala program. *)
+let ind = "  "
 
 let rec gen_expression inds expression =
   let next_inds = (ind ^ inds) in
@@ -330,4 +332,3 @@ object Main {
 }
 "
     (gen_statements (ind ^ ind) statements))
-;;

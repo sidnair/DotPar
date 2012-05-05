@@ -15,7 +15,6 @@ open Ast;;
 let extract_type_from_param param =
   match param with
     Param (vtype, expr) -> vtype
-;;
 
 let rec reverse_tree tree =
   match tree with
@@ -83,7 +82,7 @@ and reverse_expression expr =
                           reverse_statements stats, sym_tab)
   | Function_expression(stat) ->
       Function_expression (reverse_statement stat)
-  | anything -> anything
+  | x -> x
 
 and reverse_param param =
   match param with
@@ -101,7 +100,7 @@ and reverse_selection select = {
   elif_bodies = 
   let stats = List.map reverse_statements select.elif_bodies in
   List.rev stats
- }
+}
 
 and reverse_type type_def = 
   match type_def with
@@ -114,4 +113,3 @@ and reverse_type type_def =
                     (List.map extract_type_from_param
                        (List.rev params))))
   | anything -> anything
-;;
