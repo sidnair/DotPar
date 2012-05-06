@@ -26,7 +26,9 @@ and can_par_statement statement symbols =
       let is_pure = can_par_statements stmts table in
       table.pure <- is_pure;
       db_par name is_pure;
-      is_pure
+      (* Regardless of whether or not the function is pure, the definition
+       * does not violate purity. *)
+      true
 
 and db_par name is_pure =
   Printf.printf "%s : %s\n" name (string_of_bool is_pure)
@@ -49,12 +51,19 @@ and can_par_elifs conds bodies tables outer_table =
 and can_par_expr e symbols =
   match e with
   | Assignment_expression(lv, rv) -> can_par_assignment_expr lv symbols
-  | List_comprehension(expr, params, exprs, if_cond, s) -> false
-  (* Might be able to detect our own functions are pure for free by looking it
-   * up in our symbol table; unknown function variables might be false, *)
+  (* TODO: can't parallelize this without array parallelization logic. *)
+  | List_comprehension(expr, params, exprs, if_cond, table) -> false
+  (* TODO: might be able to detect our own functions are pure for free by
+   * looking it up in our symbol table; function variables would be false,
+   * functinos we know the body of could be true. *)
   | Function_call(expr, exprs) -> false
-  | Anonymous_function(type_def, params, block, sym_tabl) -> false
-  | Function_expression(state) -> false
+  | Anonymous_function(type_def, params, stmts, table) ->
+      let is_pure = can_par_statements stmts table in
+      table.pure <- is_pure;
+      db_par "anon" is_pure;
+      true
+  (* Can roll these all into one case, but keep it explicit for now. *)
+  | Function_expression(state) -> true
   | Declaration(type_dec, expr) -> true
   | Declaration_expression(type_dec, rv, lv) -> true
   | Array_literal(exprs) -> true

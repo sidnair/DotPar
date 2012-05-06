@@ -8,7 +8,7 @@ module StringMap = Map.Make(String);;
 
 (* utility function *)
 
-let debug str = 
+let debug str =
   if true then print_string (str) else ()
 
 let rec lookup id sym_table iter = 

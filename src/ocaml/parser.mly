@@ -139,7 +139,7 @@ assignment_expression:
   | anonymous_function_definition { $1 }
   | postfix_expression ASSIGN array_expression { Assignment_expression ($1,$3) }
   | postfix_expression ASSIGN function_definition
-  { Assignment_expression ($1, Function_expression $3) }
+      { Assignment_expression ($1, Function_expression $3) }
   | postfix_expression ASSIGN anonymous_function_definition
       { Assignment_expression ($1, $3) }
 
