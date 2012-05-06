@@ -8,8 +8,11 @@ module StringMap = Map.Make(String);;
 
 (* utility function *)
 
+type debug_state_monad = { mutable debug_switch : bool };;
+let debug_state = { debug_switch = false; };;
+
 let debug str = 
-  if true then print_string (str) else ()
+  if debug_state.debug_switch then print_string (str) else ()
 
 let rec lookup id sym_table iter = 
   debug("Looking for "^ id ^" ...\n");
@@ -460,7 +463,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
       List.fold_left com_bools false (List.map match_jump_types stats)
     in
     if b then debug("True \n") 
-      else print_string("False \n"); 
+      else debug("False \n"); 
         if b && (require_void v) then raise 
           (Error "Void method contains return")
         else 
@@ -521,7 +524,8 @@ and check_statements stats sym_tabl =
       ignore(check_statements tl sym_tabl);
   | [] -> () 
 
-let generate_sast program = 
+let generate_sast program debug = 
+  ignore(debug_state.debug_switch <- debug);
   match program with
   | Program(imp, stat, symbol_table) -> 
       ignore(check_statements stat symbol_table);
