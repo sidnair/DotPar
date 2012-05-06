@@ -1,5 +1,4 @@
-func main:void()
-{
-	char[] helloWorld = "Hello, World";
-	println(helloWorld);
+func main:void() {
+    char[] helloWorld = "Hello, World";
+    println(helloWorld);
 }
