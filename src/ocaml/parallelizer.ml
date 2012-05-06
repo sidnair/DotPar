@@ -13,9 +13,9 @@ and can_par_statement statement symbols =
   | Statements(s) -> can_par_statements s symbols
   | Selection(s) -> can_par_selection s symbols
   | Iteration(e1, e2, e3, stmts, table) ->
-      let is_pure = can_par_expr e1 symbols &&
-          can_par_expr e2 symbols &&
-          can_par_expr e3 symbols &&
+      let is_pure = can_par_expr e1 table &&
+          can_par_expr e2 table &&
+          can_par_expr e3 table &&
           can_par_statements stmts table
       in
       table.pure <- is_pure;
