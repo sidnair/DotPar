@@ -28,4 +28,8 @@ let _ =
   let self_switch = switch "--dotpar" args in
   let ast_switch = switch "--ast" args in
   let gen_switch = switch "--scala" args in
-  generate self_switch ast_switch gen_switch
+  let parser_switch = switch "--parser-only" args in
+  (if parser_switch then
+    ignore(parse_ast stdin)
+  else
+    generate self_switch ast_switch gen_switch)
