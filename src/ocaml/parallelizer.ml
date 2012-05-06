@@ -31,7 +31,7 @@ and can_par_statement statement symbols =
 and db_par name is_pure =
   Printf.printf "%s : %s\n" name (string_of_bool is_pure)
 
-(*Currently, parallelization of an if statement or else statement is not
+(* Currently, parallelization of an if statement or else statement is not
  * supported. The symbol tables here must be updated to enable that if
  * desired.*)
 and can_par_selection stmt symbols =
@@ -48,8 +48,10 @@ and can_par_elifs conds bodies tables outer_table =
 
 and can_par_expr e symbols =
   match e with
-  | Assignment_expression(rv, lv) -> false
+  | Assignment_expression(lv, rv) -> can_par_assignment_expr lv symbols
   | List_comprehension(expr, params, exprs, if_cond, s) -> false
+  (* Might be able to detect our own functions are pure for free by looking it
+   * up in our symbol table; unknown function variables might be false, *)
   | Function_call(expr, exprs) -> false
   | Anonymous_function(type_def, params, block, sym_tabl) -> false
   | Function_expression(state) -> false
@@ -66,6 +68,14 @@ and can_par_expr e symbols =
   | Boolean_literal(b) -> true
   | Nil_literal -> true
   | Empty_expression -> true
+
+and can_par_assignment_expr lv symbols =
+  match lv with
+  | Variable(name) -> snd(lookup name symbols 0) == 0
+  | Array_access(e1, e2) -> (match e1 with
+      | Variable(name) -> snd(lookup name symbols 0) == 0
+      | _ -> raise (Error "Malformed array statement"))
+  | _ -> raise (Error "Invalid assignment expression")
 
 let parallelize program =
   match program with
