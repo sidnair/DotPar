@@ -239,6 +239,14 @@ tests = [
   foo(bar);
 }""", True),
 
+("""func main:void() {
+  number[] x = [];
+}""", True),
+("""func main:void() {
+  number[] x = [];
+  char[] y = x;
+}""", False),
+
 #Anon Functions
 
 ("""func main:void() {

@@ -211,7 +211,10 @@ let rec check_expression e sym_tabl =
 and get_type expression sym_tabl =
   (match expression with 
   | Array_literal (exprs) -> 
-      Array_type((get_type (List.nth exprs 0) sym_tabl))
+      (if ((List.length exprs) = 0) then
+        Array_type (Basic_type Void_type)
+      else
+        Array_type((get_type (List.nth exprs 0) sym_tabl)))
   | List_comprehension (expr, params, exprs, expr1, s_t) -> 
       ignore(link_tables sym_tabl s_t);
       (get_type expr sym_tabl)
@@ -275,9 +278,40 @@ and get_type expression sym_tabl =
   )
 
 and compare_type type1 type2 =
-  debug ("Comparing two types...\n" ^ (repr_of_type " " type1)
-  ^ (repr_of_type " " type2));
-  if not (type1 = type2) then raise (Error "Type Mismatch")
+  debug ("Comparing two types...\n" ^ (repr_of_type " " type1) ^ "\n"
+  ^ (repr_of_type " " type2) ^ "\n");
+  (* specially handle empty arrays *)
+  let array_void t = 
+    let rec array_void_rec t =
+      match t with
+      | Array_type(t) -> array_void_rec(t)
+      | Basic_type(b) -> (match b with Void_type -> true | _ -> false)
+      | _ -> false
+    in
+    match t with
+    | Array_type(t) -> array_void_rec(t)
+    | _ -> false
+  in
+  let rec array_layers a1 a2 = match a1 with
+  | Array_type(b1) ->
+      (match a2 with
+      | Array_type(b2) -> (array_layers b1 b2)
+      | _ -> raise (Error "Mismatched array types"))
+  | _ ->
+      (match a2 with
+      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | _ -> true)
+  in
+   if ((array_void type1) && (array_void type2)) then
+    raise (Error "Interior type could not be determined")
+  else if (array_void type1) then
+    (ignore(array_layers type1 type2);
+     type2)
+  else if (array_void type2) then
+    (ignore(array_layers type1 type2);
+     type1)
+  (* do vanilla type checking here *)
+  else if not (type1 = type2) then raise (Error "Type Mismatch")
   else type1
 
 and check_unop op type1 =
