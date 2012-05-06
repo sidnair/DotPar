@@ -18,8 +18,8 @@ compiler:
 	ocamllex scanner.mll; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
-	ocamlc -c parallelizer.ml; \
 	ocamlc -c semantic.ml; \
+	ocamlc -c parallelizer.ml; \
 	ocamlc -c compile.ml; \
 	ocamlc -c dotpar.ml; \
 	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo \

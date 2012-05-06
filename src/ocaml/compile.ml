@@ -36,7 +36,8 @@ and insert_imports imports =
     List.map (fun x -> (insert_import x)) imports in
   let get_statements program =
     match program with
-    | Program(imports, statements, symbol_table) -> statements in
+    | Program(imports, statements, symbol_table) -> statements
+  in
   let statements = List.map get_statements programs in
   let join a b = a @ b in
   List.fold_left join [] statements
