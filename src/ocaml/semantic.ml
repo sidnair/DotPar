@@ -25,11 +25,11 @@ let rec lookup id sym_table iter =
     | Some(parent) -> lookup id parent (iter +1 )
     | _ -> raise Not_found 
 
-let add_to_symbol_table id id_type sym_table = 
-  debug("Adding " ^ id ^ " to symbol_table \n");
-  debug(repr_of_type " " id_type ^ "\n");
-  sym_table.table <- StringMap.add id id_type sym_table.table;
-  ()
+(*let add_to_symbol_table id id_type sym_table = *)
+  (*debug("Adding " ^ id ^ " to symbol_table \n");*)
+  (*debug(repr_of_type " " id_type ^ "\n");*)
+  (*sym_table.table <- StringMap.add id id_type sym_table.table;*)
+  (*()*)
   
 let link_tables p_table c_table =   
   debug("Linking a symbol_tables... \n");

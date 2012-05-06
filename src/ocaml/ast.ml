@@ -22,6 +22,7 @@ and var_type =
   | Fixed_array_type of var_type * expression
   | Func_type of var_type * var_type list
   | Func_param_type of var_type * param list
+  | Any_type
 
 and symbol_table = {
   mutable table : var_type StringMap.t;
@@ -90,14 +91,113 @@ type program = Program of imports * statements * symbol_table
 
 ;;
 
-let make_symbol_table p = 
+let builtin_list = 
+  [ ("cat" ,  
+        Func_type( Array_type(Any_type), 
+        [Array_type(Any_type) ; Array_type(Any_type) ] ) ) ;
+    ("each" ,  
+        Func_type( Basic_type(Void_type), 
+        [Array_type(Any_type) ; 
+        Func_type(Any_type,  [Any_type ; Basic_type(Number_type)]) ] ) ) ;
+    ("fill", 
+        Func_type( Array_type(Any_type),
+        [ Array_type(Basic_type(Number_type)) ; Func_type(Any_type, [Any_type])])) ; 
+    ("filter", 
+        Func_type( Basic_type(Boolean_type) ,
+        [Array_type(Any_type) ; Func_type(Array_type(Any_type) ,
+        [Basic_type(Number_type) ; Basic_type(Number_type) ]) ] ) ) ;
+    ("len", 
+        Func_type(Basic_type(Number_type), [Array_type(Any_type)]) ) ;
+    ("map",  
+        Func_type( Array_type(Any_type), 
+        [Array_type(Any_type) ; 
+        Func_type(Any_type,  [Any_type ; Basic_type(Number_type)]) ] ) ) ;
+    ("reduce",
+        Func_type( Any_type,
+        [Func_type( Any_type, [Any_type ; Any_type] ) ; Array_type(Any_type) ;
+        Any_type ] ) ) ;
+    ("zip",
+        Func_type(Array_type(Array_type(Any_type)), 
+        [Array_type(Any_type) ; Array_type(Any_type)] ) ) ;
+    ("acos",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("asin",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("atan",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("cos",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("exp",
+        Func_type(Basic_type(Number_type), 
+        [Basic_type(Number_type) ; Basic_type(Number_type)])) ;
+    ("ln",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("log",
+        Func_type(Basic_type(Number_type), 
+        [Basic_type(Number_type) ;  Basic_type(Number_type)])) ;
+    ("sin",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("sqrt",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("tan",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("ceil",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("floor",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("trunc",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("round",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("rand",
+    Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
+    ("print",
+        Func_type(Basic_type(Void_type),
+        [Any_type])) ;
+    ("println",
+        Func_type(Basic_type(Void_type),
+        [Any_type])) ;
+    ("printerr",
+        Func_type(Basic_type(Void_type),
+        [Any_type])) ;
+    ("read",
+        Func_type(Any_type,
+        [])) ;
+    ("readln",
+        Func_type(Any_type,
+        [])) 
+  ]
+
+;;
+let add_to_symbol_table id id_type sym_table = 
+  sym_table.table <- StringMap.add id id_type sym_table.table;
+  ()
+
+;;
+let  make_symbol_table p = 
   {
     table = StringMap.empty;
     parent = p;
     children = [];
     pure = false;
   }
+;;
+let make_global_table p =
+  let s_t = 
+  {
+    table = StringMap.empty;
+    parent = p;
+    children = [];
+    pure = false;
+  }
+  in
+  let add_func (name,t) =
+  add_to_symbol_table name t s_t 
+  in
+  ignore(List.map add_func builtin_list);
+  s_t
 
+;;
 (* reverse string out for the AST *)
 
 (* let ind = "  ";; *)
@@ -191,6 +291,7 @@ and string_of_type var_type =
   | Func_param_type(ret_type, params) ->
       "func:" ^ (string_of_type ret_type) ^ "(" ^
       (String.concat ", " (List.map string_of_param params)) ^ ")"
+  | Any_type -> "Any_type"
 
 and string_of_param parm =
   match parm with
@@ -391,6 +492,8 @@ and repr_of_type ind var_type =
       repr2 ind "FunctionType+Param"
         (repr_of_type ind ret_type)
         (repr_of_params ind params)
+  | Any_type -> "Any_type"
+
 and repr_of_types ind types =
   repr_list ind (repr_of_type ind) types
 
