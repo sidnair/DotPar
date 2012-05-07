@@ -63,6 +63,7 @@ and can_par_expr e symbols =
       db_par "anon" is_pure;
       true
   (* Can roll these all into one case, but keep it explicit for now. *)
+  (* TODO: is it necessary to recurse into these statements? *)
   | Function_expression(state) -> true
   | Declaration(type_dec, expr) -> true
   | Declaration_expression(type_dec, rv, lv) -> true

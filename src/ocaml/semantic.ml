@@ -8,8 +8,11 @@ module StringMap = Map.Make(String);;
 
 (* utility function *)
 
+type debug_state_monad = { mutable debug_switch : bool };;
+let debug_state = { debug_switch = false; };;
+
 let debug str =
-  if true then print_string (str) else ()
+  if debug_state.debug_switch then print_string (str) else ()
 
 let rec lookup id sym_table iter = 
   debug("Looking for "^ id ^" ...\n");
@@ -22,14 +25,14 @@ let rec lookup id sym_table iter =
     | Some(parent) -> lookup id parent (iter +1 )
     | _ -> raise Not_found 
 
-let add_to_symbol_table id id_type sym_table = 
-  debug("Adding " ^ id ^ " to symbol_table \n");
-  debug(repr_of_type " " id_type ^ "\n");
-  sym_table.table <- StringMap.add id id_type sym_table.table;
-  ()
+(*let add_to_symbol_table id id_type sym_table = *)
+  (*debug("Adding " ^ id ^ " to symbol_table \n");*)
+  (*debug(repr_of_type " " id_type ^ "\n");*)
+  (*sym_table.table <- StringMap.add id id_type sym_table.table;*)
+  (*()*)
   
 let link_tables p_table c_table =   
-  debug("Linking a symbol_tables... \n");
+  debug("Linking a symbol_table... \n");
   c_table.parent <- Some(p_table);
   p_table.children <- c_table :: p_table.children;
   ()
@@ -164,13 +167,13 @@ let rec check_expression e sym_tabl =
           (try
             let (t, iter) = lookup v sym_tabl 0 in 
             (match t with
-            | Func_type(ret_type, var_types) ->  
-              ignore (List.map2 compare_type var_types      
+            | Func_type(ret_type, var_types, sym_ref) ->  
+              ignore (List.map2 compare_type var_types
               (List.map get_type_table exprs));
             t
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found")) 
-      | _ -> raise (Error "Malformed function call")) 
+      | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) -> 
     (match name with 
       | Variable(v) -> 
@@ -208,7 +211,10 @@ let rec check_expression e sym_tabl =
 and get_type expression sym_tabl =
   (match expression with 
   | Array_literal (exprs) -> 
-      Array_type((get_type (List.nth exprs 0) sym_tabl))
+      (if ((List.length exprs) = 0) then
+        Array_type (Basic_type Void_type)
+      else
+        Array_type((get_type (List.nth exprs 0) sym_tabl)))
   | List_comprehension (expr, params, exprs, expr1, s_t) -> 
       ignore(link_tables sym_tabl s_t);
       (get_type expr sym_tabl)
@@ -236,7 +242,9 @@ and get_type expression sym_tabl =
         (* extract the return value *)
   | Function_call (expr, exprs) -> (* (get_type expr ) *)
       let get_type_table t = get_type t sym_tabl in
-      Func_type((get_type expr sym_tabl), (List.map get_type_table exprs))
+      Func_type((get_type expr sym_tabl)
+      , (List.map get_type_table exprs)
+      , (ref (make_symbol_table (Some(sym_tabl)));))
       (* strip a layer off *)
   | Array_access (name, index) -> 
       (match name with 
@@ -259,22 +267,60 @@ and get_type expression sym_tabl =
   | Anonymous_function (var_type, params, stats, s_t) -> 
       let check_params_table param = check_param param sym_tabl in 
       Func_type((check_var_type var_type), 
-        (List.map check_params_table params))
+        (List.map check_params_table params), (ref (make_symbol_table
+        (Some(sym_tabl)));))
   | Function_expression (stat) -> 
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         let check_params_table param = check_param param sym_tabl in 
         Func_type((check_var_type ret_type), 
-        (List.map check_params_table params))
+        (List.map check_params_table params), (ref (make_symbol_table
+        (Some(sym_tabl)))))
       | _ -> raise (Error "Function expression invalid"))
   | Empty_expression -> Basic_type(Void_type)
   | _ -> raise (Error "Error in Semantic Analysis. Unknown Type Found")
   )
 
 and compare_type type1 type2 =
-  debug ("Comparing two types...\n" ^ (repr_of_type " " type1)
-  ^ (repr_of_type " " type2));
-  if not (type1 = type2) then raise (Error "Type Mismatch")
+  debug ("Comparing two types...\n" ^ (repr_of_type " " type1) ^ "\n"
+  ^ (repr_of_type " " type2) ^ "\n");
+  (* specially handle empty arrays *)
+  let array_void t = 
+    let rec array_void_rec t =
+      match t with
+      | Array_type(t) -> array_void_rec(t)
+      | Basic_type(b) -> (match b with Void_type -> true | _ -> false)
+      | _ -> false
+    in
+    match t with
+    | Array_type(t) -> array_void_rec(t)
+    | _ -> false
+  in
+  let rec array_layers a1 a2 = match a1 with
+  | Array_type(b1) ->
+      (match a2 with
+      | Array_type(b2) -> (array_layers b1 b2)
+      | _ -> raise (Error "Mismatched array types"))
+  | _ ->
+      (match a2 with
+      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | _ -> true)
+  in
+   if ((array_void type1) && (array_void type2)) then
+    raise (Error "Interior type could not be determined")
+  else if (array_void type1) then
+    (ignore(array_layers type1 type2);
+     type2)
+  else if (array_void type2) then
+    (ignore(array_layers type1 type2);
+     type1)
+  (* check for catchall types *)
+  else if (type1 = Any_type) then
+    type2
+  else if (type2 = Any_type) then
+    type1
+  (* do vanilla type checking here *)
+  else if not (type1 = type2) then raise (Error "Type Mismatch")
   else type1
 
 and check_unop op type1 =
@@ -359,9 +405,9 @@ and check_var_type var_type =
         in
         let temp = (det_array a 0) in
         (Array_type(temp))
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       Func_type((check_var_type ret_type),  
-        (List.map check_var_type param_types))
+        (List.map check_var_type param_types), sym_ref)
   | Func_param_type(ret_type, params) ->
     raise (Error "Function paramater types not supported ") 
   | _ -> raise (Error "Unsupported variable type")
@@ -388,12 +434,14 @@ and check_boolean v =
 
 and check_selection select sym_tabl =
   debug ("Checking a selection block... \n");
-  ignore( check_boolean (get_type select.if_cond sym_tabl));
-  ignore( check_statements select.if_body select.if_sym_tabl);
+  ignore(link_tables sym_tabl select.if_sym_tabl);
+  ignore(check_boolean (get_type select.if_cond sym_tabl));
+  ignore(check_statements select.if_body select.if_sym_tabl);
   if ((List.length select.elif_conds) != 0) then
     let check_elif cond body s_t = 
+      ignore(link_tables sym_tabl s_t);
       ignore(check_boolean (get_type cond s_t));
-      ignore(check_statements body s_t); 
+      ignore(check_statements body s_t)
     in
     for i=0 to (List.length select.elif_conds)-1 do
       (check_elif  
@@ -403,7 +451,8 @@ and check_selection select sym_tabl =
     done;
   else begin 
     if (List.length select.else_body) != 0 then 
-      ignore(check_statements select.else_body select.else_sym_tabl) 
+      (ignore(link_tables sym_tabl select.else_sym_tabl);
+       ignore(check_statements select.else_body select.else_sym_tabl))
     else () 
   end
 
@@ -435,7 +484,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
     let check_param_table param = 
       (check_param param sym_tabl) in
     ignore(add_to_symbol_table name 
-      (Func_type(v, (List.map check_param_table params))) p_s_tabl); 
+    (Func_type(v, (List.map check_param_table params), (ref sym_tabl))) p_s_tabl); 
     let com_bools x y = x || y in 
     let rec match_jump_types stat =
       debug ("Looking for jumps in " ^ name ^ "...\n");
@@ -460,7 +509,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
       List.fold_left com_bools false (List.map match_jump_types stats)
     in
     if b then debug("True \n") 
-      else print_string("False \n"); 
+      else debug("False \n"); 
         if b && (require_void v) then raise 
           (Error "Void method contains return")
         else 
@@ -521,7 +570,8 @@ and check_statements stats sym_tabl =
       ignore(check_statements tl sym_tabl);
   | [] -> () 
 
-let generate_sast program = 
+let generate_sast program debug = 
+  ignore(debug_state.debug_switch <- debug);
   match program with
   | Program(imp, stat, symbol_table) -> 
       ignore(check_statements stat symbol_table);

@@ -40,7 +40,7 @@ open Printf %}
 %%
 
 program:
-  | lines { Program (fst($1), snd($1), (make_symbol_table None);) }
+  | lines { Program (fst($1), snd($1), (make_global_table None);) }
 
 lines:
   | imports_opt external_declaration { ($1, [$2]) }
@@ -162,7 +162,7 @@ type_specifier:
 
 func_specifier:
   | FUNC COLON type_specifier LPAREN type_list RPAREN
-      { Func_type ($3, $5) }
+  { Func_type ($3, $5, (ref(make_symbol_table None);)) }
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN
       { Func_param_type ($3, $5) }
 

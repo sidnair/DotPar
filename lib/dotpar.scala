@@ -8,7 +8,7 @@ object Dotpar {
         case str: Array[Char] =>
           str.map(_.toString).reduceLeft(_+_)
         case arr: Array[_] =>
-          "[\" + arr.map(dotpar_string(_)).reduceLeft(_+\", \"+_) + \"]"
+          "[" + arr.map(dotpar_string(_)).reduceLeft(_+", "+_) + "]"
         case _ => y.toString
       }
     }

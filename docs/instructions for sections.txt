@@ -1,0 +1,43 @@
+So when you are writing your parts here are the things to know.
+
+1) If you need a header use
+
+\section{name}
+\subsection{name}
+\subsubsection{name}
+
+to organize your work, latex will automatically number all of the parts consecutively. The part headers are built into the main documents so don't worry about those.
+
+2) You do not need a header or document tags, just write the text for your section in your document. You can just type text normally and it will put it in paragraph form.
+
+3) You will need to check all ' and "" to make sure they print correctly. to make double quotes, the first is two backticks `` and the second is to apostrophes '' so ``hello'' will produce "hello". ' may need to be retyped if they don't show up.
+
+4) If you want to make lists
+for bullet points:
+\begin{itemize}
+\item Lessons learned individually
+\end{itemize}
+
+for numbered:
+\begin{enumerate}
+\itemAdd more assignment operators: *=, \textbackslash=, +=, -=, \%=
+\end{enumerate}
+
+5) If you want to insert lines of code
+\begin{verbatim}
+int fib(n) {
+       if (n == 0)
+         return 0;
+\end{verbatim}
+for inline code use \verb=code= or \verb$code$
+
+6) Special characters
+# $ % & \ ^ _ { } ~
+can be written as
+\# \$ \% \& \_ \{ \}
+
+7) Formatting
+\\ creates a new line after previous text
+\newline also works
+if it looks weird you can use
+\textit{text} makes text italic

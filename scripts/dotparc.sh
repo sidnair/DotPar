@@ -30,9 +30,7 @@ mkdir -p $Program_lib
 mkdir -p $Scala_lib
 
 # we assume this file is executed with ./dotparc.sh
-cd `dirname $1`
-cat `basename $1` | $CurDir/bin/dotpar > $Scala_file
-cd $CurDir
+$CurDir/bin/dotpar <$1 >$Scala_file
 if [ $? -ne 0 ]
 then
     echo "Dotpar -> Scala conversion failed"

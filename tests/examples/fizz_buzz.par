@@ -1,0 +1,23 @@
+func fizzBuzz:void() {
+    char[] fb = "FizzBuzz";
+    char[] f = "Fizz";
+    char[] b = "Buzz";
+    for (number i = 1; i < 101; i = i + 1){
+        if (i % 15 == 0){
+            println(fb);
+        }
+        elif(i % 3 == 0){
+            println(f);
+        }
+        elif(i % 5 == 0){
+            println(b);
+        }
+        else{
+            println(i);
+        }
+    }
+}
+
+func main:void() {
+    fizzBuzz();
+}
