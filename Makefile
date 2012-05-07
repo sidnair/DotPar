@@ -8,7 +8,6 @@ bin:
 	mkdir bin
 
 compiler:
-	make clean
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
 	ocamlc -c transform.ml; \
