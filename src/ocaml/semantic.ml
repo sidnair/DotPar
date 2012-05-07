@@ -314,6 +314,11 @@ and compare_type type1 type2 =
   else if (array_void type2) then
     (ignore(array_layers type1 type2);
      type1)
+  (* check for catchall types *)
+  else if (type1 = Any_type) then
+    type2
+  else if (type2 = Any_type) then
+    type1
   (* do vanilla type checking here *)
   else if not (type1 = type2) then raise (Error "Type Mismatch")
   else type1
