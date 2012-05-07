@@ -32,7 +32,7 @@ let rec lookup id sym_table iter =
   (*()*)
   
 let link_tables p_table c_table =   
-  debug("Linking a symbol_tables... \n");
+  debug("Linking a symbol_table... \n");
   c_table.parent <- Some(p_table);
   p_table.children <- c_table :: p_table.children;
   ()
@@ -168,12 +168,12 @@ let rec check_expression e sym_tabl =
             let (t, iter) = lookup v sym_tabl 0 in 
             (match t with
             | Func_type(ret_type, var_types, sym_ref) ->  
-              ignore (List.map2 compare_type var_types      
+              ignore (List.map2 compare_type var_types
               (List.map get_type_table exprs));
             t
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found")) 
-      | _ -> raise (Error "Malformed function call")) 
+      | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) -> 
     (match name with 
       | Variable(v) -> 
@@ -434,12 +434,14 @@ and check_boolean v =
 
 and check_selection select sym_tabl =
   debug ("Checking a selection block... \n");
-  ignore( check_boolean (get_type select.if_cond sym_tabl));
-  ignore( check_statements select.if_body select.if_sym_tabl);
+  ignore(link_tables sym_tabl select.if_sym_tabl);
+  ignore(check_boolean (get_type select.if_cond sym_tabl));
+  ignore(check_statements select.if_body select.if_sym_tabl);
   if ((List.length select.elif_conds) != 0) then
     let check_elif cond body s_t = 
+      ignore(link_tables sym_tabl s_t);
       ignore(check_boolean (get_type cond s_t));
-      ignore(check_statements body s_t); 
+      ignore(check_statements body s_t)
     in
     for i=0 to (List.length select.elif_conds)-1 do
       (check_elif  
@@ -449,7 +451,8 @@ and check_selection select sym_tabl =
     done;
   else begin 
     if (List.length select.else_body) != 0 then 
-      ignore(check_statements select.else_body select.else_sym_tabl) 
+      (ignore(link_tables sym_tabl select.else_sym_tabl);
+       ignore(check_statements select.else_body select.else_sym_tabl))
     else () 
   end
 
