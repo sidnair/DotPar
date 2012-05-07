@@ -320,7 +320,9 @@ and compare_type type1 type2 =
   else if (type2 = Any_type) then
     type1
   (* do vanilla type checking here *)
-  else if not (type1 = type2) then raise (Error "Type Mismatch")
+  else if not (type1 = type2) then raise
+      (Error (Printf.sprintf "Type Mismatch: got %s expected %s"
+      (string_of_type type1) (string_of_type type2)))
   else type1
 
 and check_unop op type1 =
