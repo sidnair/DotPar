@@ -162,7 +162,7 @@ type_specifier:
 
 func_specifier:
   | FUNC COLON type_specifier LPAREN type_list RPAREN
-      { Func_type ($3, $5) }
+  { Func_type ($3, $5, (ref(make_symbol_table None);)) }
   | FUNC COLON type_specifier LPAREN parameter_list RPAREN
       { Func_param_type ($3, $5) }
 

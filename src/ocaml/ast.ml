@@ -20,7 +20,7 @@ and var_type =
     Basic_type of basic_type
   | Array_type of var_type
   | Fixed_array_type of var_type * expression
-  | Func_type of var_type * var_type list
+  | Func_type of var_type * var_type list * symbol_table ref 
   | Func_param_type of var_type * param list
   | Any_type
 
@@ -85,95 +85,11 @@ and import = Import of string
 
 and imports = import list
 
-;;
 
-type program = Program of imports * statements * symbol_table
-
-;;
-
-let builtin_list = 
-  [ ("cat" ,  
-        Func_type( Array_type(Any_type), 
-        [Array_type(Any_type) ; Array_type(Any_type) ] ) ) ;
-    ("each" ,  
-        Func_type( Basic_type(Void_type), 
-        [Array_type(Any_type) ; 
-        Func_type(Any_type,  [Any_type ; Basic_type(Number_type)]) ] ) ) ;
-    ("fill", 
-        Func_type( Array_type(Any_type),
-        [ Array_type(Basic_type(Number_type)) ; Func_type(Any_type, [Any_type])])) ; 
-    ("filter", 
-        Func_type( Basic_type(Boolean_type) ,
-        [Array_type(Any_type) ; Func_type(Array_type(Any_type) ,
-        [Basic_type(Number_type) ; Basic_type(Number_type) ]) ] ) ) ;
-    ("len", 
-        Func_type(Basic_type(Number_type), [Array_type(Any_type)]) ) ;
-    ("map",  
-        Func_type( Array_type(Any_type), 
-        [Array_type(Any_type) ; 
-        Func_type(Any_type,  [Any_type ; Basic_type(Number_type)]) ] ) ) ;
-    ("reduce",
-        Func_type( Any_type,
-        [Func_type( Any_type, [Any_type ; Any_type] ) ; Array_type(Any_type) ;
-        Any_type ] ) ) ;
-    ("zip",
-        Func_type(Array_type(Array_type(Any_type)), 
-        [Array_type(Any_type) ; Array_type(Any_type)] ) ) ;
-    ("acos",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("asin",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("atan",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("cos",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("exp",
-        Func_type(Basic_type(Number_type), 
-        [Basic_type(Number_type) ; Basic_type(Number_type)])) ;
-    ("ln",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("log",
-        Func_type(Basic_type(Number_type), 
-        [Basic_type(Number_type) ;  Basic_type(Number_type)])) ;
-    ("sin",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("sqrt",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("tan",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("ceil",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("floor",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("trunc",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("round",
-        Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("rand",
-    Func_type(Basic_type(Number_type), [Basic_type(Number_type)])) ;
-    ("print",
-        Func_type(Basic_type(Void_type),
-        [Any_type])) ;
-    ("println",
-        Func_type(Basic_type(Void_type),
-        [Any_type])) ;
-    ("printerr",
-        Func_type(Basic_type(Void_type),
-        [Any_type])) ;
-    ("read",
-        Func_type(Any_type,
-        [])) ;
-    ("readln",
-        Func_type(Any_type,
-        [])) 
-  ]
+and program = Program of imports * statements * symbol_table
 
 ;;
-let add_to_symbol_table id id_type sym_table = 
-  sym_table.table <- StringMap.add id id_type sym_table.table;
-  ()
 
-;;
 let  make_symbol_table p = 
   {
     table = StringMap.empty;
@@ -181,6 +97,97 @@ let  make_symbol_table p =
     children = [];
     pure = false;
   }
+;;
+let builtin_list = 
+  [ ("cat" ,  
+        Func_type( Array_type(Any_type)
+        , [Array_type(Any_type) ; Array_type(Any_type) ] 
+        , (ref (make_symbol_table None);))) ;
+    ("each" ,  
+        Func_type( Basic_type(Void_type)
+        , [Array_type(Any_type) ; Func_type(Any_type,  [Any_type ;
+        Basic_type(Number_type)], (ref (make_symbol_table None );)) ]
+        , (ref (make_symbol_table None);)));
+    ("fill", 
+        Func_type( Array_type(Any_type),
+        [ Array_type(Basic_type(Number_type)) ; 
+        Func_type(Any_type, [Any_type], (ref (make_symbol_table None);))]
+        , (ref (make_symbol_table None);))) ; 
+    ("filter", 
+        Func_type( Basic_type(Boolean_type) 
+        , [Array_type(Any_type) ; Func_type(Array_type(Any_type) ,
+        [Basic_type(Number_type) ; Basic_type(Number_type) ], (ref
+        (make_symbol_table None);)) ], (ref (make_symbol_table None);)))  ;
+    ("len", 
+        Func_type(Basic_type(Number_type), [Array_type(Any_type)] , (ref
+        (make_symbol_table None); )) );
+    ("map",  
+        Func_type( Array_type(Any_type), 
+        [Array_type(Any_type) ; 
+        Func_type(Any_type,  [Any_type ; Basic_type(Number_type)] , (ref
+        (make_symbol_table None);)) ] , (ref (make_symbol_table None);)) ) ;
+    ("reduce",
+        Func_type( Any_type, [Func_type( Any_type, [Any_type ; Any_type] 
+        ,(ref (make_symbol_table None);)) ; Array_type(Any_type) ;
+        Any_type ]
+        , (ref (make_symbol_table None);) )) ;
+    ("zip",
+        Func_type(Array_type(Array_type(Any_type)), 
+        [Array_type(Any_type) ; Array_type(Any_type)] , (ref (make_symbol_table None);)) ) ;
+    ("acos",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("asin",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("atan",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("cos",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("exp",
+        Func_type(Basic_type(Number_type), 
+        [Basic_type(Number_type) ; Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("ln",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("log",
+        Func_type(Basic_type(Number_type), 
+        [Basic_type(Number_type) ;  Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("sin",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("sqrt",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("tan",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("ceil",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("floor",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("trunc",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("round",
+        Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("rand",
+    Func_type(Basic_type(Number_type), [Basic_type(Number_type)], (ref (make_symbol_table None);))) ;
+    ("print",
+        Func_type(Basic_type(Void_type),
+        [Any_type], (ref (make_symbol_table None);))) ;
+    ("println",
+        Func_type(Basic_type(Void_type),
+        [Any_type], (ref (make_symbol_table None);))) ;
+    ("printerr",
+        Func_type(Basic_type(Void_type),
+        [Any_type], (ref (make_symbol_table None);))) ;
+    ("read",
+        Func_type(Any_type,
+        [], (ref (make_symbol_table None);))) ;
+    ("readln",
+        Func_type(Any_type,
+        [], (ref (make_symbol_table None);))) 
+  ]
+
+;;
+let add_to_symbol_table id id_type sym_table = 
+  sym_table.table <- StringMap.add id id_type sym_table.table;
+  ()
+
 ;;
 let make_global_table p =
   let s_t = 
@@ -192,7 +199,7 @@ let make_global_table p =
   }
   in
   let add_func (name,t) =
-  add_to_symbol_table name t s_t 
+   add_to_symbol_table name t s_t 
   in
   ignore(List.map add_func builtin_list);
   s_t
@@ -285,7 +292,7 @@ and string_of_type var_type =
   | Array_type(a) -> (string_of_type a) ^ "[]"
   | Fixed_array_type(a,expr) ->
       (string_of_type a) ^ "[" ^ (string_of_expression expr) ^ "]"
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       "func:" ^ (string_of_type ret_type) ^ "(" ^
       (String.concat ", " (List.map string_of_type param_types)) ^ ")"
   | Func_param_type(ret_type, params) ->
@@ -484,7 +491,7 @@ and repr_of_type ind var_type =
       repr2 ind "ArrayTypeFixed"
         (repr_of_type ind a)
         (repr_of_expression ind expr)
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       repr2 ind "FunctionType"
         (repr_of_type ind ret_type)
         (repr_of_types ind param_types)

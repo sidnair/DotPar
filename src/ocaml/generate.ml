@@ -156,7 +156,7 @@ and gen_type var_type =
   | Array_type(a) -> "Array[" ^ (gen_type a) ^ "]"
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       "((" ^ (String.concat ", " (List.map gen_type param_types)) ^ ") => " ^
       (gen_type ret_type) ^ ")"
   | Func_param_type(ret_type, params) ->
@@ -182,7 +182,7 @@ and gen_initial type_dec =
   | Array_type(a) -> Array_literal [(gen_initial a)]
   (* | Fixed_array_type(a,expr) -> *)
   (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       (let rec range l u =
         if ( l > u )
         then []

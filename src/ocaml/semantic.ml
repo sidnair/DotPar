@@ -167,7 +167,7 @@ let rec check_expression e sym_tabl =
           (try
             let (t, iter) = lookup v sym_tabl 0 in 
             (match t with
-            | Func_type(ret_type, var_types) ->  
+            | Func_type(ret_type, var_types, sym_ref) ->  
               ignore (List.map2 compare_type var_types      
               (List.map get_type_table exprs));
             t
@@ -242,7 +242,9 @@ and get_type expression sym_tabl =
         (* extract the return value *)
   | Function_call (expr, exprs) -> (* (get_type expr ) *)
       let get_type_table t = get_type t sym_tabl in
-      Func_type((get_type expr sym_tabl), (List.map get_type_table exprs))
+      Func_type((get_type expr sym_tabl)
+      , (List.map get_type_table exprs)
+      , (ref (make_symbol_table (Some(sym_tabl)));))
       (* strip a layer off *)
   | Array_access (name, index) -> 
       (match name with 
@@ -265,13 +267,15 @@ and get_type expression sym_tabl =
   | Anonymous_function (var_type, params, stats, s_t) -> 
       let check_params_table param = check_param param sym_tabl in 
       Func_type((check_var_type var_type), 
-        (List.map check_params_table params))
+        (List.map check_params_table params), (ref (make_symbol_table
+        (Some(sym_tabl)));))
   | Function_expression (stat) -> 
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         let check_params_table param = check_param param sym_tabl in 
         Func_type((check_var_type ret_type), 
-        (List.map check_params_table params))
+        (List.map check_params_table params), (ref (make_symbol_table
+        (Some(sym_tabl)))))
       | _ -> raise (Error "Function expression invalid"))
   | Empty_expression -> Basic_type(Void_type)
   | _ -> raise (Error "Error in Semantic Analysis. Unknown Type Found")
@@ -396,9 +400,9 @@ and check_var_type var_type =
         in
         let temp = (det_array a 0) in
         (Array_type(temp))
-  | Func_type(ret_type, param_types) ->
+  | Func_type(ret_type, param_types, sym_ref) ->
       Func_type((check_var_type ret_type),  
-        (List.map check_var_type param_types))
+        (List.map check_var_type param_types), sym_ref)
   | Func_param_type(ret_type, params) ->
     raise (Error "Function paramater types not supported ") 
   | _ -> raise (Error "Unsupported variable type")
@@ -472,7 +476,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
     let check_param_table param = 
       (check_param param sym_tabl) in
     ignore(add_to_symbol_table name 
-      (Func_type(v, (List.map check_param_table params))) p_s_tabl); 
+    (Func_type(v, (List.map check_param_table params), (ref sym_tabl))) p_s_tabl); 
     let com_bools x y = x || y in 
     let rec match_jump_types stat =
       debug ("Looking for jumps in " ^ name ^ "...\n");
