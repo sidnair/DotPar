@@ -19,5 +19,5 @@ func fizzBuzz:void() {
 }
 
 func main:void() {
-    println(fizzBuzz());
+    fizzBuzz();
 }

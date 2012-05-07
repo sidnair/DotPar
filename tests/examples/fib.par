@@ -1,13 +1,22 @@
 func fib:number(number n) {
-    if (n == 0) {
-        return 0;
-    } elif (n == 1) {
-       return 1;
-    } else {
-        return fib(n-1) + fib(n-2);
-    } 
+	if (n == 0) {
+         return 0;
+	}
+    elif (n == 1) {
+		return 1;
+	}
+    else {
+		return fib(n-1) + fib(n-2);
+	} 
 }
 
-func main:void() {
-    println(fib(10));
+func main:void(){
+	number[] a;
+	for (number i = 0; i < 11; i = i + 1){
+		a[i] = fib(i);
+	}
+	println("The first 10 elements of the fibonacci");
+	for (number i = 0; i < len(a); i = i + 1){
+		println(a[i]);
+	}
 }
