@@ -74,10 +74,10 @@ and statement =
   | Statements of statements (* compound statements *)
   | Selection of selection_statement
   | Iteration of expression * expression * expression * statements *
-    symbol_table
+    symbol_table * symbol_table 
   | Jump of expression
   | Function_definition of string * var_type * param list * statements *
-    symbol_table
+    symbol_table  
 
 and statements = statement list
 
@@ -325,7 +325,7 @@ and string_of_statement stat =
     Expression(e) -> (string_of_expression e) ^ ";\n"
   | Statements(s) -> (string_of_statements s) ^ "\n"
   | Selection(s) -> (string_of_selection s) ^ "\n"
-  | Iteration(dec,check,incr, stats, sym_tabl) ->
+  | Iteration(dec,check,incr, stats, sym_tabl, head_sym_tabl) ->
       "for(" ^ (string_of_expression dec) ^ "," ^
       (string_of_expression check) ^ "," ^
       (string_of_expression incr) ^ ")" ^
@@ -542,7 +542,7 @@ and repr_of_statement ind stat =
       (repr1 ind "Statements" (repr_of_statements ind s)) ^ "\n" ^ ind
   | Selection(s) ->
       (repr1 ind "If" (repr_of_selection ind s)) ^ "\n" ^ ind
-  | Iteration(dec,check,incr, stats, table) ->
+  | Iteration(dec,check,incr, stats, table, header_symbol_Table) ->
       (repr5 ind "For"
          (repr_table ind table)
          (repr_of_expression ind dec)

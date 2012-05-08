@@ -11,8 +11,7 @@ module StringMap = Map.Make(String);;
 type debug_state_monad = { mutable debug_switch : bool };;
 let debug_state = { debug_switch = true; };;
 
-let debug str =
-  if debug_state.debug_switch then print_string (str) else ()
+let debug str = if debug_state.debug_switch then print_string (str);;
 
 let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
@@ -24,12 +23,6 @@ let rec lookup id sym_table iter =
     match sym_table.parent with 
     | Some(parent) -> lookup id parent (iter +1 )
     | _ -> raise Not_found 
-
-(*let add_to_symbol_table id id_type sym_table = *)
-  (*debug("Adding " ^ id ^ " to symbol_table \n");*)
-  (*debug(repr_of_type " " id_type ^ "\n");*)
-  (*sym_table.table <- StringMap.add id id_type sym_table.table;*)
-  (*()*)
   
 let link_tables p_table c_table =   
   debug("Linking a symbol_table... \n");
@@ -37,23 +30,17 @@ let link_tables p_table c_table =
   p_table.children <- c_table :: p_table.children;
   ()
 
-(* This method is very experimental *)
-(*let rec get_symbol_table root id iter = *)
-  (*let rec wrap_get_sym_table root id iter tail = *)
-    (*(try ignore(StringMap.find id root.table);*)
-      (*root*)
-    (*with Not_found ->*)
-      (*(match tail with *)
-      (*| [] ->    *)
-      (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl))*)
-  (*in*)
-  (*try*)
-    (*ignore(StringMap.find id root.table);*)
-    (*root*)
-  (*with Not_found ->*)
-    (*match root.children with*)
-    (*| [] -> raise (Not_found)*)
-    (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl*)
+let rec get_symbol_table id sym_table iter =
+  debug("Looking for symbol_table based on "^ id ^" ...\n");
+  try
+    let t = StringMap.find id sym_table.table in
+    debug("Found " ^ id ^ " ...\n");
+    ignore(t, iter);
+    (sym_table, iter)
+  with Not_found ->
+    match sym_table.parent with 
+    | Some(parent) -> get_symbol_table id parent (iter +1 )
+    | _ -> raise Not_found 
 
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
@@ -74,7 +61,7 @@ let rec check_expression e sym_tabl =
             if not (require_number index_t)
               then raise (Error "Invalid Array Access")
             else begin 
-              let t1 = get_type right sym_tabl in
+              let t1 = check_expression right sym_tabl in
               ignore(compare_type t t1);
               t1
             end
@@ -112,19 +99,15 @@ let rec check_expression e sym_tabl =
             end
           with Not_found ->
             let t = check_var_type var_type in
-            let t2 = get_type right sym_tabl in
+            let t2 = check_expression right sym_tabl in
             ignore(compare_type t t2);
             ignore(add_to_symbol_table v t sym_tabl);
             t2
           )
       | _ -> raise (Error "Malformed Declaration Expression"))
   | Array_literal (exprs) ->
-    let get_type_wrap expr = 
-      get_type expr sym_tabl
-    in
-    let t = get_type (List.hd exprs) sym_tabl in
-    ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
-    t
+    (if ((List.length exprs) = 0) then Array_type (Basic_type Void_type)
+     else Array_type((check_expression (List.nth exprs 0) sym_tabl)))
   | List_comprehension (expr, params, exprs, expr1, symbol_table) -> 
     ignore(link_tables sym_tabl symbol_table);
     let check_param_table param = check_param param symbol_table in
@@ -132,7 +115,7 @@ let rec check_expression e sym_tabl =
       match (get_type e symbol_table) with
       | Array_type(a) -> a
       | _ -> (get_type e symbol_table)   
-    in 
+    in
     (try
       ignore(List.map2 compare_type 
         (List.map check_param_table params)
@@ -150,17 +133,18 @@ let rec check_expression e sym_tabl =
     with Invalid_argument "" -> 
         raise (Error "Mismatched on types in List comp"))
   | Unop (op, expr) ->
-    let t = (get_type expr sym_tabl) in
+    let t = (check_expression expr sym_tabl) in
     ignore(check_unop op t);
     (get_type (Unop(op, expr)) sym_tabl)
   | Binop (expr, op, expr1) -> 
-    let t = (get_type expr sym_tabl) in
-    let t2 = (get_type expr1 sym_tabl) in
+    debug("checkin binop");
+    let t = (check_expression expr sym_tabl) in
+    let t2 = (check_expression expr1 sym_tabl) in
     ignore(check_operator t op t2);
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
     let get_type_table expr = 
-        get_type expr sym_tabl
+        check_expression expr sym_tabl
     in 
     (match expr with
       | Variable(v) ->
@@ -175,6 +159,7 @@ let rec check_expression e sym_tabl =
           with Not_found -> raise (Error "Function not found")) 
       | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) -> 
+    debug("matahced on array access!!!!!!!!!!!!!!!!!!!!!!!!");
     (match name with 
       | Variable(v) -> 
         let (t, iter) = lookup v sym_tabl 0 in
@@ -182,7 +167,9 @@ let rec check_expression e sym_tabl =
         if not (require_number index_t) 
           then raise (Error "Invalid Array Access")
         else begin 
-          t
+            (match t with 
+            | Array_type(a) -> a
+            | _ -> t)
         end
       | _ -> raise (Error "Malformed Array Statement"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t 
@@ -192,12 +179,11 @@ let rec check_expression e sym_tabl =
   | Boolean_literal (b) -> Basic_type(Boolean_type) 
   | Nil_literal -> Basic_type(Void_type) 
   | Anonymous_function (var_type, params, stats, s_t) ->
+       debug("annonmous funcitonssss");
       ignore(link_tables sym_tabl s_t);
-      let check_param_table param = check_param param s_t in 
-      ignore(check_statements stats s_t);
-      ignore(List.map check_param_table params);
-      check_var_type var_type
+      check_func_def "anon" var_type params stats s_t sym_tabl
   | Function_expression (stat) ->
+      debug("We've reached a function expressionssssss");
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
@@ -490,9 +476,10 @@ and check_selection select sym_tabl =
     else () 
   end
 
-and check_iter dec check incr stats sym_tabl = 
-  ignore(check_expression dec sym_tabl); 
-  if not ( require_bool (get_type check sym_tabl)) then 
+and check_iter dec check incr stats sym_tabl head_sym_tabl = 
+  (link_tables head_sym_tabl sym_tabl);
+  ignore(check_expression dec head_sym_tabl); 
+  if not ( require_bool (get_type check head_sym_tabl)) then 
     raise (Error "Conditonal in iteration not of type Boolean")
     else begin
       ignore(check_expression incr sym_tabl);
@@ -529,7 +516,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
         List.fold_left com_bools false (List.map match_jump_types 
           (List.concat [s.if_body; s.else_body; 
           (List.concat s.elif_bodies)]) )
-    | Iteration(d,c,i,s, s_t) -> debug("Iteration\n");
+    | Iteration(d,c,i,s, s_t, h_s_t) -> debug("Iteration\n");
         List.fold_left com_bools false (List.map match_jump_types s) 
     | Jump(j) -> debug("Jumping!\n");
         ignore(compare_type (get_type j sym_tabl) v); 
@@ -549,7 +536,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
         else 
           if (not b) && not (require_void v) then 
             raise (Error "Non-void method must contain return statement") 
-          else v 
+          else (Func_type(v, (List.map check_param_table params), (ref sym_tabl)))
 
 and require_void type1 =
   match type1 with
@@ -585,10 +572,10 @@ and check_statement stat sym_tabl =
   | Statements(s) -> ignore (check_statements s sym_tabl);
   | Selection(s) -> ignore (check_selection s sym_tabl);
   debug("Matched on Selection");
-  | Iteration(dec, check, incr, stats, symbol_table) -> 
+  | Iteration(dec, check, incr, stats, symbol_table, head_sym_tab) -> 
       debug("Matched on Iteration");
-      ignore(link_tables sym_tabl symbol_table);
-      ignore(check_iter dec check incr stats symbol_table); 
+      ignore(link_tables sym_tabl head_sym_tab);
+      ignore(check_iter dec check incr stats symbol_table head_sym_tab); 
   | Jump(j) -> ignore (check_expression j sym_tabl);
       debug ("Check jump...\n");
   | Function_definition(name, ret_type, params, sts, symbol_table) ->

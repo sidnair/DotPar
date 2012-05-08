@@ -1,6 +1,47 @@
 System Integrator - Nathan
+
 \begin{itemize}
 \item Describe the software development environment used to create the compiler.
+
+The build environment of the compiler used a combination of OCaml,
+Scala, and shell scripts to tie everything together.
+
+We use OCaml for the source-to-source translator, compiling DotPar
+code down to scala code.
+
+We leverage the existing \texttt{scalac} compiler to compile the
+results of the previous step, compiling the generated scala file down
+to class files.
+
+Then, we use a shell script to tie the translator and \texttt{scalac}
+compiler together, and package the entire thing into a single
+executable jar appropriate for execution directly on the JVM.
+
 \item Show the makefile used to create and test the compiler during development.
+
+<<<Copy-pasta>>>
+
 \item Describe the run-time environment for the compiler.
+
+Overall, the run-time environment of the generated programs is the
+JVM, which executes the bytecode from the generated class files
+packaged up into the final jar file.
+
+At the next level down, the jar file also comes equipped with the
+included Scala supporting class files: without these, the program will
+not run as compiled by \texttt{scalac}. 
+
+Finally, we include some supporting scala code that the generated
+scala code relies on, which extends the behavior of the scala runtime
+to provide the semantics required by the DotPar code.
+
 \end{itemize}
+
+
+Individual lessons learned:
+ - Motivating people is hard.
+ - Projects will grow to fill the time allotted to them.
+
+
+Group lessons
+ - Bleed now or bleed tomorrow.
