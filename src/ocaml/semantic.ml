@@ -29,25 +29,24 @@ let link_tables p_table c_table =
   c_table.parent <- Some(p_table);
   p_table.children <- c_table :: p_table.children;
   ()
-
-(* This method is very experimental *)
-(*let rec get_symbol_table root id iter = *)
-  (*let rec wrap_get_sym_table root id iter tail = *)
-    (*(try ignore(StringMap.find id root.table);*)
-      (*root*)
-    (*with Not_found ->*)
-      (*(match tail with *)
-      (*| [] ->    *)
-      (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl))*)
-  (*in*)
-  (*try*)
-    (*ignore(StringMap.find id root.table);*)
-    (*root*)
-  (*with Not_found ->*)
-    (*match root.children with*)
-    (*| [] -> raise (Not_found)*)
-    (*| h :: tl -> wrap_get_sym_table h id (iter+1) tl*)
-
+(*
+let rec get_symbol_table root id iter = 
+  let rec wrap_get_sym_table root id iter tail = 
+    (try ignore(StringMap.find id root.table);
+      root
+    with Not_found ->
+      (match tail with 
+      | [] -> []    
+      | h :: tl -> wrap_get_sym_table h id (iter+1) tl))
+  in
+  try
+    ignore(StringMap.find id root.table);
+    root
+  with Not_found ->
+    match root.children with
+    | [] -> raise (Not_found)
+    | h :: tl -> wrap_get_sym_table h id (iter+1) tl
+*)
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
   debug("Checking an expression... \n");

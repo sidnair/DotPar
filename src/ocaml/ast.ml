@@ -74,7 +74,7 @@ and statement =
   | Statements of statements (* compound statements *)
   | Selection of selection_statement
   | Iteration of expression * expression * expression * statements *
-    symbol_table
+    symbol_table 
   | Jump of expression
   | Function_definition of string * var_type * param list * statements *
     symbol_table
