@@ -73,7 +73,7 @@ let rec check_expression e sym_tabl =
             if not (require_number index_t)
               then raise (Error "Invalid Array Access")
             else begin 
-              let t1 = get_type right sym_tabl in
+              let t1 = check_expression right sym_tabl in
               ignore(compare_type t t1);
               t1
             end
@@ -101,6 +101,7 @@ let rec check_expression e sym_tabl =
       | _ -> raise (Error "Invalid Declaration Type")
     ) 
   | Declaration_expression (var_type, var, right) ->
+    debug("declare yoself adsfdsafsdafdsf");
     (match var with
       | Variable(v) -> 
           (try
@@ -111,15 +112,16 @@ let rec check_expression e sym_tabl =
             end
           with Not_found ->
             let t = check_var_type var_type in
-            let t2 = get_type right sym_tabl in
+            let t2 = check_expression right sym_tabl in
             ignore(compare_type t t2);
             ignore(add_to_symbol_table v t sym_tabl);
             t2
           )
       | _ -> raise (Error "Malformed Declaration Expression"))
   | Array_literal (exprs) ->
+    debug("matched array literalll");
     let get_type_wrap expr = 
-      get_type expr sym_tabl
+      check_expression expr sym_tabl
     in
     let t = get_type (List.hd exprs) sym_tabl in
     ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
@@ -153,8 +155,9 @@ let rec check_expression e sym_tabl =
     ignore(check_unop op t);
     (get_type (Unop(op, expr)) sym_tabl)
   | Binop (expr, op, expr1) -> 
-    let t = (get_type expr sym_tabl) in
-    let t2 = (get_type expr1 sym_tabl) in
+    debug("checkin binop");
+    let t = (check_expression expr sym_tabl) in
+    let t2 = (check_expression expr1 sym_tabl) in
     ignore(check_operator t op t2);
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
@@ -174,6 +177,7 @@ let rec check_expression e sym_tabl =
           with Not_found -> raise (Error "Function not found")) 
       | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) -> 
+    debug("matahced on array access!!!!!!!!!!!!!!!!!!!!!!!!");
     (match name with 
       | Variable(v) -> 
         let (t, iter) = lookup v sym_tabl 0 in
@@ -181,7 +185,9 @@ let rec check_expression e sym_tabl =
         if not (require_number index_t) 
           then raise (Error "Invalid Array Access")
         else begin 
-          t
+            (match t with 
+            | Array_type(a) -> a
+            | _ -> t)
         end
       | _ -> raise (Error "Malformed Array Statement"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t 
