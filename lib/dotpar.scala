@@ -38,6 +38,11 @@ object Dotpar {
       (implicit m:ClassManifest[TT]):Array[TT] = {
     (arr map function).toArray
   }
+  // map
+  def dp_par_map[T, TT](arr:Array[T], function:(T => TT))
+      (implicit m:ClassManifest[TT]):Array[TT] = {
+    (arr.par map function).toArray
+  }
   // reduce
   def dp_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
     if (arr.length == 0) {
