@@ -1,7 +1,53 @@
 open Ast;;
 open Semantic;;
 
-let rec can_par_statements statements symbols =
+type debug_state_monad = { mutable debug_switch : bool };;
+let debug_state = { debug_switch = false; };;
+let debug str = if debug_state.debug_switch then print_string (str);;
+
+let rec are_assoc_statements statements symbols =
+  match statements with
+  | head::tail ->
+      let can_assoc_head = is_assoc_statement head symbols in
+      let can_assoc_tail = are_assoc_statements tail symbols in
+      can_assoc_head && can_assoc_tail
+  | [] -> true
+
+and is_assoc_statement statement symbols =
+  match statement with
+  | Expression(e) -> is_assoc_expr e
+  | Statements(s) -> are_assoc_statements s symbols
+  | Jump(e) -> is_assoc_expr e
+  (* Don't recurse on functions defined in if statements or for loops *)
+  | Selection(s) -> false
+  | Iteration(e1, e2, e3, stmts, table, head_table) -> false
+  | Function_definition(name, ret_type, params, stmts, table) ->
+      let is_assoc = are_assoc_statements stmts table in
+      table.associative <- is_assoc;
+      db_assoc name is_assoc;
+      (* Regardless of whether or not the function is associative, the
+       * definition does not violate purity. *)
+      true
+
+and is_assoc_expr expr =
+  match expr with
+  | (Binop(e1, Add, e2)
+    | Binop(e1, Mult, e2)
+    | Binop(e1, And, e2)
+    | Binop(e1, Or, e2)) -> (is_assoc_expr e1) && (is_assoc_expr e2)
+  | Declaration(type_dec, e1) -> true
+  | Array_literal(exprs) -> true
+  | Array_access(e1, e2) -> true
+  | Variable(str) -> true
+  | Char_literal(c) -> true
+  | Number_literal(n) -> true
+  | String_literal(s) -> true
+  | Boolean_literal(b) -> true
+  | Nil_literal -> true
+  | Empty_expression -> true
+  | _ -> false
+
+and can_par_statements statements symbols =
   match statements with
   | head::tail ->
       let can_par_head = can_par_statement head symbols in
@@ -33,12 +79,17 @@ and can_par_statement statement symbols =
        * does not violate purity. *)
       true
 
+and db_assoc name is_assoc =
+  let assoc_string_of_bool b =
+    if b then "assoc" else "non-assoc"
+  in
+  debug (Printf.sprintf "%s: %s\n" name (assoc_string_of_bool is_assoc))
+
 and db_par name is_pure =
   let pure_string_of_bool b =
     if b then "pure" else "impure"
   in
-  (*Printf.printf "%s: %s\n" name (pure_string_of_bool is_pure)*)
-  ()
+  debug (Printf.sprintf "%s: %s\n" name (pure_string_of_bool is_pure))
 
 (* Currently, parallelization of an if statement or else statement is not
  * supported. The symbol tables here must be updated to enable that if
@@ -112,4 +163,5 @@ let parallelize program =
   match program with
   | Program(imports, statements, symbols) ->
       ignore(can_par_statements statements symbols);
+      ignore(are_assoc_statements statements symbols);
       Program(imports, statements, symbols)
