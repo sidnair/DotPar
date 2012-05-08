@@ -31,7 +31,10 @@ and can_par_statement statement symbols =
       true
 
 and db_par name is_pure =
-  Printf.printf "%s : %s\n" name (string_of_bool is_pure)
+  let pure_string_of_bool b =
+    if b then "pure" else "impure"
+  in
+  Printf.printf "%s: %s\n" name (pure_string_of_bool is_pure)
 
 (* Currently, parallelization of an if statement or else statement is not
  * supported. The symbol tables here must be updated to enable that if
