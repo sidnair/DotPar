@@ -321,13 +321,13 @@ and compare_type type1 type2 =
    if ((array_void_any type1) && (array_void_any type2)) then
     raise (Error "Interior type could not be determined")
   else if (array_void_any type1) then begin
-     any = (if (array_layers type1 type2) then true
-     else false);
+     ignore(any = (if (array_layers type1 type2) then true
+     else false));
      type2
   end
   else if (array_void_any type2) then begin
-    any = (if (array_layers type1 type2) then true
-     else false);
+    ignore(any = (if (array_layers type1 type2) then true
+     else false));
      type1
   end
   (* check for catchall types *)
