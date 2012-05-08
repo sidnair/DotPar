@@ -31,14 +31,38 @@ and is_assoc_statement statement symbols =
 
 and is_assoc_expr expr =
   match expr with
-  | (Binop(e1, Add, e2)
-    | Binop(e1, Mult, e2)
-    | Binop(e1, And, e2)
-    | Binop(e1, Or, e2)) -> (is_assoc_expr e1) && (is_assoc_expr e2)
+  | Binop(e1, Add, e2) -> (are_adds e1) && (is_simple_assoc e2)
+  | Binop(e1, Mult, e2) -> (are_mults e1) && (is_simple_assoc e2)
+  | Binop(e1, And, e2) -> (are_ands e1) && (is_simple_assoc e2)
+  | Binop(e1, Or, e2) -> (are_ors e1) && (is_simple_assoc e2)
   | Declaration(type_dec, e1) -> true
   | Array_literal(exprs) -> true
-  | Array_access(e1, e2) -> true
-  | Variable(str) -> true
+  | Array_access(Variable(v), e2) -> is_simple_assoc e2
+  | _ -> is_simple_assoc expr
+
+and are_adds expr =
+  match expr with
+  | Binop(e1, Add, e2) -> (are_adds e1) && (is_simple_assoc e2)
+  | _ -> is_simple_assoc expr
+
+and are_mults expr =
+  match expr with
+  | Binop(e1, Mult, e2) -> (are_mults e1) && (is_simple_assoc e2)
+  | _ -> is_simple_assoc expr
+
+and are_ands expr =
+  match expr with
+  | Binop(e1, And, e2) -> (are_ands e1) && (is_simple_assoc e2)
+  | _ -> is_simple_assoc expr
+
+and are_ors expr =
+  match expr with
+  | Binop(e1, Or, e2) -> (are_ors e1) && (is_simple_assoc e2)
+  | _ -> is_simple_assoc expr
+
+and is_simple_assoc expr =
+  match expr with
+  | Variable(v) -> true
   | Char_literal(c) -> true
   | Number_literal(n) -> true
   | String_literal(s) -> true
