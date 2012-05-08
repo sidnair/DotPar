@@ -312,7 +312,7 @@ and compare_type type1 type2 =
       | Any_type -> true
       | _ -> false)
   in
-  let any = true in
+  let any = false in
    if ((array_void_any type1) && (array_void_any type2)) then
     raise (Error "Interior type could not be determined")
   else if (array_void_any type1) then begin
@@ -331,7 +331,7 @@ and compare_type type1 type2 =
   else if (type2 = Any_type) then
     type1
   (* do vanilla type checking here *)
-  else if not ((type1 = type2) && not any) then raise
+  else if ((not (type1 = type2)) && (not any)) then raise
       (Error (Printf.sprintf "Type Mismatch: got %s expected %s"
       (string_of_type type1) (string_of_type type2)))
   else type1
