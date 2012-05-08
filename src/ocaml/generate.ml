@@ -28,16 +28,18 @@ let rec gen_expression inds expression =
       (if (List.length params) == 1 then
         let if_cond_str = (gen_expression inds if_cond) in
         "(" ^ (gen_expression inds (List.nth exprs 0)) ^
+        (if s.pure then ".par" else "") ^
         (if (String.length if_cond_str) > 0 then
           ".filter({(" ^ (gen_param inds (List.nth params 0)) ^
           ") => " ^ if_cond_str ^ "})"
         else
           "") ^
         ".map({(" ^ (gen_param inds (List.nth params 0)) ^ 
-        ") => " ^ if_cond_str ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr) ^ "})" ^ ")"
       else
         let if_cond_str = (gen_expression inds if_cond) in
         "(" ^ (gen_expression inds (List.nth exprs 0)) ^
+        (if s.pure then ".par" else "") ^
         (if (String.length if_cond_str) > 0 then
           ".zipped.filter({(" ^
           (String.concat "," (List.map (gen_param inds) params)) ^
@@ -46,7 +48,7 @@ let rec gen_expression inds expression =
           "") ^
         ".zipped.map({(" ^
         (String.concat "," (List.map (gen_param inds) params)) ^ 
-        ") => " ^ if_cond_str ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr) ^ "})" ^ ")"
       )
         (* unary operators *)
   | Unop(op,expr) -> (gen_unop op) ^ (gen_expression inds expr)

@@ -4,7 +4,9 @@ open Semantic;;
 let rec can_par_statements statements symbols =
   match statements with
   | head::tail ->
-      (can_par_statement head symbols) && (can_par_statements tail symbols)
+      let can_par_head = can_par_statement head symbols in
+      let can_par_tail = can_par_statements tail symbols in
+      can_par_head && can_par_tail
   | [] -> true
 
 and can_par_statement statement symbols =
@@ -13,10 +15,11 @@ and can_par_statement statement symbols =
   | Statements(s) -> can_par_statements s symbols
   | Selection(s) -> can_par_selection s symbols
   | Iteration(e1, e2, e3, stmts, table, head_table) ->
-      let is_pure = can_par_expr e1 head_table &&
+      (* This only checks the head statements if the body fails the test. *)
+      let is_pure = can_par_statements stmts table &&
+          can_par_expr e1 head_table &&
           can_par_expr e2 head_table &&
-          can_par_expr e3 head_table &&
-          can_par_statements stmts table
+          can_par_expr e3 head_table
       in
       table.pure <- is_pure;
       db_par "for" is_pure;
@@ -40,25 +43,38 @@ and db_par name is_pure =
  * supported. The symbol tables here must be updated to enable that if
  * desired.*)
 and can_par_selection stmt symbols =
-  can_par_expr stmt.if_cond symbols &&
-  can_par_statements stmt.if_body stmt.if_sym_tabl &&
-  can_par_statements stmt.else_body stmt.else_sym_tabl &&
-  can_par_elifs stmt.elif_conds stmt.elif_bodies stmt.elif_sym_tabl symbols
+  let can_par_if = can_par_expr stmt.if_cond symbols in
+  let can_par_if_body = can_par_statements stmt.if_body stmt.if_sym_tabl in
+  let can_par_else_body = can_par_statements stmt.else_body stmt.else_sym_tabl in
+  let can_par_rest =
+      can_par_elifs stmt.elif_conds stmt.elif_bodies stmt.elif_sym_tabl symbols
+  in
+  can_par_if && can_par_if_body && can_par_else_body && can_par_rest
 
 and can_par_elifs conds bodies tables outer_table =
-  (List.length conds == 0) ||
-  (can_par_expr (List.hd conds) outer_table &&
-    can_par_statements (List.hd bodies) (List.hd tables) &&
-    can_par_elifs (List.tl conds) (List.tl bodies) (List.tl tables) outer_table)
+  if ((List.length conds) == 0) then
+    true
+  else
+    let can_par_conds = can_par_expr (List.hd conds) outer_table in
+    let can_par_body = can_par_statements (List.hd bodies) (List.hd tables) in
+    let can_par_rest =
+      can_par_elifs (List.tl conds) (List.tl bodies) (List.tl tables) outer_table
+    in
+    can_par_conds && can_par_body && can_par_rest
 
 and can_par_expr e symbols =
   match e with
   | Assignment_expression(lv, rv) -> can_par_assignment_expr lv symbols
-  (* TODO: can't parallelize this without array parallelization logic. *)
-  | List_comprehension(expr, params, exprs, if_cond, table) -> false
-  (* TODO: might be able to detect our own functions are pure for free by
-   * looking it up in our symbol table; function variables would be false,
-   * functinos we know the body of could be true. *)
+  | List_comprehension(expr, params, exprs, if_expr, table) ->
+      (* if_expr should be tiny, so only check it if the main expression is
+       * pure *)
+      let is_pure = can_par_expr expr table && can_par_expr if_expr table
+      in
+      table.pure <- is_pure;
+      db_par "list_comp" is_pure;
+      is_pure
+  (* TODO: detect our own functions are pure for free by looking it up in our
+   * symbol table; functions which we can statically identify could be true. *)
   | Function_call(expr, exprs) -> false
   | Anonymous_function(type_def, params, stmts, table) ->
       let is_pure = can_par_statements stmts table in
