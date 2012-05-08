@@ -36,7 +36,7 @@ let rec get_symbol_table id sym_table iter =
     let t = StringMap.find id sym_table.table in
     debug("Found " ^ id ^ " ...\n");
     ignore(t, iter);
-    sym_table
+    (sym_table, iter)
   with Not_found ->
     match sym_table.parent with 
     | Some(parent) -> get_symbol_table id parent (iter +1 )
