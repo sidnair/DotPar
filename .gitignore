@@ -15,6 +15,8 @@
 # LaTeX temp files
 *.aux
 *.log
+*.pdf
+*.gz
 
 /bin/
 *.DS_Store
