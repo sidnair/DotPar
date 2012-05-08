@@ -9,12 +9,12 @@ module StringMap = Map.Make(String);;
 (* utility function *)
 
 type debug_state_monad = { mutable debug_switch : bool };;
-let debug_state = { debug_switch = false; };;
+let debug_state = { debug_switch = true; };;
 
 let debug str =
   if debug_state.debug_switch then print_string (str) else ()
 
-let rec lookup id sym_table iter = 
+let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
   try
     let t = StringMap.find id sym_table.table in
@@ -282,45 +282,79 @@ and get_type expression sym_tabl =
   )
 
 and compare_type type1 type2 =
+  let catch_func t =
+    match t with
+    | Func_type(ret_type, params, sym_tabl)-> true
+    | _ -> false
+    in
   debug ("Comparing two types...\n" ^ (repr_of_type " " type1) ^ "\n"
   ^ (repr_of_type " " type2) ^ "\n");
   (* specially handle empty arrays *)
-  let array_void t = 
-    let rec array_void_rec t =
+  let array_void_any t = 
+    let rec array_void_any_rec t =
       match t with
-      | Array_type(t) -> array_void_rec(t)
+      | Array_type(t) -> array_void_any_rec(t)
+      | Any_type -> true
       | Basic_type(b) -> (match b with Void_type -> true | _ -> false)
       | _ -> false
     in
     match t with
-    | Array_type(t) -> array_void_rec(t)
+    | Array_type(t) -> array_void_any_rec(t)
     | _ -> false
   in
-  let rec array_layers a1 a2 = match a1 with
+  let rec array_layers a1 a2 = 
+  match a1 with
   | Array_type(b1) ->
       (match a2 with
       | Array_type(b2) -> (array_layers b1 b2)
       | _ -> raise (Error "Mismatched array types"))
+  | Any_type -> 
+    (match a2 with
+      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | _ -> true)
   | _ ->
       (match a2 with
       | Array_type(b2) -> raise (Error "Mismatched array types")
-      | _ -> true)
+      | Any_type -> true
+      | _ -> false)
   in
-   if ((array_void type1) && (array_void type2)) then
+  let any = false in
+   if ((array_void_any type1) && (array_void_any type2)) then
     raise (Error "Interior type could not be determined")
-  else if (array_void type1) then
-    (ignore(array_layers type1 type2);
-     type2)
-  else if (array_void type2) then
-    (ignore(array_layers type1 type2);
-     type1)
+  else if (array_void_any type1) then begin
+     ignore(any = (if (array_layers type1 type2) then true
+     else false));
+     type2
+  end
+  else if (array_void_any type2) then begin
+    ignore(any = (if (array_layers type1 type2) then true
+     else false));
+     type1
+  end
   (* check for catchall types *)
   else if (type1 = Any_type) then
     type2
   else if (type2 = Any_type) then
     type1
-  (* do vanilla type checking here *)
-  else if not (type1 = type2) then raise (Error "Type Mismatch")
+   (*custom validiation for func types, we need to ignore symbol tables*)
+  else if ((catch_func type1) && (catch_func type2)) then begin
+    let rec determine_equal t1 t2 =
+       match t1 with
+        | Func_type(rt, params, sym_tabl) ->
+            (match t2 with
+             | Func_type(rt2, params2, sym_tabl2) -> 
+                ignore(compare_type rt rt2);
+                ignore(List.map2 compare_type params params2);
+             | _ -> ())
+        | _ -> ()
+    in
+    (determine_equal type1 type2);
+    type1
+    end
+    (* do vanilla type checking here *)
+  else if ((not (type1 = type2)) && (not any)) then raise
+      (Error (Printf.sprintf "Type Mismatch: got %s expected %s"
+      (string_of_type type1) (string_of_type type2)))
   else type1
 
 and check_unop op type1 =

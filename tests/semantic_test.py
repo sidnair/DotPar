@@ -412,7 +412,7 @@ foo(func:number(number y) { return y*y; })
 }""",True),
 
 ("""
-function fizzBuzz:void() {
+func fizzBuzz:void() {
   char[] fb = "FizzBuzz";
   char[] f = "Fizz";
   char[] b = "Buzz";

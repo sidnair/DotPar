@@ -1,7 +1,93 @@
 Language Guru - Sid
+
+\section{Language Changes}
+The LRM changed very little during the course of our implementation. This is
+because we were cautious when writing the LRM and anticipated that features we
+thought would be simple might end up being difficult to implement. In fact, our
+LRM did not require any parallelism in a DotPar compiler implementation. This is
+because the language could conceivably be run in an environment in which
+parallelism is infeasible or undesirable; adding unnecessary restrictions on the
+compiler writer seemed imprudent.
+
+The biggest issue we we came across was dealing with overloading. For instance,
+we wanted to overload the \verb$map$ function, but support neither function
+overloading nor inheritance. Thus, we could not support using \verb$map$ on an
+array of numbers and an array of strings, for example. To solve this, we
+introduced an \verb$Any$ type which can be used for built-in functions. This
+maintains the paradigms of our type system, but means that it is possible to get
+a type error after semantic analysis, which violates some definitions of static
+typing.
+
+Parallelization was another challenging feature. But because it is the selling
+point of the language we will discuss implementation here even though the LRM
+does not strictly require it. We decided that our focus would be data
+parallelism on \verb$for$ loops and special constructs like the \verb$map$ and
+\verb$reduce$ functions and list comprehensions. We did not want to parallelize
+lines outside of blocks. This would require constructing a full data flow graph
+and generating code that would make wait for all dependencies to be computed
+before executing a piece of code. While not infeasible, this introduced
+additional complexity for minimal gain because the most expensive computations
+tend to be in loops.
+
+Due to time constraints, our analysis of data dependencies is limited to the
+variable level. Thus, if each iteration of a loop from \verb$i$ to \verb$n$
+writes to \verb$a[i]$ for some array \verb$a$, our code will think that there is
+a dependence with between each iteration of these loops. This is known as a
+\emph{false dependency}. Although every correct dependency analysis program
+provably must generates some false dependencies, many common cases can be
+optimized. There are well-known tests for array dependencies such as the
+Banerjee GCD test and the Delta test. Because these tests are well-known and our
+language provides ways to naturally parallelize maps and reduces even without
+this analysis we decided not to implement these tests.
+
+Another limitation of our parallelism is that we can only detect associativity
+and commutativity of functions in special cases. Detecting these properties in
+general cases is an open problem in the field. Without detecting these
+properties, however, it becomes impossible to parallelize certain classes of
+problems. For instance, to parallelize a \verb$reduce$, the reduction function
+must be associative.
+
+Another feature on our wishlist that we wanted but were forced to cut was Java
+interoperability. Java interoperability would make our language practical in the
+real world. Unfortunately, it would require generating an AST from bytecode in
+order to do dependency analysis and to do type checking. That said, compiled
+DotPar code can be used with Java code, just not the other way around.
+
+\section{Language Implementation Tools}
+To implement the language, we wrote the compiler in OCaml and used Scala as our
+target language.
+
+We used OCaml because we wanted to learn a functional paradigm. OCaml is also
+often used for writing compilers, so many relevant tools and resources are
+available. We used \verb$ocamllex$ and \verb$ocamlyacc$ for lexing and parsing,
+respectively. The tools are similar to \verb$lex$ and \verb$yacc$, but have
+slightly different syntax that is more fitting for OCaml.
+
+We compiled down to Scala for several reasons. First, it gives us first-class
+functions and closures for free. If we compiled down to something like Java,
+implementing closures would involve creating wrapper classes for functions to
+make them first-class and wrapping scopes in objects to implement closures.
+Second, it was more natural to compile our imperative constructs into Scala than
+it would have been to compile it to a functional language like Haskell or even a
+multiparadigm language like OCaml, which errs towards the functional.
+Additionally, Scala is threaded, and allows us to have more granular control
+over parallelism than a language like JavaScript. Furthermore, Scala is
+statically and strongly typed. Since our language does some type checking and
+requires types to be specified, it makes sense to use a language that makes use
+of these constructs since statically typed language tend to be faster than
+dynamically typed languages. Finally, Scala runs on the JVM\@. While this was not
+as essential as the other requirements, it is nice that any code that runs on
+the JVM will be able to use compiled DotPar code. In the future, we could
+leverage the virtual machine to use other code that runs on the JVM in DotPar
+code.
+
+We require no unusual libraries. An OCaml compiler, \verb$ocamlyacc$,
+\verb$ocamllex$, and Scala 2.9 or greater must be installed.
+
+\section{Language Implementation Practices}
+Keeping LRM and compiler consistent:
 \begin{itemize}
-\item Describe how the language evolved during the implementation and what steps were used to try to maintain the good attributes of the original language proposal.
-\item Describe the compiler tools used to create the compiler components.
-\item Describe what unusual libraries are used in the compiler.
-\item Describe what steps were taken to keep the LRM and the compiler consistent.
+	\item{Iterative development}
+	\item{Compilation to Scala worked first, then we added semantic analysis}
+	\item{GitHub issues}
 \end{itemize}
