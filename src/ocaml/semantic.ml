@@ -23,12 +23,6 @@ let rec lookup id sym_table iter =
     match sym_table.parent with 
     | Some(parent) -> lookup id parent (iter +1 )
     | _ -> raise Not_found 
-
-(*let add_to_symbol_table id id_type sym_table = *)
-  (*debug("Adding " ^ id ^ " to symbol_table \n");*)
-  (*debug(repr_of_type " " id_type ^ "\n");*)
-  (*sym_table.table <- StringMap.add id id_type sym_table.table;*)
-  (*()*)
   
 let link_tables p_table c_table =   
   debug("Linking a symbol_table... \n");
@@ -101,7 +95,6 @@ let rec check_expression e sym_tabl =
       | _ -> raise (Error "Invalid Declaration Type")
     ) 
   | Declaration_expression (var_type, var, right) ->
-    debug("declare yoself adsfdsafsdafdsf");
     (match var with
       | Variable(v) -> 
           (try
@@ -119,13 +112,8 @@ let rec check_expression e sym_tabl =
           )
       | _ -> raise (Error "Malformed Declaration Expression"))
   | Array_literal (exprs) ->
-    debug("matched array literalll");
-    let get_type_wrap expr = 
-      check_expression expr sym_tabl
-    in
-    let t = get_type (List.hd exprs) sym_tabl in
-    ignore (List.fold_left compare_type t (List.map get_type_wrap exprs));
-    t
+    (if ((List.length exprs) = 0) then Array_type (Basic_type Void_type)
+     else Array_type((check_expression (List.nth exprs 0) sym_tabl)))
   | List_comprehension (expr, params, exprs, expr1, symbol_table) -> 
     ignore(link_tables sym_tabl symbol_table);
     let check_param_table param = check_param param symbol_table in
@@ -133,7 +121,7 @@ let rec check_expression e sym_tabl =
       match (get_type e symbol_table) with
       | Array_type(a) -> a
       | _ -> (get_type e symbol_table)   
-    in 
+    in
     (try
       ignore(List.map2 compare_type 
         (List.map check_param_table params)
@@ -151,7 +139,7 @@ let rec check_expression e sym_tabl =
     with Invalid_argument "" -> 
         raise (Error "Mismatched on types in List comp"))
   | Unop (op, expr) ->
-    let t = (get_type expr sym_tabl) in
+    let t = (check_expression expr sym_tabl) in
     ignore(check_unop op t);
     (get_type (Unop(op, expr)) sym_tabl)
   | Binop (expr, op, expr1) -> 
@@ -162,7 +150,7 @@ let rec check_expression e sym_tabl =
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
     let get_type_table expr = 
-        get_type expr sym_tabl
+        check_expression expr sym_tabl
     in 
     (match expr with
       | Variable(v) ->
