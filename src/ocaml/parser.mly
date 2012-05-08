@@ -300,11 +300,13 @@ elifs_opt:
 iteration_statement:
   | FOR LPAREN expression SEMI expression SEMI expression RPAREN
       compound_statement
-      { Iteration ($3, $5, $7, $9, (make_symbol_table None);) }
+      { Iteration ($3, $5, $7, $9, (make_symbol_table None),
+      (make_symbol_table None);) }
   /* declaration already has a SEMI */
   | FOR LPAREN declaration expression SEMI expression RPAREN
       compound_statement
-      { Iteration ($3, $4, $6, $8, (make_symbol_table None);) }
+      { Iteration ($3, $4, $6, $8, (make_symbol_table None), 
+      (make_symbol_table None);)}
 
 jump_statement:
   | RETURN expression SEMI { Jump $2 }

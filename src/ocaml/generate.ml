@@ -238,7 +238,7 @@ and gen_statement inds stat =
     Expression(e) -> inds ^ (gen_expression inds e) ^ ";\n"
   | Statements(s) -> (gen_statements inds s) ^ "\n" ^ inds
   | Selection(s) -> (gen_selection inds s) ^ "\n"
-  | Iteration(dec,check,incr, stats, sym_tab) ->
+  | Iteration(dec,check,incr, stats, sym_tab, header_sym_tab) ->
       inds ^ (gen_expression inds dec) ^ "\n" ^
       inds ^ "while(" ^ (gen_expression inds check) ^ ") {\n" ^
       next_inds ^ (gen_statements next_inds stats) ^

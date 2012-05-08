@@ -34,12 +34,13 @@ and reverse_statement statement =
     Expression(e) -> Expression (reverse_expression e)
   | Statements(s) -> Statements (reverse_statements s)
   | Selection(s) -> Selection (reverse_selection s)
-  | Iteration(dec,check,incr, stats, sym_tab) ->
+  | Iteration(dec,check,incr, stats, sym_tab, head_sym_tab) ->
       Iteration (reverse_expression dec,
                  reverse_expression check,
                  reverse_expression incr,
                  reverse_statements stats,
-                 sym_tab)
+                 sym_tab,
+                 head_sym_tab)
   | Jump(j) -> Jump (reverse_expression j)
   | Function_definition(name, ret_type, params, sts, sym_tab) ->
       Function_definition (name, reverse_type ret_type,

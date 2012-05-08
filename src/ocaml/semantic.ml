@@ -482,9 +482,10 @@ and check_selection select sym_tabl =
     else () 
   end
 
-and check_iter dec check incr stats sym_tabl = 
-  ignore(check_expression dec sym_tabl); 
-  if not ( require_bool (get_type check sym_tabl)) then 
+and check_iter dec check incr stats sym_tabl head_sym_tabl = 
+  (link_tables head_sym_tabl sym_tabl);
+  ignore(check_expression dec head_sym_tabl); 
+  if not ( require_bool (get_type check head_sym_tabl)) then 
     raise (Error "Conditonal in iteration not of type Boolean")
     else begin
       ignore(check_expression incr sym_tabl);
@@ -521,7 +522,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
         List.fold_left com_bools false (List.map match_jump_types 
           (List.concat [s.if_body; s.else_body; 
           (List.concat s.elif_bodies)]) )
-    | Iteration(d,c,i,s, s_t) -> debug("Iteration\n");
+    | Iteration(d,c,i,s, s_t, h_s_t) -> debug("Iteration\n");
         List.fold_left com_bools false (List.map match_jump_types s) 
     | Jump(j) -> debug("Jumping!\n");
         ignore(compare_type (get_type j sym_tabl) v); 
@@ -577,10 +578,10 @@ and check_statement stat sym_tabl =
   | Statements(s) -> ignore (check_statements s sym_tabl);
   | Selection(s) -> ignore (check_selection s sym_tabl);
   debug("Matched on Selection");
-  | Iteration(dec, check, incr, stats, symbol_table) -> 
+  | Iteration(dec, check, incr, stats, symbol_table, head_sym_tab) -> 
       debug("Matched on Iteration");
-      ignore(link_tables sym_tabl symbol_table);
-      ignore(check_iter dec check incr stats symbol_table); 
+      ignore(link_tables sym_tabl head_sym_tab);
+      ignore(check_iter dec check incr stats symbol_table head_sym_tab); 
   | Jump(j) -> ignore (check_expression j sym_tabl);
       debug ("Check jump...\n");
   | Function_definition(name, ret_type, params, sts, symbol_table) ->
