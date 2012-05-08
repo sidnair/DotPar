@@ -179,12 +179,11 @@ let rec check_expression e sym_tabl =
   | Boolean_literal (b) -> Basic_type(Boolean_type) 
   | Nil_literal -> Basic_type(Void_type) 
   | Anonymous_function (var_type, params, stats, s_t) ->
+       debug("annonmous funcitonssss");
       ignore(link_tables sym_tabl s_t);
-      let check_param_table param = check_param param s_t in 
-      ignore(check_statements stats s_t);
-      ignore(List.map check_param_table params);
-      check_var_type var_type
+      check_func_def "anon" var_type params stats s_t sym_tabl
   | Function_expression (stat) ->
+      debug("We've reached a function expressionssssss");
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
@@ -537,7 +536,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
         else 
           if (not b) && not (require_void v) then 
             raise (Error "Non-void method must contain return statement") 
-          else v 
+          else (Func_type(v, (List.map check_param_table params), (ref sym_tabl)))
 
 and require_void type1 =
   match type1 with
