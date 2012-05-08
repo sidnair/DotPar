@@ -399,6 +399,12 @@ foo(func:number(number y) { return y*y; })
   number[] yy = [1, 2];
   [x*y for number x, number y in xx,yy if (x==1)];
 }""", True),
+("""
+func main:void() {
+    number[] array = [1, 2, 3, 4, 5];
+    number[] squares = [x * x for number x in [1, 2, 3, 4, 5] if (x % 2 == 0)];
+}
+""", True),
 
 ("""func fib:number(number n) {
   if (n == 0) {

@@ -111,27 +111,23 @@ let rec check_expression e sym_tabl =
   | List_comprehension (expr, params, exprs, expr1, symbol_table) -> 
     ignore(link_tables sym_tabl symbol_table);
     let check_param_table param = check_param param symbol_table in
-    let get_type_table e = 
-      match (get_type e symbol_table) with
+    let check_exp_table e = 
+      match (check_expression e symbol_table) with 
       | Array_type(a) -> a
-      | _ -> (get_type e symbol_table)   
+      | _ -> (check_expression e symbol_table)
     in
-    (try
-      ignore(List.map2 compare_type 
-        (List.map check_param_table params)
-        (List.map get_type_table exprs));
-      ignore(compare_type (get_type_table expr) 
-        (check_param_table (List.hd params)));
-      let fil = check_expression expr1 symbol_table in
-      debug(repr_of_type "  " fil);
-      if (require_bool fil || require_void fil) then  
-        (*returning this *)
-        (get_type_table expr)
-      else begin
-        raise (Error "Bad filter in List Comp")
-      end
-    with Invalid_argument "" -> 
-        raise (Error "Mismatched on types in List comp"))
+    ignore(List.map2 compare_type 
+      (List.map check_param_table params)
+      (List.map check_exp_table exprs));
+    ignore(compare_type (check_param  (List.hd params) symbol_table)
+    (check_expression expr symbol_table)); 
+
+    let filter  = check_expression expr1 symbol_table in
+    debug(repr_of_type "  " filter);
+    if (require_bool filter || require_void filter || require_func filter )     then  (*returning *) Array_type(check_expression expr symbol_table)
+    else begin
+      raise (Error "Bad filter in List Comprehension")
+    end
   | Unop (op, expr) ->
     let t = (check_expression expr sym_tabl) in
     ignore(check_unop op t);
@@ -159,7 +155,7 @@ let rec check_expression e sym_tabl =
           with Not_found -> raise (Error "Function not found")) 
       | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) -> 
-    debug("matahced on array access!!!!!!!!!!!!!!!!!!!!!!!!");
+    debug("Matahced on array access");
     (match name with 
       | Variable(v) -> 
         let (t, iter) = lookup v sym_tabl 0 in
@@ -179,11 +175,11 @@ let rec check_expression e sym_tabl =
   | Boolean_literal (b) -> Basic_type(Boolean_type) 
   | Nil_literal -> Basic_type(Void_type) 
   | Anonymous_function (var_type, params, stats, s_t) ->
-       debug("annonmous funcitonssss");
+       debug("Matched on Anonymous Function");
       ignore(link_tables sym_tabl s_t);
       check_func_def "anon" var_type params stats s_t sym_tabl
   | Function_expression (stat) ->
-      debug("We've reached a function expressionssssss");
+      debug("Matched on Function Expression");
       (match stat with
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
@@ -422,7 +418,7 @@ and check_var_type var_type =
             (Error "Cannot declare an array of type void")   
             else (build_array (Basic_type(b)) iter))
         | _ -> raise (Error "Incorrect type found in array"))
-        in
+       in
         let temp = (det_array a 0) in
         (Array_type(temp))
   | Func_type(ret_type, param_types, sym_ref) ->
@@ -562,6 +558,10 @@ and require_bool type1 =
       (match b with 
         | Boolean_type -> true
         | _ -> false)
+  | _ -> false
+and require_func type1 =
+  match type1 with
+  | Func_type(e,p,s) -> true
   | _ -> false
 
 and check_statement stat sym_tabl =
