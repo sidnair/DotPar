@@ -17,6 +17,7 @@
 *.log
 *.pdf
 *.gz
+*.toc
 
 /bin/
 *.DS_Store
