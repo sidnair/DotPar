@@ -154,9 +154,10 @@ func main:void() {
 # check char literals
 ("""func main:void() { 'a'; }""", True),
 (r"""func main:void() { '\n'; }""", True),
-(r"""func main:void() { '\'; }""", True),
+(r"""func main:void() { '\\'; }""", True),
 ("""func main:void() { char x = 'b'; }""", True),
 
+(r"""func main:void() { '\'; }""", False),
 ("""func main:void() { ''; }""", False),
 (r'func main:void() { \'\\\'; }', False),
 ("""func main:void() { 'ಠ_ಠ'; }""", False),
