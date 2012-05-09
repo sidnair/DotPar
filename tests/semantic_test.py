@@ -418,6 +418,12 @@ func main:void() {
 """, True),
 
 ("""func main:void() {
+    number x = (func:number() { return 2; })();
+    println(x);
+}""",True),
+
+
+("""func main:void() {
 func fib:number(number n) {
   if (n == 0) {
     return 0;
