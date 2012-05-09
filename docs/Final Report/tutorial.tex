@@ -387,11 +387,15 @@ For a concrete example, let's compute the sum of the numbers 1 to 10000:
 
 \begin{verbatim}
 func main:void(){
-   func sum:number (number a, number b){
-       return a+b;
+   func sum:number (number a, number b) {
+       return a + b;
    }
-   number[] x;
-   fill(x, func:number(number index) { return index+1; }, 10000);
+
+	func filler:number(number index) {
+		return index + 1;
+	}
+
+   number[] x = fill(x, filler, 10000);
    // 0 is the starting value, we do this so that we can return 0 
    //if the array is  empty
    //Here we are filling the array with the values 0 - 10000 for 
