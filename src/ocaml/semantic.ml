@@ -596,4 +596,10 @@ let generate_sast program debug =
   match program with
   | Program(imp, stat, symbol_table) -> 
       ignore(check_statements stat symbol_table);
+      (* check if we have a main *)
+      ignore(try
+        let main_type = lookup "main" symbol_table 0 in
+        main_type;
+      with Not_found ->
+      raise (Error "Need a main function"));
       Program(imp, stat, symbol_table)
