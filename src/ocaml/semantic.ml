@@ -33,9 +33,8 @@ let link_tables p_table c_table =
 let rec get_symbol_table id sym_table iter =
   debug("Looking for symbol_table based on "^ id ^" ...\n");
   try
-    let t = StringMap.find id sym_table.table in
+    let _ = StringMap.find id sym_table.table in
     debug("Found " ^ id ^ " ...\n");
-    ignore(t, iter);
     (sym_table, iter)
   with Not_found ->
     match sym_table.parent with 
