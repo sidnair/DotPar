@@ -101,19 +101,26 @@
 \contentsline {section}{\numberline {25}Interfaces}{44}
 \contentsline {section}{\numberline {26}Implementation}{44}
 \contentsline {part}{VII\hspace {1em}Development and Run-time Environment}{44}
-\contentsline {part}{VIII\hspace {1em}Test Plan}{45}
-\contentsline {section}{\numberline {27}Testing Methodology}{45}
-\contentsline {section}{\numberline {28}Test Programs}{46}
-\contentsline {part}{IX\hspace {1em}Conclusions}{47}
-\contentsline {section}{\numberline {29}Group Lessons}{47}
-\contentsline {subsection}{\numberline {29.1}Starting Early}{47}
-\contentsline {subsection}{\numberline {29.2}Work Must be Done Eventually}{47}
-\contentsline {section}{\numberline {30}Individual Lessons}{47}
-\contentsline {subsection}{\numberline {30.1}Logan - Have a Backup Plan}{47}
-\contentsline {subsection}{\numberline {30.2}Sid}{48}
-\contentsline {subsection}{\numberline {30.3}Justin - Not Being Afraid to Ask for Help}{48}
-\contentsline {subsection}{\numberline {30.4}Andrew - Pair Programming}{48}
-\contentsline {subsection}{\numberline {30.5}Nathan - Projects Will Take as Much Time as You Let Them}{48}
-\contentsline {section}{\numberline {31}Advice for Future Groups}{48}
-\contentsline {section}{\numberline {32}Ideas for Improving the Course}{48}
-\contentsline {part}{X\hspace {1em}Appendix}{48}
+\contentsline {section}{\numberline {27}Development Environment}{44}
+\contentsline {subsection}{\numberline {27.1}Compiler Build Process}{45}
+\contentsline {subsection}{\numberline {27.2}Makefile for the Project}{45}
+\contentsline {subsection}{\numberline {27.3}Compilation Process}{46}
+\contentsline {subsection}{\numberline {27.4}Editor Plugins}{46}
+\contentsline {subsection}{\numberline {27.5}Runtime Environment}{46}
+\contentsline {part}{VIII\hspace {1em}Test Plan}{47}
+\contentsline {section}{\numberline {28}Testing Methodology}{47}
+\contentsline {section}{\numberline {29}Test Programs}{48}
+\contentsline {part}{IX\hspace {1em}Conclusions}{48}
+\contentsline {section}{\numberline {30}Group Lessons and Advice for Future Groups}{49}
+\contentsline {subsection}{\numberline {30.1}Starting Early}{49}
+\contentsline {subsection}{\numberline {30.2}Work Must be Done Eventually}{49}
+\contentsline {subsection}{\numberline {30.3}Make Group Deadlines Hard Deadlines}{49}
+\contentsline {section}{\numberline {31}Individual Lessons}{49}
+\contentsline {subsection}{\numberline {31.1}Logan - Have a Backup Plan}{49}
+\contentsline {subsection}{\numberline {31.2}Sid}{49}
+\contentsline {subsection}{\numberline {31.3}Justin - Don't Be Afraid to Ask for Help}{49}
+\contentsline {subsection}{\numberline {31.4}Andrew - Pair Programming}{49}
+\contentsline {subsection}{\numberline {31.5}Nathan - Projects Will Take as Much Time as You Let Them}{49}
+\contentsline {section}{\numberline {32}Advice for Future Groups}{50}
+\contentsline {section}{\numberline {33}Ideas for Improving the Course}{50}
+\contentsline {part}{X\hspace {1em}Appendix}{50}

@@ -16,10 +16,10 @@ of building the compiler anew.
 Holding with tradition, the Makefile provides familiar commands such
 as \texttt{all}, \texttt{clean}, and \texttt{test}, which each in turn
 generate a binary, clean up generated intermediate files, and run the
-test suites on the generated binary, respectively. We reference our
-Makefile in figure \ref{makefile}.
+test suites on the generated binary, respectively. 
 
-\begin{figure}[H]
+\subsection{Makefile for the Project}
+
 \begin{verbatim}
 SRC = src
 OCAML_PATH = $(SRC)/ocaml
@@ -28,7 +28,7 @@ all: bin compiler
 
 bin:
 	mkdir bin
-
+	
 compiler:
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
@@ -65,9 +65,7 @@ clean: clean_ocaml
 
 .PHONY: all compiler test clean
 \end{verbatim}
-\caption{Makefile for the project}
-\label{makefile}
-\end{figure}
+
 
 Additionally, we provide a finer-grained access to our test suites
 with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
