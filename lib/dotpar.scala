@@ -11,6 +11,10 @@ object Dotpar {
       return Array[Char]()
   }
 
+  def rand(cap:Double) = {
+    (new scala.util.Random()).nextInt(cap.toInt)
+  }
+
   def dotpar_string(y: Any):String = {
     y match {
       case str: Array[Char] =>

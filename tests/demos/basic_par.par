@@ -26,6 +26,7 @@ func main:void() {
   print("here");
   printerr("oh no");
   println(readln());
+  println(rand(1));
 
 }
 
