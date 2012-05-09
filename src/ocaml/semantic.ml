@@ -610,4 +610,23 @@ let generate_sast program debug =
   match program with
   | Program(imp, stat, symbol_table) -> 
       ignore(check_statements stat symbol_table);
+      (* check if we have a main *)
+      ignore(try
+        let main_type = (fst (lookup "main" symbol_table 0)) in
+        (* check if main has the right types *)
+        match main_type with
+        | Func_type(ret_type, params, sym_ref) ->
+            (if not (ret_type = (Basic_type Void_type)) then
+              raise (Error "Main return needs to be void"));
+            ignore(match (List.length params) with
+            | 0 -> ignore(true)
+            | 1 ->
+                ignore(let param = (List.nth params 0) in
+                if not (param = Array_type(Basic_type Char_type)) then
+                  raise (Error "Parameter does not have correct type"))
+            | _ -> raise (Error "Too many parameters"));
+        | _ -> raise (Error "Main needs to be function")
+      with Not_found ->
+      raise (Error "Need a main function"));
+      (* rebuild the ast? *)
       Program(imp, stat, symbol_table)
