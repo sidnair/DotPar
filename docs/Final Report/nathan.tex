@@ -14,26 +14,24 @@ this standard tool in the open source world to abstract away the act
 of building the compiler anew.
 
 Holding with tradition, the Makefile provides familiar commands such
-as \texttt{all}, \texttt{clean}, and \texttt{test}, which each in turn
+as \texttt{all}, \texttt{clean}, and \texttt{test}, that allows each in turn to
 generate a binary, clean up generated intermediate files, and run the
 test suites on the generated binary, respectively. 
 
-Additionally, we provide a finer-grained access to our test suites
+Additionally, we provide a fine-grained access to our test suites
 with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
-and \texttt{full\_test} which run the seperate test suites that target
+and \texttt{full\_test} that run the seperate test suites and target
 the major parts of our compiler in turn. The test suites themselves
-are detailed in the ``Testing Methodology'' section.
+are detailed in the \emph{Testing Methodology} section.
 
-To manage the code and facilitate collaboration, we used a source
-control system known as git, which has recently become a popular tool,
-especially in the open source world. In particular, we extensively
+To manage the code and facilitate collaboration, we used the source
+control system git, In particular, we 
 used branches in order to allow development in different areas at the
 same time. Also, we leveraged the excellent git hosting tool
-github.com, as detailed in the ``Github'' section.
+github.com, as detailed in the \emph{Github} section.
 
 The \texttt{dotpar} compiler itself is built on OCaml, as detailed in
-``Language Implementation Tools''. We invoke the OCaml compiler from
-our Makefile, compiling each separate part of the compiler with
+\emph{Language Implementation Tools}. We invoke the OCaml compiler from our Makefile, compiling each separate part of the compiler with
 \texttt{ocamlc -c} and then linking them together with \texttt{ocamlc
   -o} in discrete steps. The compiler itself has no dependencies on
 external OCaml libraries that are not packaged with the standard OCaml
@@ -97,7 +95,7 @@ them through \texttt{dotpar}, and compiles the resulting Scala code to
 an executable jar file. It does this by invoking the Scala compiler
 \texttt{scalac} on the output Scala code, and packing the
 \texttt{class} files into a jar along with the requisite Scala and
-Dotpar support libraries. Then this jar is ready to be run on a JVM.
+Dotpar support libraries. Then this jar is ready to be run on the JVM.
 
 \subsection{Editor Plugins}
 

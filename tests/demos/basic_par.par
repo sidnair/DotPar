@@ -22,9 +22,6 @@ func main:void() {
 
   println(list_comp);
 
-
-  print("here");
-  printerr("oh no");
   println(readln());
 
 }

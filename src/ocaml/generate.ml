@@ -64,7 +64,7 @@ and gen_expression inds expression table =
   | Function_call(expr, exprs) ->
       (* match special functions *)
       (match(gen_expression inds expr table) with
-      | ("cat" | "len" | "each" | "filter" | "fill" |
+      | ("rand" | "cat" | "len" | "each" | "filter" | "fill" |
       "println" | "print" | "printerr" | "readln") as fn_name ->
           "Dotpar." ^ fn_name ^ "(" ^
           (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^

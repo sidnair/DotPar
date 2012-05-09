@@ -7,9 +7,9 @@ System Architect - Justin
 \end{figure}
 
 \section{Interfaces}
-Dotpars interface, as seen above follows a standard form of a compiler. The raw
-source file is fed into the \verb=lexer=, \verb=ocamllex=, which outputs a series of tokens that is then
-parsed by \verb=ocamlyacc=.  \verb=Ocamlyacc= uses a our custom type system to output an abstract
+Dotpars interface, as seen above, follows a standard compiler form. The raw
+source file is fed into the \verb=lexer=, \verb=OCamllex=, which outputs a series of tokens that is then
+parsed by \verb=OCamlyacc=.  \verb=OCamlyacc= uses a our custom type system to output an abstract
 syntax tree.
 
 Our abstract syntax tree then undergoes a series of modifications and optimizations before it
@@ -19,7 +19,7 @@ recurses right to left, and thus all lists are stored backeds and need to be rev
 The transform outputs a modified AST which is then fed into the semantic analyzer.
 
 The semantic analyzer performs an extensive amount of type checking, making 
-sense of a user's source code, throwing errors where need be, recovering from 
+sense of a user's source code, throwing errors where appropriate, recovering from 
 small errors if possible,  and adding necessary information to the symbol table.  
 
 Next, the parallelizer, in which the main optimizations are performed, takes
@@ -38,7 +38,7 @@ scala compiler then complies down the JVM which can then be run on a target mach
 
 Dotpar uses a total of 5 different passes over the abstract syntax, performing 
 checks and optimizations at each state to insure relability.  With this comes
-the added benefit of a program not required to be parallizable to be run.  Dotpar
+the added benefit thgat a program is not required to be parallizable in order to run.  Dotpar
 will only attempt to parallelize a program after extensive checks which gives add 
 compile security and relability.
 
@@ -48,7 +48,7 @@ implemented Sid Nair and Nathan Hwang. The conversion to OCaml was done by Sid
 Nair and Justin Hines. The parsing to create the AST was was completed by
 Nathan Hwang and Justin Hines. An additional transformation pass on the tree was
 done by Nathan Hwang. The semantic analysis pass was implemented by Justin
-Hines and Andrew Hitti. The parallelizer was implemented by Sid Nair with minor
+Hines and Andrew Hitti with help from Logan Donovan. The parallelizer was implemented by Sid Nair with minor
 contributions from Justin Hines and Nathan Hwang. The Generator was implemented
 by Nathan Hwang with signifcant contributions from Sid Nair, Andrew Hitti, and
 Justin Hines. Test cases were written by all group members, but the primary
