@@ -1,0 +1,128 @@
+\contentsline {part}{I\hspace {1em}Introduction}{6}
+\contentsline {section}{\numberline {1}Motivation}{6}
+\contentsline {subsection}{\numberline {1.1}Locking}{6}
+\contentsline {subsection}{\numberline {1.2}Task-based Concurrency and the Actor Model}{6}
+\contentsline {subsection}{\numberline {1.3}Functional Programming}{6}
+\contentsline {subsection}{\numberline {1.4}Implicit Parallelization}{7}
+\contentsline {section}{\numberline {2}Introducing DotPar}{7}
+\contentsline {subsection}{\numberline {2.1}Automatic Parallelization}{7}
+\contentsline {subsection}{\numberline {2.2}Static and Strong Typing}{7}
+\contentsline {subsection}{\numberline {2.3}First-class Functions and Lexical Closures}{8}
+\contentsline {subsection}{\numberline {2.4}Robustness and Security}{8}
+\contentsline {subsection}{\numberline {2.5}Memory Management and Garbage Collection}{8}
+\contentsline {part}{II\hspace {1em}Language Tutorial}{8}
+\contentsline {section}{\numberline {3}Overview}{8}
+\contentsline {subsection}{\numberline {3.1}Hello, World}{8}
+\contentsline {subsection}{\numberline {3.2}Types And Arithmetic Expressions}{9}
+\contentsline {subsubsection}{\numberline {3.2.1}Numbers and Basic Arithmetic Operators}{10}
+\contentsline {subsubsection}{\numberline {3.2.2}Booleans and Operators}{10}
+\contentsline {subsubsection}{\numberline {3.2.3}Char}{11}
+\contentsline {subsection}{\numberline {3.3}Arrays and Control Flow}{11}
+\contentsline {subsubsection}{\numberline {3.3.1}Revisiting Hello, World}{11}
+\contentsline {subsection}{\numberline {3.4}Array Iteration}{12}
+\contentsline {subsubsection}{\numberline {3.4.1}the each method}{12}
+\contentsline {subsubsection}{\numberline {3.4.2}the for loop}{12}
+\contentsline {subsection}{\numberline {3.5}Control Statements}{13}
+\contentsline {subsection}{\numberline {3.6}List Comprehensions}{14}
+\contentsline {subsection}{\numberline {3.7}Working with Functions}{15}
+\contentsline {subsubsection}{\numberline {3.7.1}Revisiting main}{15}
+\contentsline {subsubsection}{\numberline {3.7.2}Declaring an Array}{16}
+\contentsline {subsection}{\numberline {3.8}Idioms and Parallelism}{16}
+\contentsline {subsubsection}{\numberline {3.8.1}Map}{16}
+\contentsline {subsubsection}{\numberline {3.8.2}Reduce}{16}
+\contentsline {subsubsection}{\numberline {3.8.3}Matrix Multiplication}{17}
+\contentsline {subsubsection}{\numberline {3.8.4}Parallelization}{18}
+\contentsline {section}{\numberline {4}Conclusion}{18}
+\contentsline {part}{III\hspace {1em}Language Reference Manual}{18}
+\contentsline {section}{\numberline {5}Lexical Convention}{19}
+\contentsline {section}{\numberline {6}Tokens}{19}
+\contentsline {subsection}{\numberline {6.1}Comments}{19}
+\contentsline {subsection}{\numberline {6.2}Constants}{19}
+\contentsline {subsubsection}{\numberline {6.2.1}Character Literal}{20}
+\contentsline {subsubsection}{\numberline {6.2.2}Number Literal}{20}
+\contentsline {subsubsection}{\numberline {6.2.3}String Constant}{20}
+\contentsline {subsubsection}{\numberline {6.2.4}Boolean Constant}{20}
+\contentsline {subsubsection}{\numberline {6.2.5}Nil Constant}{21}
+\contentsline {subsection}{\numberline {6.3}Identifiers}{21}
+\contentsline {subsection}{\numberline {6.4}Keywords}{21}
+\contentsline {section}{\numberline {7}Syntax Notation}{21}
+\contentsline {section}{\numberline {8}Meaning of Identifiers}{22}
+\contentsline {subsection}{\numberline {8.1}Basic Types}{22}
+\contentsline {subsection}{\numberline {8.2}Derived Types}{22}
+\contentsline {section}{\numberline {9}Objects and lvalues}{22}
+\contentsline {section}{\numberline {10}Expressions}{22}
+\contentsline {subsection}{\numberline {10.1}Primary Expressions}{23}
+\contentsline {subsection}{\numberline {10.2}Postfix Expressions}{23}
+\contentsline {subsubsection}{\numberline {10.2.1}Array References}{23}
+\contentsline {subsubsection}{\numberline {10.2.2}Function call}{24}
+\contentsline {subsection}{\numberline {10.3}Unary Expressions}{24}
+\contentsline {subsection}{\numberline {10.4}Arithmetic Expressions}{24}
+\contentsline {subsection}{\numberline {10.5}Relational Expressions}{25}
+\contentsline {subsection}{\numberline {10.6}Conditional Expressions}{26}
+\contentsline {subsection}{\numberline {10.7}Array Expressions}{26}
+\contentsline {subsection}{\numberline {10.8}List Comprehension}{26}
+\contentsline {subsection}{\numberline {10.9}Assignment Expressions}{27}
+\contentsline {subsection}{\numberline {10.10}Anonymous Function Definitions}{27}
+\contentsline {section}{\numberline {11}External Declarations}{27}
+\contentsline {subsection}{\numberline {11.1}Type Specifiers}{28}
+\contentsline {subsection}{\numberline {11.2}Declarators}{28}
+\contentsline {subsection}{\numberline {11.3}Initializers}{29}
+\contentsline {section}{\numberline {12}Statements}{29}
+\contentsline {subsection}{\numberline {12.1}Expression Statements}{29}
+\contentsline {subsection}{\numberline {12.2}Compound Statements}{30}
+\contentsline {subsection}{\numberline {12.3}Selection Statements}{30}
+\contentsline {subsection}{\numberline {12.4}Iteration Statements}{31}
+\contentsline {subsection}{\numberline {12.5}Jump Statements}{31}
+\contentsline {section}{\numberline {13}Scope}{31}
+\contentsline {section}{\numberline {14}Preprocessing}{31}
+\contentsline {subsection}{\numberline {14.1}File Inclusion}{32}
+\contentsline {section}{\numberline {15}Built-in Functions}{32}
+\contentsline {subsection}{\numberline {15.1}Array}{32}
+\contentsline {subsection}{\numberline {15.2}String}{32}
+\contentsline {subsection}{\numberline {15.3}Math}{33}
+\contentsline {subsection}{\numberline {15.4}I\textbackslash O}{33}
+\contentsline {section}{\numberline {16}Future Goals}{33}
+\contentsline {section}{\numberline {17}Grammar}{34}
+\contentsline {part}{IV\hspace {1em}Project Plan}{38}
+\contentsline {section}{\numberline {18}Process}{38}
+\contentsline {subsection}{\numberline {18.1}Weekly Meetings}{38}
+\contentsline {subsection}{\numberline {18.2}Github}{39}
+\contentsline {subsection}{\numberline {18.3}Google Apps}{39}
+\contentsline {subsection}{\numberline {18.4}Testing}{39}
+\contentsline {section}{\numberline {19}Roles and Responsibilities}{39}
+\contentsline {section}{\numberline {20}Style Sheet}{40}
+\contentsline {section}{\numberline {21}Timeline and Project Log}{40}
+\contentsline {subsection}{\numberline {21.1}Contribution Graphs}{40}
+\contentsline {part}{V\hspace {1em}Language Evolution}{41}
+\contentsline {section}{\numberline {22}Language Changes}{41}
+\contentsline {section}{\numberline {23}Language Implementation Tools}{42}
+\contentsline {part}{VI\hspace {1em}Translator Architecture}{43}
+\contentsline {section}{\numberline {24}Block Diagram}{43}
+\contentsline {section}{\numberline {25}Interfaces}{44}
+\contentsline {section}{\numberline {26}Implementation}{44}
+\contentsline {part}{VII\hspace {1em}Development and Run-time Environment}{44}
+\contentsline {section}{\numberline {27}Development Environment}{44}
+\contentsline {subsection}{\numberline {27.1}Compiler Build Process}{45}
+\contentsline {subsection}{\numberline {27.2}Makefile for the Project}{45}
+\contentsline {subsection}{\numberline {27.3}Compilation Process}{46}
+\contentsline {subsection}{\numberline {27.4}Editor Plugins}{46}
+\contentsline {subsection}{\numberline {27.5}Runtime Environment}{46}
+\contentsline {part}{VIII\hspace {1em}Test Plan}{47}
+\contentsline {section}{\numberline {28}Testing Methodology}{47}
+\contentsline {section}{\numberline {29}Test Programs}{48}
+\contentsline {part}{IX\hspace {1em}Conclusions}{48}
+\contentsline {section}{\numberline {30}Group Lessons and Advice for Future Groups}{49}
+\contentsline {subsection}{\numberline {30.1}Starting Early}{49}
+\contentsline {section}{\numberline {31}Individual Lessons}{49}
+\contentsline {subsection}{\numberline {31.1}Logan - Have a Backup Plan}{49}
+\contentsline {subsection}{\numberline {31.2}Sid - Motivating People is Hard}{49}
+\contentsline {subsection}{\numberline {31.3}Justin - Don't Be Afraid to Ask for Help}{49}
+\contentsline {subsection}{\numberline {31.4}Andrew - Pair Programming}{50}
+\contentsline {subsection}{\numberline {31.5}Nathan - Projects Will Take as Much Time as You Let Them}{50}
+\contentsline {section}{\numberline {32}Advice for Future Groups}{50}
+\contentsline {subsection}{\numberline {32.1}Make Group Deadlines Hard Deadlines}{50}
+\contentsline {section}{\numberline {33}Ideas for Improving the Course}{50}
+\contentsline {subsection}{\numberline {33.1}Example Timeline}{50}
+\contentsline {subsection}{\numberline {33.2}Possible Deadlines for Parts of the Compiler}{51}
+\contentsline {subsection}{\numberline {33.3}More Specifics About Available Tools}{51}
+\contentsline {part}{X\hspace {1em}Appendix}{51}
