@@ -18,7 +18,7 @@ maintains the paradigms of our type system, but means that it is possible to get
 a type error after semantic analysis, which violates some definitions of static
 typing.
 
-Another feature on our wishlist that we wanted but were forced to cut was Java
+Another feature on our wishlist that we wanted to implement but were forced to cut was Java
 interoperability. Java interoperability would make our language practical in the
 real world. Unfortunately, it would require generating an AST from bytecode in
 order to do dependency analysis and to do type checking. That said, compiled
@@ -31,7 +31,7 @@ We decided that our focus would be data
 parallelism on \verb$for$ loops and special constructs like the \verb$map$ and
 \verb$reduce$ functions and list comprehensions. We did not want to parallelize
 lines outside of blocks. This would require constructing a full data flow graph
-and generating code that would make wait for all dependencies to be computed
+and generating code that would wait for all dependencies to be computed
 before executing a piece of code. While not infeasible, this introduced
 additional complexity for minimal gain because the most expensive computations
 tend to be in loops.
@@ -97,4 +97,4 @@ We require no unusual libraries. An OCaml compiler, \verb$ocamlyacc$,
 In order to keep the LRM and compiler consistent, we followed agile development
 practices and had quick iterations that conformed to the language spec. We also
 kept track of the features we had left to implement using GitHub. This is
-explained in more detail in Part~\ref{sec:project_plan}.
+explain in more detail in Part IV, Section 18.2.
