@@ -1,0 +1,11 @@
+func main:void() {
+  func fill_arr:number(number index) {
+    return rand(100);
+  }
+
+  number[] arr = fill(fill_arr, 30);
+  number[] res = [x * x for number x in arr if x % 2 == 1];
+
+  println(arr);
+  println(res);
+}
