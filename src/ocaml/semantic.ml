@@ -162,7 +162,7 @@ let rec check_expression e sym_tabl =
             t
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found"))
-      | _ -> raise (Error "Malformed function call"))
+      | _ as x -> (check_expression x sym_tabl))
   | Array_access (name, index) ->
     debug("Matahced on array access");
     (match name with
