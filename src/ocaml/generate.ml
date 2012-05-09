@@ -74,9 +74,7 @@ and gen_expression inds expression table =
           (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
           ")\n"
       | "map" -> gen_map inds exprs table
-      | "reduce" -> "Dotpar.dp_reduce(" ^
-          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
-          ")\n"
+      | "reduce" -> gen_reduce inds exprs table
       | _ as name -> name ^ "(" ^
           (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^ ")"
       )
@@ -213,18 +211,8 @@ and gen_initial type_dec =
                           (make_symbol_table None);)
   | _ -> raise NotImplemented
 
-and is_pure_fn table name_expr =
-  match name_expr with
-  | Variable(name) ->
-      let func_type, iter = lookup name table 0 in
-      (match func_type with
-      | Func_type(var_type, params, f_syms) -> !(f_syms).pure
-      | _ -> raise (Error "Expected function - semantic analysis failed")
-      )
-  | _ -> raise (Error "Expected function name - semantic analysis failed")
-
 and gen_map inds exprs table =
-  let is_pure = is_pure_fn table (List.nth exprs 1) in
+  let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
   if is_pure then
     "Dotpar.dp_par_map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
@@ -233,6 +221,18 @@ and gen_map inds exprs table =
     "Dotpar.dp_map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
       ")\n"
+
+and gen_reduce inds exprs table =
+  let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
+  let is_assoc = (get_fn_sym table (List.nth exprs 1)).associative in
+  if is_pure && is_assoc then
+    "Dotpar.dp_par_reduce(" ^
+    (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+    ")\n"
+  else
+    "Dotpar.dp_reduce(" ^
+    (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+    ")\n"
 
 and gen_param_map inds table parm =
   gen_param inds parm table

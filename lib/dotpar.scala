@@ -51,4 +51,12 @@ object Dotpar {
       arr reduceLeft function
     }
   }
+  // TODO: make parallel
+  def dp_par_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
+    if (arr.length == 0) {
+      start
+    } else {
+      arr reduceLeft function
+    }
+  }
 }

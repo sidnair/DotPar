@@ -41,6 +41,17 @@ let rec get_symbol_table id sym_table iter =
     | Some(parent) -> get_symbol_table id parent (iter +1 )
     | _ -> raise Not_found
 
+let get_fn_sym table name_expr =
+  match name_expr with
+  | Variable(name) ->
+      let func_type, iter = lookup name table 0 in
+      (match func_type with
+      | Func_type(var_type, params, f_syms) -> !(f_syms)
+      | _ -> raise (Error "Expected function - semantic analysis failed")
+      )
+  | _ -> raise (Error "Expected function name - semantic analysis failed")
+
+
 (***************************************************************************)
 let rec check_expression e sym_tabl =
   debug("Checking an expression... \n");
