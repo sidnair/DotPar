@@ -526,8 +526,12 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
     | Iteration(d,c,i,s, s_t, h_s_t) -> debug("Iteration\n");
         List.fold_left com_bools false (List.map match_jump_types s)
     | Jump(j) -> debug("Jumping!\n");
-        ignore(compare_type (get_type j sym_tabl) v);
-        true
+        (try
+          ignore(compare_type (get_type j sym_tabl) v);
+          true
+        with Not_found ->
+          true
+        )
     | Expression(e) -> debug("Expression\n");
         false
     | _ -> debug("Catch all\n");
@@ -576,7 +580,7 @@ and require_func type1 =
   | _ -> false
 
 and check_statement stat sym_tabl =
-  debug ("Checking Statement... \n");
+  debug ("Checking Statement... \n" ^ (string_of_statement stat) ^ "-------\n");
   match stat with
   | Expression(e) -> ignore (check_expression e sym_tabl);
   debug("Matched on Expression");
@@ -595,7 +599,6 @@ and check_statement stat sym_tabl =
       ignore(check_statements sts symbol_table);
 
 and check_statements stats sym_tabl =
-  debug "Checking Statements... \n";
   match stats with
   | hd :: tl ->
       ignore(check_statement hd sym_tabl);
