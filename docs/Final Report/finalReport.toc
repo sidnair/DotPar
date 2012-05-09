@@ -97,10 +97,12 @@
 \contentsline {section}{\numberline {22}Language Changes}{40}
 \contentsline {section}{\numberline {23}Language Implementation Tools}{41}
 \contentsline {part}{VI\hspace {1em}Translator Architecture}{42}
-\contentsline {section}{\numberline {24}Block Diagram}{43}
+\contentsline {section}{\numberline {24}Block Diagram}{42}
 \contentsline {section}{\numberline {25}Interfaces}{43}
-\contentsline {section}{\numberline {26}Implementation}{44}
-\contentsline {part}{VII\hspace {1em}Development and Run-time Environment}{44}
-\contentsline {part}{VIII\hspace {1em}Test Plan}{45}
-\contentsline {part}{IX\hspace {1em}Conclusions}{45}
-\contentsline {part}{X\hspace {1em}Appendix}{45}
+\contentsline {section}{\numberline {26}Implementation}{43}
+\contentsline {part}{VII\hspace {1em}Development and Run-time Environment}{43}
+\contentsline {part}{VIII\hspace {1em}Test Plan}{44}
+\contentsline {section}{\numberline {27}Testing Methodology}{44}
+\contentsline {section}{\numberline {28}Test Programs}{45}
+\contentsline {part}{IX\hspace {1em}Conclusions}{46}
+\contentsline {part}{X\hspace {1em}Appendix}{46}
