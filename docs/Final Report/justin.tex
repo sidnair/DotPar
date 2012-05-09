@@ -16,23 +16,22 @@ Our abstract syntax tree then undergoes a series of modifications and optimizati
 is complied down into scala and fed into the scala compiler.  The first transform
 is done by the aptly named \verb=transform.ml= which reverses nodes with a tree.  The lexer
 recurses right to left, and thus all lists are stored backeds and need to be reversed.
-The transform outputs a modified ast which is then fed into the semantic analyzer.
+The transform outputs a modified AST which is then fed into the semantic analyzer.
 
 The semantic analyzer performs an extensive amount of type checking, making 
 sense of a user's source code, throwing errors where need be, recovering from 
 small errors if possible,  and adding necessary information to the symbol table.  
 
-Next, the parallelizer, where the main optimizations are acomplished, takes 
-the modified ast from the semantic analyzer and performs two passes to test. 
-Each pass performs a series of tests to find, and declare certain functions as
-\emph{pure}. Additionally, certain functions can be marked as
-\emph{associative}.
+Next, the parallelizer, in which the main optimizations are performed, takes
+the modified AST from the semantic analyzer. The first pass
+performs a series of tests to find, and declare certain functions as
+\emph{pure}. A second pass marks certain functions as \emph{associative}.
 These functions that are pure can be parallelized in maps and list
 comprehensions, and pure and associative functions can be parallelized in
 reduces as well. Our optimizatinos focus on major bottlenecks of source programs
 including maps, reduces, and list comprehensions.
 
-Lastly, the parallelizer outputs a modified ast which is fed into the generator, 
+Lastly, the parallelizer outputs a modified AST which is fed into the generator, 
 which does a pass over the ast, translating the tree into and creating parallelized 
 functions where applicable, which is lastly fed into the scala compiler.  The
 scala compiler then complies down the JVM which can then be run on a target machine.
