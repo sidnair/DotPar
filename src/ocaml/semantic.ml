@@ -158,7 +158,7 @@ let rec check_expression e sym_tabl =
     ignore(check_operator t op t2);
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
-    debug("mathced on function callllll");
+    debug("mathced on function call");
     let get_type_table expr =
         check_expression expr sym_tabl
     in
