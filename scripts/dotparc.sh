@@ -45,18 +45,21 @@ do
     mkdir -p $Scala_lib
 
     filename=`basename $1`
-    filename=${filename%.*}
-    Gen_file=$filename.jar
+    noextension=${filename%.*}
+    Gen_file=$noextension.jar
+    dir_file=`dirname $1`
     # clean up any previously generated file
     rm -f $Gen_file
 
-    # we assume this file is executed with ./dotparc.sh
-    $CurDir/bin/dotpar <$file >$Scala_file
+    # we assume this file is executed with scripts/dotparc.sh
+    cd $dir_file
+    $CurDir/bin/dotpar <$filename >$Scala_file
     if [ $? -ne 0 ]
     then
         echo "Dotpar -> Scala conversion failed"
         exit $?
     fi
+    cd $CurDir
 
     # do the compilation
     scalac -d $Class_files $Lib_file $Scala_file

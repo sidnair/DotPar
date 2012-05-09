@@ -3,11 +3,9 @@ open Semantic;;
 open Parallelizer;;
 
 let rec ast_generate stream debug =
-  let ast = parse_ast stream in
   (* Perform semantic transformations, import preprocessing, and semantic
    * analysis. The code generation to Scala happens elsewhere. *)
-  let ast = Transform.reverse_tree ast in
-  let ast = insert_imports_program ast debug in
+  let ast = get_ast stream debug in
   ignore(Semantic.generate_sast ast debug);
   let ast = Parallelizer.parallelize ast in
   ast
@@ -28,13 +26,19 @@ and parse_ast stream =
   in
   ast
 
-(* TODO: import only once *)
+and get_ast stream debug =
+  let ast = parse_ast stream in
+  let ast = Transform.reverse_tree ast in
+  let ast = insert_imports_program ast debug in  
+  ast
+
+(* TODO: import only once,  *)
 and insert_import import debug_switch =
   match import with
     Import(s) ->
       let filename = s ^ ".par" in
       let file = open_in filename in
-      (ast_generate file debug_switch)
+      (get_ast file debug_switch)
 and insert_imports imports debug_switch =
   let programs =
     List.map (fun x -> (insert_import x debug_switch)) imports in
