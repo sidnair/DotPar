@@ -2,9 +2,8 @@ import scala.collection.mutable.ArraySeq
 
 object Dotpar {
 
-  var lines = io.Source.stdin.getLines
-
   def readln():Array[Char] = {
+    var lines = io.Source.stdin.getLines
     if (lines.hasNext)
       return lines.next.toCharArray
     else
@@ -24,6 +23,7 @@ object Dotpar {
   // multiplexed print
   def println(x: Any) = {
     Console.println(dotpar_string(x))
+    Console.flush
   }
 
   def print(x: Any) = {
@@ -83,7 +83,7 @@ object Dotpar {
     if (arr.length == 0) {
       start
     } else {
-      arr reduceLeft function
+      arr.reduce(function)
     }
   }
   // TODO: make parallel
@@ -91,7 +91,7 @@ object Dotpar {
     if (arr.length == 0) {
       start
     } else {
-      arr reduceLeft function
+      arr.par.reduce(function)
     }
   }
 }
