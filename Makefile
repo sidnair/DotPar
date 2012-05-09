@@ -8,20 +8,22 @@ bin:
 	mkdir bin
 
 compiler:
-	make clean
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
 	ocamlc -c transform.ml; \
-	ocamlc -c generate.ml; \
 	ocamlyacc parser.mly; \
 	ocamlc -c parser.mli; \
 	ocamllex scanner.mll; \
 	ocamlc -c scanner.ml; \
 	ocamlc -c parser.ml; \
 	ocamlc -c semantic.ml; \
+	ocamlc -c parallelizer.ml; \
+	ocamlc -c generate.ml; \
 	ocamlc -c compile.ml; \
 	ocamlc -c dotpar.ml; \
-	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo generate.cmo parser.cmo semantic.cmo compile.cmo dotpar.cmo
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo \
+			parser.cmo semantic.cmo parallelizer.cmo generate.cmo compile.cmo \
+			dotpar.cmo
 
 clean_ocaml:
 	rm -f bin/dotpar
