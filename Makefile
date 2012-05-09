@@ -30,24 +30,14 @@ clean_ocaml:
 	cd $(OCAML_PATH); \
 	rm -f *.cmo scanner.ml parser.ml parser.mli *.cmi
 
+test: parser_test semantic_test full_test
+
 parser_test: compiler
 	python tests/parser_test.py
 semantic_test: compiler
 	python tests/semantic_test.py
-
 full_test: compiler
 	scala tests/full_test.scala
-
-c_compiler:
-	cd $(C_PATH); \
-	lex lexer.l; \
-	yacc -d --verbose dotpar.y; \
-	gcc lex.yy.c y.tab.c -ly
-	mv a.out ../../bin/dotpar
-
-clean_c:
-	cd $(C_PATH); \
-	rm -f a.out *.c *.h *.output;
 
 clean: clean_ocaml clean_c
 
