@@ -81,7 +81,7 @@ let rec check_expression e sym_tabl =
           let typ, iter = lookup v sym_tabl 0 in
           if (iter > 0) then raise Not_found
           else begin
-            raise (Error "Vannriable previously defined in the same scope");
+            raise (Error "Variable previously defined in the same scope");
           end
         with Not_found ->
           let t1 = check_var_type var_type in

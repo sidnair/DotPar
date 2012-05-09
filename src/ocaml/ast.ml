@@ -202,7 +202,7 @@ let reserved_words =
     "cos"      ; "exp"     ; "ln"      ; "log"    ; "sin"      ;
     "sqrt"     ; "tan"     ; "ceil"    ; "floor"  ; "trunc"    ;
     "round"    ; "rand"    ; "print"   ; "println";
-    "printerr" ; "read"    ; "readln"    
+    "printerr" ; "read"    ; "readln"
   ]
 
 ;;
