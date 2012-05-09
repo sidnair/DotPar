@@ -19,7 +19,7 @@ generate a binary, clean up generated intermediate files, and run the
 test suites on the generated binary, respectively. We reference our
 Makefile in figure \ref{makefile}.
 
-\begin{figure}
+\begin{figure}[H]
 \begin{verbatim}
 SRC = src
 OCAML_PATH = $(SRC)/ocaml
@@ -67,7 +67,7 @@ clean: clean_ocaml
 \end{verbatim}
 \caption{Makefile for the project}
 \label{makefile}
-\end{figure
+\end{figure}
 
 Additionally, we provide a finer-grained access to our test suites
 with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
