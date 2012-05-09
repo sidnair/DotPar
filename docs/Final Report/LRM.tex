@@ -94,6 +94,7 @@ plain font. Optional terminal and nonterminal symbols have the subscript ``opt,'
 *An non-terminal with the name foo\_opt will either go to ``the empty string'' or foo. Similarly, lists follow the format of imports above. To avoid repetition, rules that follow this rigid structure will not be explained in-depth. However, they will be included in the complete grammar at the end of this reference manual.
 \section{Meaning of Identifiers}
 Identifiers are simply the names given to functions and variables. A variable is used to store data and points to a specific location. The interpretation of the data is based on the variable's type. Identifiers are limited to the scope within which they are defined and are only accessible within that scope. This can be only within a specific function or an entire program.
+\\All variables declared are initialized to a default value: number = 0, boolean = false, char = ``'', number[] = [].
 \subsection{Basic Types}
 DotPar contains three basic types: number, boolean and char. Variables of type number are 64-bit double precision floating point numbers. Boolean variables have only two possible values: true and false. They are internally treated as a 32-bit entities. Char variables can store any member of the set of characters. Every character has its value as equivalent to the integer code for the character.
 \subsection{Derived Types}
