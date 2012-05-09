@@ -20,7 +20,7 @@ val cats = List("basic", "arrays", "examples")
 // or failure (name, compilation_passed, exitcode,out)
 def execute_test(f : File):(String, Boolean, Int, String) = {
   // get the associated .out output
-  val out_path = f.getAbsolutePath().split('.').init :+ "out" mkString "."
+  val out_path = f.getAbsolutePath().split("""\.""").init :+ "out" mkString "."
   val expected_output = scala.io.Source.fromFile(out_path).mkString
   // run the compiler
   var errors:List[String] = List()
@@ -36,7 +36,8 @@ def execute_test(f : File):(String, Boolean, Int, String) = {
   }
   // run the program
   var output:List[String] = List()
-  val gen_prog = new File("program.jar")
+  val gen_prog_path = f.getName().split("""\.""").init :+ "jar" mkString "."
+  val gen_prog = new File(gen_prog_path)
   val test = "java -jar " + gen_prog.getAbsolutePath()
   val test_log = ProcessLogger(line => output = output :+ line,
                                line => output = output :+ line)

@@ -90,7 +90,7 @@ object Dotpar {
       arr.reduce(function)
     }
   }
-  // TODO: make parallel
+  // check parallel
   def par_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
     if (arr.length == 0) {
       start
