@@ -1,6 +1,7 @@
 (* Abstract syntax tree definitions *)
 
 open Str;;
+exception Error of string
 module StringMap = Map.Make(String);;
 
 type unop = Neg | Not
@@ -186,19 +187,41 @@ let builtin_list =
         [], (ref (make_symbol_table None);))) 
   ]
 
-;;
-let add_to_symbol_table id id_type sym_table = 
-  sym_table.table <- StringMap.add id id_type sym_table.table;
-  ()
+let reserved_words = 
+  [ "abstract" ; "case"    ; "catch"   ; "class"  ; "def"      ;
+    "do"       ; "else"    ; "extends" ; "false"  ; "final"    ;
+    "finally"  ; "for"     ; "forSome" ; "if"     ; "implicit" ;
+    "import"   ; "lazy"    ; "match"   ; "new"    ; "null"     ;
+    "object"   ; "override"; "package" ; "private"; "protected";
+    "return"   ; "sealed"  ; "super"   ; "this"   ; "throw"    ;
+    "trait"    ; "try"     ; "true"    ; "type"   ; "val"      ; 
+    "var"      ; "while"   ; "with"    ; "yield"  ; "cat"      ;
+    "each"     ; "fill"    ; "filter"  ; "len"    ; "map"      ;
+    "reduce"   ; "zip"     ; "acos"    ; "asin"   ; "atan"     ;
+    "cos"      ; "exp"     ; "ln"      ; "log"    ; "sin"      ;
+    "sqrt"     ; "tan"     ; "ceil"    ; "floor"  ; "trunc"    ;
+    "round"    ; "rand"    ; "print"   ; "println";
+    "printerr" ; "read"    ; "readln"    
+  ]
 
 ;;
+let add_to_symbol_table id id_type sym_table =
+    if (List.mem id reserved_words) then raise (Error "Can not declare function or variable with a reserved word")
+    else ignore(sym_table.table <- StringMap.add id id_type sym_table.table);
+    ()
+;;
+
+let global_add id id_type sym_table =
+    sym_table.table <- StringMap.add id id_type sym_table.table
+;; 
 let make_global_table p =
   let s_t = make_symbol_table p in
-  let add_func (name,t) = add_to_symbol_table name t s_t in
+  let add_func (name,t) = global_add name t s_t in
   ignore(List.map add_func builtin_list);
   s_t
-
 ;;
+
+    
 (* reverse string out for the AST *)
 
 (* let ind = "  ";; *)

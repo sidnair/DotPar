@@ -11,7 +11,7 @@ module StringMap = Map.Make(String);;
 type debug_state_monad = { mutable debug_switch : bool };;
 let debug_state = { debug_switch = true; };;
 
-let debug str = if debug_state.debug_switch then print_string (str);;
+let debug str = print_string (str);;
 
 let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
@@ -50,21 +50,6 @@ let get_fn_sym table name_expr =
       | _ -> raise (Error "Expected function - semantic analysis failed")
       )
   | _ -> raise (Error "Expected function name - semantic analysis failed")
-
-
-let reserved_words = 
-  [ "abstract" ; "case"    ; "catch"   ; "class"  ; "def"      ;
-    "do"       ; "else"    ; "extends" ; "false"  ; "final"    ;
-    "finally"  ; "for"     ; "forSome" ; "if"     ; "implicit" ;
-    "import"   ; "lazy"    ; "match"   ; "new"    ; "null"     ;
-    "object"   ; "override"; "package" ; "private"; "protected";
-    "return"   ; "sealed"  ; "super"   ; "this"   ; "throw"    ;
-    "trait"    ; "try"     ; "true"    ; "type"   ; "val"      ; 
-    "var"      ; "while"   ; "with"    ; "yield" 
-  ]
-    
-    
-
     
 (***************************************************************************)
 let rec check_expression e sym_tabl =

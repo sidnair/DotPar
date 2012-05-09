@@ -7,6 +7,7 @@ import sys
 
 ########################################
 ## TOC
+#check not using reserved words
 #invalid assignments
 #check varaibles are declared/initialized
 #duplicate variable declaration
@@ -19,6 +20,16 @@ import sys
 #list comprehension multiple list = multiple arguments
 
 tests = [
+#check not using reserved words
+("""func main:void() {
+  number cos = 10;
+}""", False),
+("""func main:void() {
+  boolean len = true;
+}""", False),
+("""func main:void() {
+  char println = 'a';
+}""", False),
 # invalid assignments:
 ("""func main:void() {
   number x = 10;
@@ -406,7 +417,8 @@ func main:void() {
 }
 """, True),
 
-("""func fib:number(number n) {
+("""func main:void() {
+func fib:number(number n) {
   if (n == 0) {
     return 0;
   }
@@ -415,9 +427,11 @@ func main:void() {
   } else {
     return fib(n-1) + fib(n-2);
   } 
+}
 }""",True),
 
 ("""
+func main:void() {
 func fizzBuzz:void() {
   char[] fb = "FizzBuzz";
   char[] f = "Fizz";
@@ -433,6 +447,7 @@ func fizzBuzz:void() {
       println(i);
     }
   }
+}
 }
 """,True),
 
