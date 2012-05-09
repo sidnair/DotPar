@@ -42,6 +42,20 @@ let rec get_symbol_table id sym_table iter =
     | Some(parent) -> get_symbol_table id parent (iter +1 )
     | _ -> raise Not_found 
 
+let reserved_words = 
+  [ "abstract" ; "case"    ; "catch"   ; "class"  ; "def"      ;
+    "do"       ; "else"    ; "extends" ; "false"  ; "final"    ;
+    "finally"  ; "for"     ; "forSome" ; "if"     ; "implicit" ;
+    "import"   ; "lazy"    ; "match"   ; "new"    ; "null"     ;
+    "object"   ; "override"; "package" ; "private"; "protected";
+    "return"   ; "sealed"  ; "super"   ; "this"   ; "throw"    ;
+    "trait"    ; "try"     ; "true"    ; "type"   ; "val"      ; 
+    "var"      ; "while"   ; "with"    ; "yield" 
+  ]
+    
+    
+
+    
 (***************************************************************************)
 let rec check_expression e sym_tabl = 
   debug("Checking an expression... \n");
