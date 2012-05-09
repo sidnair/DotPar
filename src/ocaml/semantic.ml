@@ -109,9 +109,13 @@ let rec check_expression e sym_tabl =
           with Not_found ->
             let t = check_var_type var_type in
             let t2 = check_expression right sym_tabl in
-            ignore(compare_type t t2);
+            let t3 = (match t2 with
+                  | Func_type(ret_type, params, sym_ref) -> ret_type
+                  | _ as x -> x)
+            in
+            ignore(compare_type t t3);
             ignore(add_to_symbol_table v t sym_tabl);
-            t2
+            t3
           )
       | _ -> raise (Error "Malformed Declaration Expression"))
   | Array_literal (exprs) ->
@@ -148,6 +152,7 @@ let rec check_expression e sym_tabl =
     ignore(check_operator t op t2);
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
+    debug("mathced on function callllll");
     let get_type_table expr =
         check_expression expr sym_tabl
     in
