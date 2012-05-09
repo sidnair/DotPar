@@ -1,47 +1,121 @@
 System Integrator - Nathan
 
-\begin{itemize}
-\item Describe the software development environment used to create the compiler.
+\section{Development Environment}
 
-The build environment of the compiler used a combination of OCaml,
-Scala, and shell scripts to tie everything together.
+In order to effectively develop the Dotpar compiler, we used standard
+development tools to streamline our development cycle, ensure a
+consistent build across platforms, and generate binaries from Dotpar
+code.
 
-We use OCaml for the source-to-source translator, compiling DotPar
-code down to scala code.
+\subsection{Compiler Build Process}
 
-We leverage the existing \texttt{scalac} compiler to compile the
-results of the previous step, compiling the generated scala file down
-to class files.
+We used a Makefile to manage our build and testing process, relying on
+this standard tool in the open source world to abstract away the act
+of building the compiler anew.
 
-Then, we use a shell script to tie the translator and \texttt{scalac}
-compiler together, and package the entire thing into a single
-executable jar appropriate for execution directly on the JVM.
+Holding with tradition, the Makefile provides familiar commands such
+as \texttt{all}, \texttt{clean}, and \texttt{test}, which each in turn
+generate a binary, clean up generated intermediate files, and run the
+test suites on the generated binary, respectively. We reference our
+Makefile in figure \ref{makefile}.
 
-\item Show the makefile used to create and test the compiler during development.
+\begin{figure}[H]
+\begin{verbatim}
+SRC = src
+OCAML_PATH = $(SRC)/ocaml
 
-<<<Copy-pasta>>>
+all: bin compiler
 
-\item Describe the run-time environment for the compiler.
+bin:
+	mkdir bin
 
-Overall, the run-time environment of the generated programs is the
-JVM, which executes the bytecode from the generated class files
-packaged up into the final jar file.
+compiler:
+	cd $(OCAML_PATH); \
+	ocamlc -c ast.ml; \
+	ocamlc -c transform.ml; \
+	ocamlyacc parser.mly; \
+	ocamlc -c parser.mli; \
+	ocamllex scanner.mll; \
+	ocamlc -c scanner.ml; \
+	ocamlc -c parser.ml; \
+	ocamlc -c semantic.ml; \
+	ocamlc -c parallelizer.ml; \
+	ocamlc -c generate.ml; \
+	ocamlc -c compile.ml; \
+	ocamlc -c dotpar.ml; \
+	ocamlc -o ../../bin/dotpar scanner.cmo ast.cmo transform.cmo \
+			parser.cmo semantic.cmo parallelizer.cmo generate.cmo compile.cmo \
+			dotpar.cmo
 
-At the next level down, the jar file also comes equipped with the
-included Scala supporting class files: without these, the program will
-not run as compiled by \texttt{scalac}. 
+clean_ocaml:
+	rm -f bin/dotpar
+	cd $(OCAML_PATH); \
+	rm -f *.cmo scanner.ml parser.ml parser.mli *.cmi
 
-Finally, we include some supporting scala code that the generated
-scala code relies on, which extends the behavior of the scala runtime
-to provide the semantics required by the DotPar code.
+test: parser_test semantic_test full_test
 
-\end{itemize}
+parser_test: compiler
+	python tests/parser_test.py
+semantic_test: compiler
+	python tests/semantic_test.py
+full_test: compiler
+	scala tests/full_test.scala
 
+clean: clean_ocaml
 
-Individual lessons learned:
- - Motivating people is hard.
- - Projects will grow to fill the time allotted to them.
+.PHONY: all compiler test clean
+\end{verbatim}
+\caption{Makefile for the project}
+\label{makefile}
+\end{figure}
 
+Additionally, we provide a finer-grained access to our test suites
+with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
+and \texttt{full\_test} which run the seperate test suites that target
+the major parts of our compiler in turn. The test suites themselves
+are detailed in the ``Testing Methodology'' section.
 
-Group lessons
- - Bleed now or bleed tomorrow.
+To manage the code and facilitate collaboration, we used a source
+control system known as git, which has recently become a popular tool,
+especially in the open source world. In particular, we extensively
+used branches in order to allow development in different areas at the
+same time. Also, we leveraged the excellent git hosting tool
+github.com, as detailed in the ``Github'' section.
+
+The \texttt{dotpar} compiler itself is built on OCaml, as detailed in
+``Language Implementation Tools''. We invoke the OCaml compiler from
+our Makefile, compiling each separate part of the compiler with
+\texttt{ocamlc -c} and then linking them together with \texttt{ocamlc
+  -o} in discrete steps. The compiler itself has no dependencies on
+external OCaml libraries that are not packaged with the standard OCaml
+environment, which enhances it's portability.
+
+\subsection{Compilation Process}
+
+The process of actually creating a binary from the generated compiler
+is facilitated by a different program, a shell script named
+\texttt{dotparc}. While \texttt{dotpar} takes Dotpar source code and
+generates Scala code, \texttt{dotparc} reads in Dotpar files, runs
+them through \texttt{dotpar}, and compiles the resulting Scala code to
+an executable jar file. It does this by invoking the Scala compiler
+\texttt{scalac} on the output Scala code, and packing the
+\texttt{class} files into a jar along with the requisite Scala and
+Dotpar support libraries. Then this jar is ready to be run on a JVM.
+
+\subsection{Editor Plugins}
+
+In order to facilitate writing tests, we wrote plugins for the popular
+Vim and Emacs text editors to do code highlighting and indentation for
+Dotpar files.
+
+\subsection{Runtime Environment}
+
+Our run-time is based on the JVM, as we leverage Scala, which compiles
+down to JVM bytecode. More specifically, the generated JVM bytecode
+relies on the included support Scala library files: without these, the
+program will not run as compiled by \texttt{scalac}.
+
+Finally, we include some supporting Scala code specifically tailored
+to enabling our generated Dotpar code to run by extending the behavior
+of the JVM and Scala runtimes to provide the semantics required by the
+DotPar code.
