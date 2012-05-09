@@ -11,7 +11,7 @@ module StringMap = Map.Make(String);;
 type debug_state_monad = { mutable debug_switch : bool };;
 let debug_state = { debug_switch = true; };;
 
-let debug str = print_string (str);;
+let debug str = if debug_state.debug_switch then print_string (str);;
 
 let rec lookup id sym_table iter =
   debug("Looking for "^ id ^" ...\n");
