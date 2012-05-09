@@ -161,7 +161,7 @@ and can_par_expr e symbols =
   (* TODO: is it necessary to recurse into these statements? *)
   | Function_expression(state) -> true
   | Declaration(type_dec, expr) -> true
-  | Declaration_expression(type_dec, rv, lv) -> true
+  | Declaration_expression(type_dec, lv, rv) -> can_par_expr rv symbols
   | Array_literal(exprs) -> true
   | Unop(op, expr) -> true
   | Binop(expr1, op, expr2) -> true

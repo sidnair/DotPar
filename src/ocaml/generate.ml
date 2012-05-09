@@ -39,7 +39,7 @@ and gen_expression inds expression table =
         else
           "") ^
         ".map({(" ^ (gen_param inds (List.nth params 0) symbols) ^ 
-        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
       else
         let if_cond_str = (gen_expression inds if_cond symbols) in
         "(" ^ (gen_expression inds (List.nth exprs 0) symbols) ^
@@ -52,7 +52,7 @@ and gen_expression inds expression table =
           "") ^
         ".zipped.map({(" ^
         (String.concat "," (List.map (gen_param_map inds symbols) params)) ^ 
-        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
       )
   (* unary operators *)
   | Unop(op,expr) -> (gen_unop op) ^ (gen_expression inds expr table)
@@ -64,13 +64,8 @@ and gen_expression inds expression table =
   | Function_call(expr, exprs) ->
       (* match special functions *)
       (match(gen_expression inds expr table) with
-      | "println" -> "Dotpar.dp_println(" ^
-          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
-          ")\n"
-      | "each" -> "Dotpar.dp_each(" ^
-          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
-          ")\n"
-      | "filter" -> "Dotpar.dp_filter(" ^
+      | ("println" | "each" | "filter" | "fill") as fn_name ->
+          "Dotpar." ^ fn_name ^ "(" ^
           (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
           ")\n"
       | "map" -> gen_map inds exprs table
@@ -81,7 +76,7 @@ and gen_expression inds expression table =
   | Array_access(expr, expr2) ->
       (* uses a function-call index syntax *)
       (gen_expression inds expr table) ^
-      "(Dotpar.dp_array_index(" ^ (gen_expression inds expr2 table) ^ "))"
+      "(Dotpar.array_index(" ^ (gen_expression inds expr2 table) ^ "))"
   | Variable(str) -> str
   (* constants *)
   | Char_literal(c) -> "'" ^ (String.make 1 c) ^ "'"
@@ -214,11 +209,11 @@ and gen_initial type_dec =
 and gen_map inds exprs table =
   let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
   if is_pure then
-    "Dotpar.dp_par_map(" ^
+    "Dotpar.par_map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
       ")\n"
   else
-    "Dotpar.dp_map(" ^
+    "Dotpar.map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
       ")\n"
 
@@ -226,11 +221,11 @@ and gen_reduce inds exprs table =
   let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
   let is_assoc = (get_fn_sym table (List.nth exprs 1)).associative in
   if is_pure && is_assoc then
-    "Dotpar.dp_par_reduce(" ^
+    "Dotpar.par_reduce(" ^
     (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
     ")\n"
   else
-    "Dotpar.dp_reduce(" ^
+    "Dotpar.reduce(" ^
     (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
     ")\n"
 
@@ -247,13 +242,13 @@ and gen_selection inds select table =
   inds ^ "if(" ^ (gen_expression inds select.if_cond table) ^ ")" ^
   "{\n" ^ next_inds ^
   (gen_statements next_inds select.if_body table) ^
-  inds ^ "}" ^
+  inds ^ "}\n" ^
   (if ((List.length select.elif_conds) != 0) then
     let gen_elif cond body =
       " else if(" ^ (gen_expression next_inds cond table) ^ ")" ^
       "{\n" ^ next_inds ^
       (gen_statements next_inds body table) ^
-      inds ^ "}"
+      inds ^ "}\n"
     in
     (String.concat ""
        (List.map2 gen_elif select.elif_conds select.elif_bodies))
@@ -261,7 +256,7 @@ and gen_selection inds select table =
   (if (select.else_body != []) then
     " else {\n" ^ next_inds ^
      (gen_statements next_inds select.else_body table) ^
-    inds ^ "}"
+    inds ^ "}\n"
   else "")
 
 and gen_statement inds stat table =
@@ -286,7 +281,7 @@ and gen_statement inds stat table =
           else
             (String.concat ", " (List.map (gen_param_map inds symbols) params))
           ) ^ ")" ^ (* (gen_type ret_type) ^ !!! *)
-          " {\n" ^ (gen_statements next_inds sts symbols) ^ inds ^ "}"
+          " {\n" ^ (gen_statements next_inds sts symbols) ^ inds ^ "}\n"
       | anything ->
           let ret_type = (gen_type ret_type symbols) in
           inds ^ "def " ^ name ^
@@ -295,7 +290,7 @@ and gen_statement inds stat table =
           else "") ^
           " {\n" ^ next_inds ^
           (gen_statements next_inds sts symbols) ^
-          inds ^ "}"
+          inds ^ "}\n"
       )
 
 and gen_statements inds statements table =
