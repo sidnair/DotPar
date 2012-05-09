@@ -1,0 +1,75 @@
+System Tester - Andrew
+\section{Testing Methodology}
+For Dotpar we followed a very strict Test Driven Development plan. The tests for both our parser and
+semantic analyzer were written weeks before either were beginning to be implemented. To start off
+thinking about how to design a comprehensive test suite I began with my IDE. Since Dotpar is a typed,
+compiled language I figured the warnings and errors an IDE like Eclipse threw for Java would also
+pertain to our language. After that initial round of tests I walked through the sample programs in our
+whitepaper and LRM and ensured they were present in the test suite and that I created variations of
+each of them that should either pass or fail.
+
+With Nathan's help we pair programmed two python scripts, \verb=parser_test.py= and \verb=semantic_test.py=, that
+contained our tests with a table of contents at the top to allow for a high level view of our test cases and
+the ability to run them through our compiler and spit out each test that went wrong with its intended
+behavior. This bit of optimization was extremely helpful! With a single command, make semantic\_test,
+we were able to compile all our source and run the python script that told us what it was supposed to
+do.
+
+In addition to the test cases, when Justin and I were writing the semantic analyzer he had the good idea
+to add debug statements that would print out which portion of code was running on which values. So,
+when we fed a single test into our compiler it would spit out what is was doing, adding to the symbol
+table, checking types, checking jump statements, etc., and we could trace back whether or not we were
+wrapping array accesses in their proper types and comparing nested types correctly.
+
+We also created a make \emph{full\_test} that compiles a series of test programs written in Dotpar and
+compares them to scala equivalents. This ensures that our code generation matches expected scala
+output.
+Overall, it was very helpful to think of test cases in terms of pairs, a situation in which something should
+pass and a situation in which it should not. So, for every concept, like brace matching, type checking,
+comment nesting, etc. we would ensure that there were variants of each that were supposed to be
+correct and supposed to be incorrect. This was very helpful because sometimes our analyzer would fail
+tests that were supposed to fail but for the wrong reasons, or just fail everything so it looked like half
+our tests passed but in reality only for the shallow reason that nothing really worked.
+
+\section{Test Programs}
+Sample test cases:
+\begin{verbatim}
+func main:void() {
+func fizzBuzz:void() {
+  char[] fb = "FizzBuzz";
+  char[] f = "Fizz";
+  char[] b = "Buzz";
+  for (number i = 1; i < 101; i = i + 1){
+    if (i % 15 == 0){
+      println(fb);
+    } elif(i % 3 == 0) {
+      println(f);
+    } elif(i % 5 == 0) {
+      println(b);
+    } else {
+      println(i);
+    }
+  }
+}
+}
+
+func main:void() {
+func fib:number(number n) {
+  if (n == 0) {
+    return 0;
+  }
+  elif (n == 1) {
+    return 1;
+  } else {
+    return fib(n-1) + fib(n-2);
+  } 
+}
+}
+
+func main:void() {
+  number[] xx = [1, 2];
+  number[] yy = [1, 2];
+  [x*y for number x, number y in xx,yy if (x==1)];
+}
+
+\end{verbatim}

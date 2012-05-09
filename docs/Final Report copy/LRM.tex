@@ -1,0 +1,1068 @@
+DotPar is a flexible language that provides implicit nested data parallelism with powerful first-class functions while providing a familiar imperative interface. The focus is on parallel performance for arrays and loops, since these are often the source of performance bottlenecks.
+\\ \\*Previous implementations of nested data-parallel languages have relied on the use of purely functional paradigms which can make the learning-curve steep and difficult to those who just want to pick up a new tool. DotPar provides a multi-paradigm nested data-parallel language with a friendly imperative style in addition to powerful functions. Its implicit parallelism focuses on the performance of arrays and loops, but its implementation requirements are flexible enough for other forms of parallelism as well.
+
+\section{Lexical Convention}
+A program consists of zero or more input statements, and one or more lines stored in files. These are translated in several phases, which are described in Section 13. The first phases do low-level lexical transformations, which reduce the program to a series of tokens.
+
+\tab \emph{lines:} 
+\\* \tab \tab \tab \textit{imports\_opt external\_declaration}
+\\* \tab \tab \tab \emph{lines external\_declaration}
+
+ \tab \emph{imports:}
+\\* \tab \tab \tab \textit{imports import\_declaration}
+\\* \tab \tab \tab \textit{import\_declaration}
+
+import\_declarations will be explained in detail in Section 11.
+
+\section{Tokens}
+DotPar has 5 token classes: identifiers, keywords, literals, operators, and other separators. All white space, collectively including blanks, horizontal and vertical tabs, newlines, and comments as described below are ignored except as they separate certain tokens. Sometimes white space is required to separate otherwise adjacent identifiers, keywords, and literals.
+\subsection{Comments}
+The characters /* introduce a block comment, which terminates with the characters */. In addition, // adds line comments which converts everything that follows to a comment until the end of the line. Comments do not nest, and they do not occur within string or character literals.
+\subsection{Constants}
+Constants are character, number, or string literals, as well as true, false, or nil.
+\\ \emph{constant}
+\begin{itemize}
+\item
+CHAR\_LITERAL
+\item
+NUM\_LITERAL
+\item
+STRING\_LITERAL
+\item
+TRUE
+\item
+FALSE
+\item
+NIL
+\end{itemize}
+\subsubsection{Character Literal}
+A character constant specifies a single ascii character surrounded by single quotes, such as `a'. If one is so inclined, he or she can include such control characters as newlines by using traditional backslash delimited escape codes. For instance, a newline is `\textbackslash n', and `\textbackslash 0' is the null character. A notable exception is the backslash itself, which is merely `\textbackslash'.
+\\ \\* A char literal has the type char and is initialized with the given ascii character. The behavior of a program that attempts to alter a char literal is undefined.
+\subsubsection{Number Literal}
+There are two ways to represent literal numbers with DotPar: the first is an integral format, without a decimal point, and the second is a floating point representation, including a decimal point.
+\\ \\* The integral representation is merely a series of digits without spaces between them, like 31 or 42. Integral number literals are only available for base 10.
+\\ \\* The floating point representation is a series of digits with a period embedded within or prepended to the front, and without spaces anywhere. Examples include 3.14159, or .11235, but not 125. with a trailing period.
+\\ \\* The floating point representation is restricted to base 10, and there is no support for scientific notation.
+\\ \\* A number literal has a type number and is initialized with the given value: if the given literal is too large, the behavior of the program will be undefined.
+\subsubsection{String Constant}
+A string literal is a sequence of ascii characters surrounded by double quotes as in ``. . . ''. A string has type `array of characters' and is initialized with the given characters. One may include traditional backslash escape codes, similar to character constants explained above. The behavior of a program that attempts to alter a string literal is undefined.
+\subsubsection{Boolean Constant}
+There are only two values for a boolean constant, \verb!true! or \verb!false!. Their literal value is respectively represented as \verb!true! and \verb!false!, not decorated by any special characters.
+\subsubsection{Nil Constant}
+\verb!nil! is a special literal that can stand in for any other type of value. \verb!nil! evaluates to \verb!false!. \verb!nil! and \verb!false! are the only values in the language that evaluate to \verb!false!.
+\subsection{Identifiers}
+An identifier is a sequence of letters and digits, and underscores. The first character must be a letter. Identifiers are case-sensitive and may have any length.
+\subsection{Keywords}
+The following identifiers are reserved for use as keywords, and may not be used otherwise:
+\begin{itemize}
+\item
+\verb!import!
+\item
+\verb!true!
+\item
+\verb!false!
+\item
+\verb!boolean!
+\item
+\verb!char!
+\item
+\verb!func!
+\item
+\verb!number!
+\item
+\verb!void!
+\item
+\verb!if!
+\item
+\verb!else!
+\item
+\verb!elif!
+\item
+\verb!for!
+\item
+\verb!in!
+\item
+\verb!return!
+\end{itemize}
+
+\section{Syntax Notation}
+The syntax in this manual has categories written in italics and literals and characters in
+plain font. Optional terminal and nonterminal symbols have the subscript ``opt,'' like below:
+
+\centerline{\{expression\_opt\}}
+
+*An non-terminal with the name foo\_opt will either go to ``the empty string'' or foo. Similarly, lists follow the format of imports above. To avoid repetition, rules that follow this rigid structure will not be explained in-depth. However, they will be included in the complete grammar at the end of this reference manual.
+\section{Meaning of Identifiers}
+Identifiers are simply the names given to functions and variables. A variable is used to store data and points to a specific location. The interpretation of the data is based on the variable's type. Identifiers are limited to the scope within which they are defined and are only accessible within that scope. This can be only within a specific function or an entire program.
+\subsection{Basic Types}
+DotPar contains three basic types: number, boolean and char. Variables of type number are 64-bit double precision floating point numbers. Boolean variables have only two possible values: true and false. They are internally treated as a 32-bit entities. Char variables can store any member of the set of characters. Every character has its value as equivalent to the integer code for the character.
+\subsection{Derived Types}
+These include arrays and functions which can be constructed from the basic types. Derived types include:
+\begin{itemize}
+\item
+\emph{arrays} of elements of a given type
+\item
+\emph{functions} accepting variables of certain types, and returning variables of a given type
+\end{itemize}
+There are infinitely many derived types. Type declaration syntax are described in more detail below.
+
+\section{Objects and lvalues}
+A variable is a named region of storage and an lvalue is an expression referring to that variable. For example, an lvalue expression can be an identifier with a specified type. Like in C, the term ``lvalue'' originates from the term left-value which indicates that it was on the left side of the assignment operator. Each operator listed below can expect lvalue operands and yields an lvalue.
+
+\section{Expressions}
+The precedence of expression operators is the same as the order of the major subsections outlined below in this section, with highest precedence first. In all subsections, precedence follows C-style conventions.  Left- or right-associativity is specified in each subsection for the operators discussed therein. The grammar given in Section 13 incorporates the precedence and associativity of the operators.
+\\ \\*The precedence and associativity of the operators is fully specified, but the order of evaluation of expressions is undefined, even if the subexpressions involve side effects. However, each operator combines the values it produces by its operands in a way that is compatible with the parsing of the containing expression in which it appears. The handling of overflow, divide check, and other exceptions in expression evaluation is undefined by the language spec.
+\subsection{Primary Expressions}
+Primary expressions are identifiers, constants, string literals, or expressions in parentheses.
+\\ \\* \tab \emph{primary\_expression:}
+\\* \tab \tab \emph{IDENTIFIER}
+\\* \tab \tab \emph{constant}
+\\* \tab \tab \emph{(expression)}
+\\ \\* An identifier is a primary expression. Its type is specified by its declaration, which must occur earlier in the program.
+\\ \\* A constant is a primary expression. Its type depends on its form as discussed in section 2.2
+\\ \\* A string literal is a primary expression. It is actually converted to an array of characters, but string literals are included as part of the grammar for programmer convenience.    
+\\ \\* A parenthesized expression is a primary expression whose type and value are identical to those of the unadorned expression. 
+
+\subsection{Postfix Expressions}
+The operators in postfix expressions group left to right.
+\\ \\* \tab \emph{postfix\_expression:}
+\\* \tab \tab \emph{primary expression}
+\\* \tab \tab \emph{postfix\_expression [ expression ]}
+\\* \tab \tab \emph{postfix\_expression ( argument\_expression\_list\_pt)}
+\subsubsection{Array References}
+A postfix expression followed by an expression in square brackets is a postfix expression denoting a subscripted array reference. The postfix expression must evaluate to an array and the expression must evaluate to a type number.
+\subsubsection{Function call}
+A postfix expression followed by the function designator, followed by parentheses containing a possibly empty, comma-separated list of assignment expressions, which constitute the arguments to the given function.   
+\\ \\* The term argument is used for an expression passed by a function call; the term parameter is used for an input object (or its identifier) received by a function definition, or described in function declaration. The scope is lexical.
+\\ \\* Arguments are passed by value. A function may change the values of its parameter objects, which are copies of the argument expressions, but these changes cannot affect the values of the arguments. 
+\\ \\*However, array references are passed by value, so a function may modify the contents of an array passed to it. 
+\\ \\* Type agreement is strict between the parameters and arguments. Thus, DotPar is strongly and statically typed.          
+\\ \\* The order of evaluation of arguments is unspecified. In addition, the arguments and their side effects need not be fully evaluated before the function is entered if the compiler can guarantee that this does not affect the correctness of the program. 
+
+\subsection{Unary Expressions}
+Expressions with unary operators group right-to-left.
+\\ \\* \tab \emph{unary\_experession:}
+\\* \tab \tab \emph{postfix\_expression}
+\\* \tab \tab \emph{NOT unary\_expression}
+\\* \tab \tab \emph{SUB unary\_expression}
+\\ \\* The NOT unary\_expresssion refers to the ! operator. The operand of the ! operator must have a boolean type, and the result is true if the value of its operand evaluates to false, and false otherwise. The type of the result is boolean.
+\\ \\* The SUB unary\_expression refers to the - operator. The operand of the - operator must have a number type, and the result is the negation of the value of its operand. The type of the result is number.
+
+\subsection{Arithmetic Expressions}
+Arithmetic Expressions are grouped left to right, and include: \%, /, *, + , - but this is infact is not useful, as it is parsed to preserve C style precedence. All operators return number types.
+\\ \\* \tab \emph{arithmetic\_expression:}
+\\* \tab \tab \emph{unary\_expression}
+\\* \tab \tab \emph{arithmetic\_expression REM arithmetic\_expression}
+\\* \tab \tab \emph{arithmetic\_expression DIV arithmetic\_expression}
+\\* \tab \tab \emph{arithmetic\_expression MULT arithmetic\_expression}
+\\* \tab \tab \emph{arithmetic\_expression ADD arithmetic\_expression}
+\\* \tab \tab \emph{arithmetic\_expression SUB arithmetic\_expression}
+\\ \\*REM refers to the \% operator, the remainder which refers to the remaining value after quotient the first operand by the second. Note that the remainder of a negative value will be negative.
+\\ \\*DIV refers to the / operator, the division which refers to quotient of the first operand and the second.
+\\ \\*MULT refers to the * operator, the multiplication between its two operands.
+\\ \\*ADD refers to the + operator, the addition between its two operands.
+\\ \\*SUB refers to the binary - operator, the subtraction between its two operands.
+
+\subsection{Relational Expressions}
+The relational operators group left-to-right.
+\\ \\* \tab \emph{relational\_expression:}
+\\* \tab \tab \emph{arithmetic\_expression}
+\\* \tab \tab \emph{relational\_expression GEQ relational\_expression}
+\\* \tab \tab \emph{relational\_expression GT relational\_expression}
+\\* \tab \tab \emph{relational\_expression LT relational\_expression}
+\\* \tab \tab \emph{relational\_expression LEQ relational\_expression}
+\\* \tab \tab \emph{relational\_expression EQ relational\_expression}
+\\* \tab \tab \emph{relational\_expression NEQ relational\_expression}
+\\ \\* The GEQ refers to \textgreater= operators(greater or equal), GT to \textgreater (greater), LT to \textless (less than), LEQ to \textless= (less than or equal), EQ to == (equality), and NEQ to != (not equality). All yield false if the specified relation is false, and true if it is true. The type of the result is boolean. The usual arithmetic conversions are performed on arithmetic operands. GEQ, GT, LEQ, and LT have higher precedence than EQ and NEQ.
+
+\subsection{Conditional Expressions}
+The conditional operators group left-to-right and include \&\& and \textbar\textbar.
+\\ \\* \tab \emph{conditional\_expression:}
+\\* \tab \tab \emph{relational\_expression}
+\\* \tab \tab \emph{conditional\_expression OR conditional\_expression}
+\\* \tab \tab \emph{conditional\_expression AND conditional\_expression}
+\\ \\*OR refers to the \textbar\textbar operator which performs a logical OR on its two operands which must be of type boolean. The result is of type boolean. 
+\\ \\*AND refers to the \&\& operator which performs a logical AND on its two operands which must be of type boolean. The result is of type boolean.
+
+\subsection{Array Expressions}
+Array Expressions are conditional statements, or list\_comprehnesionsand initializer\_list\_opt enclosed in square brackets `[' ,`]'.
+\\ \\* \tab \emph{array\_expression:}
+\\* \tab \tab \emph{conditional\_expression}
+\\* \tab \tab \emph{[ list\_comprehension ]}
+\\* \tab \tab \emph{[ initializer\_list\_opt ]}
+\\ \\*An initializer\_list is used in the creation of array literals.
+\subsection{List Comprehension}
+*List comprehensions are used to succinctly create an array. They are equivalent in power to maps and filters, but are often a more convenient syntax to use. Although the list comprehension may be parallelized during its execution, the ordering of the resulting array is deterministic.
+\\ \\* \tab \emph{list\_comprehension:}
+\\* \tab \tab \emph{array\_expression FOR paren\_parameter\_list\_opt IN array\_expression if\_comp\_opt}
+\\* \tab \tab \emph{array\_expression FOR paren\_parameter\_list\_opt IN                               paren\_multi\_array\_expression\_list\_opt if\_comp\_opt}
+\\ \\* The list comprehension syntax and behavior is very similar to Python's.
+
+\subsection{Assignment Expressions}
+There is one assignment operator =, and it is not used more than once per statement.
+\\ \\* \tab \emph{assignment\_expression: }
+\\* \tab \tab \emph{array\_expression}
+\\* \tab \tab \emph{anonymous\_function\_definition}
+\\* \tab \tab \emph{postfix\_expression ASSIGN array\_expression}
+\\* \tab \tab \emph{postfix\_expression ASSIGN function\_definition}
+\\* \tab \tab \emph{postfix\_expression ASSIGN anonymous\_function\_definition}
+\\ \\*The assignment operator requires an lvalue as a left operand, and the lvalue must be mutable.
+\\ \\*The assignment operator assigns array\_expression, function\_definition and anonymous\_function\_definition to postfix\_expressions.
+
+\subsection{Anonymous Function Definitions}
+Anonymous function definitions can be used in assignments. They are identical to regular function definitions, except they lack an identifier.
+\\ \\* \tab \emph{anonymous\_function\_definition:}
+\\* \tab \tab \emph{FUNC: type\_specifier (parameter\_list\_opt) compound\_statement}
+
+\section{External Declarations}
+External declarations form the basic building blocks of lines of code.
+\\ \\* \tab \emph{external\_declaration:}
+\\* \tab \tab \emph{function\_definition}
+\\* \tab \tab \emph{declaration}
+\\ \\* The two top-level declarations are function\_definitions and declarations. Function definitions are defined as:
+\\ \\* \tab \emph{function\_definition:}
+\\* \tab \tab \emph{FUNC IDENTIFIER: type\_specifier (parameter\_list\_opt) compound\_statement) compound\_statement}
+\\ \\* Unlike C, functions the return type of a function is defined after the name. With potentially complicated return types, having the type come after the name makes reading the code easier. They also have the \verb!func! keyword so that function syntax for types, definitions, and assignments.
+\\ \\* Declarations inform the interpretation given to each identifier. Implementations decide when to reserve storage space associated with the identifier. Declarations have the form
+\\ \\* \tab \emph{declaration:}
+\\* \tab \tab \emph{type\_specifier declarator;}
+\\* \tab \tab \emph{type\_specifier declarator ASSIGN initializer;}
+\\ \\* where ASSIGN is =. A declaration must have one and only one declarator.
+
+\subsection{Type Specifiers}
+A type specifier is either a basic or derived type, examples of which are:
+\begin{itemize}
+\item
+number
+\item
+char[]
+\item
+func:number[](char[])
+\end{itemize}
+* At most one type-specifier may be given in a declaration. Type specifiers have the form:
+\\ \\* \tab \emph{type\_specifier:}
+\\* \tab \tab \emph{type\_specifier [arithmetic\_expression]}
+\\* \tab \tab \emph{type\_specifier [ ]}
+\\* \tab \tab \emph{basic\_type}
+\\* \tab \tab \emph{VOID}
+\\* \tab \tab \emph{func\_specifier}
+\\ \\* \tab \emph{func\_specifier:}
+\\* \tab \tab \emph{func: type\_specifier (type\_list)}
+\\* \tab \tab \emph{func: type\_specifier (parameter\_list\_opt)}
+\\ \\* \tab \emph{basic\_type:}
+\\* \tab \tab \emph{NUMBER}
+\\* \tab \tab \emph{CHAR}
+\\* \tab \tab \emph{BOOLEAN}
+
+\subsection{Declarators}
+Declarators have the syntax:
+\\ \\* \tab \emph{declarator:}
+\\* \tab \tab \emph{IDENTIFIER}
+\\* \tab \tab \emph{(declarator)}
+
+\subsection{Initializers}
+* \tab \emph{initializer:}
+\\* \tab \tab \emph{array\_expression}
+\\* \tab \tab \emph{anonymous\_function\_definition}
+\\ \\* As some example types, we can see that array types include number[] and number[][]. For example array can be declared initialized as: number[] a = [1, 2];
+\\ \\* An example function declaration is func:number[](number)\{ \} foo. This function returns an array of numbers, and accepts a number as an argument, and is named foo. This syntax allows us to concisely declare variables as functions, which is important for a language with first-class functions.
+\\ \\* Note that we could have given a name to the number parameter if we chose to using a parameter\_list, which is a series of parameter\_declarations:
+\\ \\* \tab \emph{parameter\_declaration:}
+\\* \tab \tab \emph{type\_specifier declarator}
+\\ \\* Although this identifier would not be used, it may be desirable to name parameter the so that the declaration is self-documenting.
+
+\section{Statements}
+Statements are executed sequentially and have no value. The types of statements in DotPar are listed below:
+\\ \\* \tab \emph{statement:}
+\\* \tab \tab \emph{expression\_statement}
+\\* \tab \tab \emph{compound\_statement}
+\\* \tab \tab \emph{selection\_statement}
+\\* \tab \tab \emph{iteration\_statement}
+\\* \tab \tab \emph{jump\_statement}
+
+\subsection{Expression Statements}
+Most statements are expressions of the form
+\\ \\* \tab \emph{expression-statement:}
+\\* \tab \tab \emph{expression\_opt;}
+\\ \\* These statements are mostly assignments and function calls. The side effects of an expression need not be computed before the execution of the following statement if the compiler can guarantee that this does not affect correctness. This is different from other languages like C.
+\subsection{Compound Statements}
+Compound statements are multiple statements executed when one is expected. For example, the body of a function is a compound statement. In DotPar, if statements and for loops also require compound statements, even if they have single line bodies.
+\\ \\* \tab \emph{compound\_statement:}
+\\* \tab \tab \emph{{ statement\_list\_opt }}
+\\* \tab \emph{statement\_list :}
+\\* \tab \tab \emph{statement\_list\_opt statement}
+\\* \tab \tab \emph{statement\_list\_opt declaration}
+\\* \tab \tab \emph{statement\_list\_opt function\_definition}
+\\ \\* Identifiers can only be declared once within the scope of a function and cannot be the same as the identifiers passed into a function.
+
+\subsection{Selection Statements}
+Selection statements allow for the choice between multiple control flows.
+\\ \\* \tab \emph{selection\_statement: }
+\\* \tab \tab \emph{if elifs\_opt else\_opt}
+\\* \tab \emph{if:}
+\\* \tab \tab \emph{IF `(' expression `)' compound\_statement}
+\\* \tab \emph{else\_opt:}
+\\* \tab \tab \emph{else}
+\\* \tab \emph{else:}
+\\* \tab \tab \emph{ELSE compound\_statement}
+\\* \tab \emph{elifs\_opt:}
+\\* \tab \tab \emph{elifs}
+\\* \tab \emph{elifs:}
+\\* \tab \tab \emph{ELIF `(' expression `)' compound\_statement}
+\\* \tab \tab \emph{elifs ELIF `(' expression `)' compound\_statement}
+\\ \\* Note that \verb!IF!, \verb!ELSE!, and \verb!ELIF!, are used to distinguish the terminal if, else, and elif keywords from the if, else, and elif non-terminals.
+\\ \\* The expression within the if statement must evaluate to either true or false. When it is true the substatement is executed. With an if else statement the else substatement is executed when the expression evaluates to false. Every else is connected with the first if statement above it that is unconnected to an else.
+
+\subsection{Iteration Statements}
+Iteration statements specify looping.
+\\ \\* \tab \emph{iteration-statement:}
+\\* \tab \tab \emph{for (expression\_opt; expression\_opt; expression\_opt) compound\_statement}
+\\ \\* The first expression is evaluated once and marks the start of the loop. Note that a new variable cannot be declared as part of this operation. The second expression is coerced to a boolean; if false, it terminates the loop. The third expression is evaluated after each iteration so it specifies the re-initialization for the loop.
+\\ \\* Again, note that curly braces must be used.
+
+\subsection{Jump Statements}
+Jump statements, once they are reached, always transfer control regardless of any condition.
+\\ \\* \tab \emph{jump\_statement:}
+\\* \tab \tab \emph{RETURN expression\_opt `;'}
+\\ \\* A function provides the value back to its caller via the return statement. It returns the value of the expression when it is evaluated. The expression once evaluated is interpreted as the type specified in the function declaration.
+
+\section{Scope}
+A program can be compiled from several .par files. Scoping is lexical. Thus, identifiers in DotPar have one top-level namespace in which variables and functions are defined, with a shared namespace between the two. Imports made in a file are accessible anywhere else in that file. An identifier declared outside of any function can be accessed anywhere in the program. An identifier declared in a block is available anywhere within the block, including inner functions. Note that this means that DotPar has closures. That is, if an inner function is returned from a function, it maintains access to the variables of the outer function.
+
+\section{Preprocessing}
+A preprocessor performs the inclusion of named files. Lines beginning with “import” communicate with the preprocessor. The syntax of these lines is independent of the rest of the language; they must only appear at the beginning of the file.
+
+\subsection{File Inclusion}
+Imports have the syntax:
+\\ \\* \tab \emph{imports:}
+\\* \tab \tab \emph{imports import\_declaration}
+\\* \tab \tab \emph{import\_declaration}
+\\ \\* \tab \emph{import\_declarations:}
+\\* \tab \tab \emph{IMPORT IDENTIFIER}
+\\ \\* A control line of the form
+\\ \tab \emph{import module;}
+\\ means this line will be replaced by the contents of the file named filename, with extension .par. The named file is searched for in the current directory, and each file is imported only once per program. Import statements can be nested, so every file can include them.
+
+\section{Built-in Functions}
+The language includes several built-in functions that provide basic building blocks for more complex user-defined functions. These appear to the user as regular library functions. They can be shadowed by user functions to avoid having an unreasonable amount of reserved words. Many of these functions are self-explanatory and, as such, their formal prototypes are not given.  Further explanation is present where warranted.
+\\ \\* Finally, note that many useful functions, such as string containment, are not included. These are more appropriate as libraries than language features.
+
+\subsection{Array}
+\begin{verbatim}
+cat(arr, other\_arr) // concatenate two arrays and return the result
+each(arr, fn(element, index)) // iterate through an array
+fill(dimensions, fn(index)) // fill an array using a function. dimensions
+// is an array that has the size of each dimension in the output array
+filter(arr, fn(element, index)) // selects certain elements from an 
+// array; the filter function returns a boolean
+len(arr) // array length
+map(arr, fn(element, index)) //runs function fn on each element of the array
+reduce(sum, nums, 0) // reduce operation. The last argument is the 
+// initial value.
+zip(arr, other\_arr) // combine two arrays into a nested array
+\end{verbatim}
+
+\subsection{String}
+\begin{verbatim}
+    len(str) // string length
+\end{verbatim}
+
+\subsection{Math}
+\emph{Note that all trigonometric functions operate with radians.}
+\begin{verbatim}
+    acos(n)
+    asin(n)
+    atan(n)
+    cos(n)
+    exp(num, exponent)
+    ln(n)
+    log(n, base)
+    sin(n)
+    sqrt(n)
+    tan(n)
+    ceil(n)
+    floor(n)
+    trunc(n)
+    round(n)
+    rand(n)
+\end{verbatim}
+
+\subsection{I\textbackslash O}
+\begin{verbatim}
+    print(s)
+    println(s)
+    printerr(s)
+    read()
+    readln()
+\end{verbatim}
+
+\section{Future Goals}
+We have an ambitious set of possible additions to the language. We do not expect to complete all of them, but we do hope to add at least a few of these features. Also, note that some of these goals are mutually exclusive. For instance, if Java interoperability is implemented, adding some of the library functionality mentioned below will not be necessary. Note that these additions are in no particular order.
+
+\begin{enumerate}
+\item
+Add more assignment operators: *=, \textbackslash=, +=, -=, \%=
+\item
+Do basic type inference
+\item
+Add new control flow tools: foreach loops, while, break, and continue
+\item
+Add new container objects, such as a struct or dictionary
+\item
+Introduce shorthand syntax for operations like array concatenation (++)
+\item
+Range selection for arrays and strings, e.g. arr[i:j] or arr[i:j:stride]
+\item
+Java interoperability (this will be hard given static analysis for parallelization)
+\item
+Namespacing
+\item
+Immutable values
+\item
+Library-level functionality
+\begin{itemize}
+\item
+String manipulation: trim, contains, split
+\item
+Regexes
+\item
+Arrays: populate (like fill, but for existing arrays), max, min, push, pop
+\item
+Basic data structures
+\item
+Time
+\item
+Char to int function
+\end{itemize}
+\item
+Mutating versions of some functions, such as map! and zip!
+\item
+Function keywords and/or optional params
+\item
+Implement more parallelized aspects in the language
+\end{enumerate}
+
+\section{Grammar}
+\newlength\rulelhs
+\newlength\rulemid
+\newlength\rulerhs
+\settowidth\rulelhs{opt\_paren\_multi\_array\_expression\_list}
+\settowidth\rulemid{::=}
+\setlength\rulerhs{\textwidth}
+\addtolength\rulerhs{-\rulelhs}
+\addtolength\rulerhs{-\rulemid}
+\addtolength\rulerhs{-6\tabcolsep}
+Note that for the grammar we specify the following precedence following YACC conventions:
+\\ \textbackslash\%left OR
+\\* \textbackslash\%left AND
+\\ \\* \textbackslash\%left EQ NEQ
+\\ \textbackslash\%left GT GEQ LT LEQ
+\\ \\*\textbackslash\%left ADD SUB
+\\ \textbackslash\%left MULT DIV REM
+\\ \\*\textbackslash\%right UMINUS
+\\ \\* These are the rules for the grammar:
+\begin{longtable}{lrl}
+lines                                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    imports\_opt external\_declaration
+  \end{minipage}                                                             \\
+lines                                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    lines external\_declaration
+  \end{minipage}                                                             \\
+imports\_opt                               & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    imports
+  \end{minipage}                                                             \\
+imports\_opt                               & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+imports                                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    imports import\_declaration
+  \end{minipage}                                                             \\
+imports                                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    import\_declaration
+  \end{minipage}                                                             \\
+import\_declaration                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    IMPORT IDENTIFIER ``{\bf ;}''
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    CHAR\_LITERAL
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    NUM\_LITERAL
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    STRING\_LITERAL
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    TRUE
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FALSE
+  \end{minipage}                                                             \\
+constant                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    NIL
+  \end{minipage}                                                             \\
+argument\_expression\_list\_opt            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    argument\_expression\_list
+  \end{minipage}                                                             \\
+argument\_expression\_list\_opt            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+argument\_expression\_list                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    assignment\_expression
+  \end{minipage}                                                             \\
+argument\_expression\_list                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    argument\_expression\_list ``{\bf ,}'' assignment\_expression
+  \end{minipage}                                                             \\
+postfix\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    primary\_expression
+  \end{minipage}                                                             \\
+postfix\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression ``{\bf $[$}'' expression ``{\bf $]$}''
+  \end{minipage}                                                             \\
+postfix\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression ``{\bf (}'' argument\_expression\_list\_opt ``{\bf )}''
+  \end{minipage}                                                             \\
+unary\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression
+  \end{minipage}                                                             \\
+unary\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    NOT unary\_expression
+  \end{minipage}                                                             \\
+unary\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    SUB unary\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    unary\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression REM arithmetic\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression DIV arithmetic\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression MULT arithmetic\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression ADD arithmetic\_expression
+  \end{minipage}                                                             \\
+arithmetic\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression SUB arithmetic\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    arithmetic\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression GEQ relational\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression GT relational\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression LT relational\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression LEQ relational\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression EQ relational\_expression
+  \end{minipage}                                                             \\
+relational\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression NEQ relational\_expression
+  \end{minipage}                                                             \\
+conditional\_expression                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    relational\_expression
+  \end{minipage}                                                             \\
+conditional\_expression                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    conditional\_expression OR conditional\_expression
+  \end{minipage}                                                             \\
+conditional\_expression                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    conditional\_expression AND conditional\_expression
+  \end{minipage}                                                             \\
+opt\_paren\_multi\_array\_expression\_list & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf (}'' multi\_array\_expression\_list ``{\bf )}''
+  \end{minipage}                                                             \\
+opt\_paren\_multi\_array\_expression\_list & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    multi\_array\_expression\_list
+  \end{minipage}                                                             \\
+multi\_array\_expression\_list             & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression ``{\bf ,}'' array\_expression
+  \end{minipage}                                                             \\
+multi\_array\_expression\_list             & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression ``{\bf ,}'' array\_expression ``{\bf ,}'' array\_expression\_list
+  \end{minipage}                                                             \\
+array\_expression\_list                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression
+  \end{minipage}                                                             \\
+array\_expression\_list                    & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression\_list ``{\bf ,}'' array\_expression
+  \end{minipage}                                                             \\
+array\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    conditional\_expression
+  \end{minipage}                                                             \\
+array\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf $[$}'' list\_comprehension ``{\bf $]$}''
+  \end{minipage}                                                             \\
+array\_expression                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf $[$}'' initializer\_list\_opt ``{\bf $]$}''
+  \end{minipage}                                                             \\
+if\_comp\_opt                              & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    if\_comp
+  \end{minipage}                                                             \\
+if\_comp\_opt                              & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+if\_comp                                   & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    IF expression
+  \end{minipage}                                                             \\
+list\_comprehension                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression FOR paren\_parameter\_list\_opt IN array\_expression if\_comp\_opt
+  \end{minipage}                                                             \\
+list\_comprehension                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression FOR paren\_parameter\_list\_opt IN opt\_paren\_multi\_array\_expression\_list if\_comp\_opt
+  \end{minipage}                                                             \\
+assignment\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression
+  \end{minipage}                                                             \\
+assignment\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    anonymous\_function\_definition
+  \end{minipage}                                                             \\
+assignment\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression ASSIGN array\_expression
+  \end{minipage}                                                             \\
+assignment\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression ASSIGN function\_definition
+  \end{minipage}                                                             \\
+assignment\_expression                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    postfix\_expression ASSIGN anonymous\_function\_definition
+  \end{minipage}                                                             \\
+expression                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    assignment\_expression
+  \end{minipage}                                                             \\
+primary\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    IDENTIFIER
+  \end{minipage}                                                             \\
+primary\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    constant
+  \end{minipage}                                                             \\
+primary\_expression                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf (}'' expression ``{\bf )}''
+  \end{minipage}                                                             \\
+type\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier ``{\bf $[$}'' arithmetic\_expression ``{\bf $]$}''
+  \end{minipage}                                                             \\
+type\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier ``{\bf $[$}'' ``{\bf $]$}''
+  \end{minipage}                                                             \\
+type\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    basic\_type
+  \end{minipage}                                                             \\
+type\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    VOID
+  \end{minipage}                                                             \\
+type\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    func\_specifier
+  \end{minipage}                                                             \\
+func\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FUNC ``{\bf :}'' type\_specifier ``{\bf (}'' type\_list ``{\bf )}''
+  \end{minipage}                                                             \\
+func\_specifier                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FUNC ``{\bf :}'' type\_specifier ``{\bf (}'' parameter\_list\_opt ``{\bf )}''
+  \end{minipage}                                                             \\
+basic\_type                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    NUMBER
+  \end{minipage}                                                             \\
+basic\_type                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    CHAR
+  \end{minipage}                                                             \\
+basic\_type                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    BOOLEAN
+  \end{minipage}                                                             \\
+declaration                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier declarator ``{\bf ;}''
+  \end{minipage}                                                             \\
+declaration                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier declarator ASSIGN initializer ``{\bf ;}''
+  \end{minipage}                                                             \\
+declarator                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    IDENTIFIER
+  \end{minipage}                                                             \\
+declarator                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf (}'' declarator ``{\bf )}''
+  \end{minipage}                                                             \\
+type\_list                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier
+  \end{minipage}                                                             \\
+type\_list                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_list ``{\bf ,}'' type\_specifier
+  \end{minipage}                                                             \\
+parameter\_list\_opt                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    parameter\_list
+  \end{minipage}                                                             \\
+parameter\_list\_opt                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+paren\_parameter\_list\_opt                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf (}'' parameter\_list ``{\bf )}''
+  \end{minipage}                                                             \\
+paren\_parameter\_list\_opt                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    parameter\_list
+  \end{minipage}                                                             \\
+parameter\_list                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    parameter\_declaration
+  \end{minipage}                                                             \\
+parameter\_list                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    parameter\_list ``{\bf ,}'' parameter\_declaration
+  \end{minipage}                                                             \\
+parameter\_declaration                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    type\_specifier declarator
+  \end{minipage}                                                             \\
+initializer                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    array\_expression
+  \end{minipage}                                                             \\
+initializer                                & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    anonymous\_function\_definition
+  \end{minipage}                                                             \\
+initializer\_list\_opt                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    initializer\_list
+  \end{minipage}                                                             \\
+initializer\_list\_opt                     & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+initializer\_list                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    initializer
+  \end{minipage}                                                             \\
+initializer\_list                          & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    initializer\_list ``{\bf ,}'' initializer
+  \end{minipage}                                                             \\
+expression\_statement                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    expression\_opt ``{\bf ;}''
+  \end{minipage}                                                             \\
+expression\_opt                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    expression
+  \end{minipage}                                                             \\
+expression\_opt                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+compound\_statement                        & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ``{\bf $\{$}'' statement\_list\_opt ``{\bf $\}$}''
+  \end{minipage}                                                             \\
+statement\_list\_opt                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    statement\_list
+  \end{minipage}                                                             \\
+statement\_list\_opt                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+statement\_list                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    statement\_list\_opt statement
+  \end{minipage}                                                             \\
+statement\_list                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    statement\_list\_opt declaration
+  \end{minipage}                                                             \\
+statement\_list                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    statement\_list\_opt function\_definition
+  \end{minipage}                                                             \\
+selection\_statement                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    if elifs\_opt else\_opt
+  \end{minipage}                                                             \\
+if                                         & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    IF ``{\bf (}'' expression ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+else\_opt                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    else
+  \end{minipage}                                                             \\
+else\_opt                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+else                                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ELSE compound\_statement
+  \end{minipage}                                                             \\
+elifs\_opt                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    elifs
+  \end{minipage}                                                             \\
+elifs\_opt                                 & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    
+  \end{minipage}                                                             \\
+elifs                                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    ELIF ``{\bf (}'' expression ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+elifs                                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    elifs ELIF ``{\bf (}'' expression ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+iteration\_statement                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FOR ``{\bf (}'' expression\_opt ``{\bf ;}'' expression\_opt ``{\bf ;}'' expression\_opt ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+jump\_statement                            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    RETURN expression\_opt ``{\bf ;}''
+  \end{minipage}                                                             \\
+statement                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    expression\_statement
+  \end{minipage}                                                             \\
+statement                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    compound\_statement
+  \end{minipage}                                                             \\
+statement                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    selection\_statement
+  \end{minipage}                                                             \\
+statement                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    iteration\_statement
+  \end{minipage}                                                             \\
+statement                                  & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    jump\_statement
+  \end{minipage}                                                             \\
+anonymous\_function\_definition            & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FUNC ``{\bf :}'' type\_specifier ``{\bf (}'' parameter\_list\_opt ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+function\_definition                       & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    FUNC IDENTIFIER ``{\bf :}'' type\_specifier ``{\bf (}'' parameter\_list\_opt ``{\bf )}'' compound\_statement
+  \end{minipage}                                                             \\
+external\_declaration                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    function\_definition
+  \end{minipage}                                                             \\
+external\_declaration                      & ::= &
+  \begin{minipage}[t]{\rulerhs}
+    \raggedright
+    declaration
+  \end{minipage}                                                             \\
+\end{longtable}
+
+
+​
