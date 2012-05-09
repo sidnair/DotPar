@@ -177,6 +177,7 @@ let rec check_expression e sym_tabl =
             (match t with
             | Array_type(a) -> a
             | _ -> t)
+        end
       | _ -> raise (Error "sdfsdfMalformed Array Statement111"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t
   | Char_literal (c) -> Basic_type(Char_type)
