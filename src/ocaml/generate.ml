@@ -39,7 +39,7 @@ and gen_expression inds expression table =
         else
           "") ^
         ".map({(" ^ (gen_param inds (List.nth params 0) symbols) ^ 
-        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
       else
         let if_cond_str = (gen_expression inds if_cond symbols) in
         "(" ^ (gen_expression inds (List.nth exprs 0) symbols) ^
@@ -52,7 +52,7 @@ and gen_expression inds expression table =
           "") ^
         ".zipped.map({(" ^
         (String.concat "," (List.map (gen_param_map inds symbols) params)) ^ 
-        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ")"
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
       )
   (* unary operators *)
   | Unop(op,expr) -> (gen_unop op) ^ (gen_expression inds expr table)
