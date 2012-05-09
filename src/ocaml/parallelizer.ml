@@ -179,6 +179,7 @@ and can_par_assignment_expr lv symbols =
   | Variable(name) -> snd(lookup name symbols 0) == 0
   | Array_access(e1, e2) -> (match e1 with
       | Variable(name) -> snd(lookup name symbols 0) == 0
+      | Array_access(e1, e2) -> can_par_assignment_expr e1 symbols
       | _ -> raise (Error "Malformed array statement")
       )
   | _ -> raise (Error "Invalid assignment expression")
