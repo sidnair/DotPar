@@ -1,8 +1,21 @@
-DotPar is a flexible language that provides implicit nested data parallelism with powerful first-class functions while providing a familiar imperative interface. The focus is on parallel performance for arrays and loops, since these are often the source of performance bottlenecks.
-\\ \\*Previous implementations of nested data-parallel languages have relied on the use of purely functional paradigms which can make the learning-curve steep and difficult to those who just want to pick up a new tool. DotPar provides a multi-paradigm nested data-parallel language with a friendly imperative style in addition to powerful functions. Its implicit parallelism focuses on the performance of arrays and loops, but its implementation requirements are flexible enough for other forms of parallelism as well.
+DotPar is a flexible language that provides implicit nested data parallelism
+with powerful first-class functions while providing a familiar imperative
+interface. The focus is on parallel performance for arrays and loops, since
+these are often the source of performance bottlenecks.
+
+\\ \\*Previous implementations of nested data-parallel languages have relied on
+the use of purely functional paradigms which can make the learning-curve steep
+and difficult to those who just want to pick up a new tool. DotPar provides a
+multi-paradigm nested data-parallel language with a friendly imperative style in
+addition to powerful functions. Its implicit parallelism focuses on the
+performance of arrays and loops, but its implementation requirements are
+flexible enough for other forms of parallelism as well.
 
 \section{Lexical Convention}
-A program consists of zero or more input statements, and one or more lines stored in files. These are translated in several phases, which are described in Section 13. The first phases do low-level lexical transformations, which reduce the program to a series of tokens.
+A program consists of zero or more input statements, and one or more lines
+stored in files. These are translated in several phases, which are described in
+Section 13. The first phases do low-level lexical transformations, which reduce
+the program to a series of tokens.
 
 \tab \emph{lines:} 
 \\* \tab \tab \tab \textit{imports\_opt external\_declaration}
@@ -15,7 +28,11 @@ A program consists of zero or more input statements, and one or more lines store
 import\_declarations will be explained in detail in Section 11.
 
 \section{Tokens}
-DotPar has 5 token classes: identifiers, keywords, literals, operators, and other separators. All white space, collectively including blanks, horizontal and vertical tabs, newlines, and comments as described below are ignored except as they separate certain tokens. Sometimes white space is required to separate otherwise adjacent identifiers, keywords, and literals.
+DotPar has 5 token classes: identifiers, keywords, literals, operators, and
+other separators. All white space, collectively including blanks, horizontal and
+vertical tabs, newlines, and comments as described below are ignored except as
+they separate certain tokens. Sometimes white space is required to separate
+otherwise adjacent identifiers, keywords, and literals.
 \subsection{Comments}
 The characters /* introduce a block comment, which terminates with the characters */. In addition, // adds line comments which converts everything that follows to a comment until the end of the line. Comments do not nest, and they do not occur within string or character literals.
 \subsection{Constants}
