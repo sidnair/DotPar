@@ -49,6 +49,7 @@ let get_fn_sym table name_expr =
       | Func_type(var_type, params, f_syms) -> !(f_syms)
       | _ -> raise (Error "Expected function - semantic analysis failed")
       )
+  | Anonymous_function (var_type, params, stats, s_t) -> s_t
   | _ -> raise (Error "Expected function name - semantic analysis failed")
     
 (***************************************************************************)
@@ -56,27 +57,23 @@ let rec check_expression e sym_tabl =
   debug("Checking an expression... \n");
   (match e with
   | Assignment_expression (left, right) ->
-    (match left with
-      | Variable(v) ->
-        let (t, iter) = lookup v sym_tabl 0 in
-        let t1 = check_expression right sym_tabl in
-        ignore(compare_type t t1);
-        t1
-      | Array_access(name, index) ->
-        (match name with
+      let rec check_array_type expr depth = 
+          (match expr with
+          | Array_access(name, index) -> 
+            ignore(check_expression index sym_tabl);
+            (check_array_type name (depth + 1))
           | Variable(v) ->
             let (t, iter) = lookup v sym_tabl 0 in
-            let index_t = get_type index sym_tabl in
-            if not (require_number index_t)
-              then raise (Error "Invalid Array Access")
-            else begin
-              let t1 = check_expression right sym_tabl in
-              ignore(compare_type t t1);
-              t1
-            end
-          | _ -> raise (Error "Malformed Array Statement"))
-       | _ -> raise (Error "Invalid Assignment Expression")
-    )
+            let t1 = check_expression right sym_tabl in
+            ignore(compare_type t (aug_type t1 depth));
+            t
+          | _ -> raise (Error "sup"))
+      and aug_type t depth =
+        if (depth == 0) then t else (aug_type (Array_type(t)) (depth - 1))
+      in
+          let t1 = (check_expression right sym_tabl) in
+          ignore(check_array_type left 0);
+          t1
   | Declaration (var_type, var) ->
     (match var with
       | Variable(v) ->
@@ -84,7 +81,7 @@ let rec check_expression e sym_tabl =
           let typ, iter = lookup v sym_tabl 0 in
           if (iter > 0) then raise Not_found
           else begin
-            raise (Error "Variable previously defined in the same scope");
+            raise (Error "Vannriable previously defined in the same scope");
           end
         with Not_found ->
           let t1 = check_var_type var_type in
@@ -173,15 +170,14 @@ let rec check_expression e sym_tabl =
     (match name with
       | Variable(v) ->
         let (t, iter) = lookup v sym_tabl 0 in
-        let index_t = get_type index sym_tabl in
+        let index_t = check_expression index sym_tabl in
         if not (require_number index_t)
           then raise (Error "Invalid Array Access")
         else begin
             (match t with
             | Array_type(a) -> a
             | _ -> t)
-        end
-      | _ -> raise (Error "Malformed Array Statement"))
+      | _ -> raise (Error "sdfsdfMalformed Array Statement111"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t
   | Char_literal (c) -> Basic_type(Char_type)
   | Number_literal (f) -> Basic_type(Number_type)
