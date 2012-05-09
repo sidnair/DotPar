@@ -3,11 +3,12 @@ func main:void() {
     return rand(10);
   }
 
-  number[] arr = fill(fill_arr, 10000);
+  number[] arr = fill(fill_arr, 10);
   number[] threes = [x for number x in arr if x == 3];
 
   number sol = len(threes);
 
-  /*println(arr);*/
+  println(arr);
   println(sol);
+  println(threes);
 }

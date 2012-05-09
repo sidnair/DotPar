@@ -16,7 +16,7 @@ func main:void(){
     for (i = 0; i < len(a); i = i + 1){
         a[i] = fib(i);
     }
-    println("The first 10 elements of the fibonacci");
+    println("The first 10 elements of the Fibonacci sequence are:");
     for (i = 0; i < len(a); i = i + 1){
         println(a[i]);
     }
