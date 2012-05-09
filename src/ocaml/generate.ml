@@ -242,13 +242,13 @@ and gen_selection inds select table =
   inds ^ "if(" ^ (gen_expression inds select.if_cond table) ^ ")" ^
   "{\n" ^ next_inds ^
   (gen_statements next_inds select.if_body table) ^
-  inds ^ "}" ^
+  inds ^ "}\n" ^
   (if ((List.length select.elif_conds) != 0) then
     let gen_elif cond body =
       " else if(" ^ (gen_expression next_inds cond table) ^ ")" ^
       "{\n" ^ next_inds ^
       (gen_statements next_inds body table) ^
-      inds ^ "}"
+      inds ^ "}\n"
     in
     (String.concat ""
        (List.map2 gen_elif select.elif_conds select.elif_bodies))
@@ -256,7 +256,7 @@ and gen_selection inds select table =
   (if (select.else_body != []) then
     " else {\n" ^ next_inds ^
      (gen_statements next_inds select.else_body table) ^
-    inds ^ "}"
+    inds ^ "}\n"
   else "")
 
 and gen_statement inds stat table =
@@ -281,7 +281,7 @@ and gen_statement inds stat table =
           else
             (String.concat ", " (List.map (gen_param_map inds symbols) params))
           ) ^ ")" ^ (* (gen_type ret_type) ^ !!! *)
-          " {\n" ^ (gen_statements next_inds sts symbols) ^ inds ^ "}"
+          " {\n" ^ (gen_statements next_inds sts symbols) ^ inds ^ "}\n"
       | anything ->
           let ret_type = (gen_type ret_type symbols) in
           inds ^ "def " ^ name ^
@@ -290,7 +290,7 @@ and gen_statement inds stat table =
           else "") ^
           " {\n" ^ next_inds ^
           (gen_statements next_inds sts symbols) ^
-          inds ^ "}"
+          inds ^ "}\n"
       )
 
 and gen_statements inds statements table =
