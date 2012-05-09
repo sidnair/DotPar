@@ -109,9 +109,13 @@ let rec check_expression e sym_tabl =
           with Not_found ->
             let t = check_var_type var_type in
             let t2 = check_expression right sym_tabl in
-            ignore(compare_type t t2);
+            let t3 = (match t2 with
+                  | Func_type(ret_type, params, sym_ref) -> ret_type
+                  | _ as x -> x)
+            in
+            ignore(compare_type t t3);
             ignore(add_to_symbol_table v t sym_tabl);
-            t2
+            t3
           )
       | _ -> raise (Error "Malformed Declaration Expression"))
   | Array_literal (exprs) ->
@@ -148,6 +152,7 @@ let rec check_expression e sym_tabl =
     ignore(check_operator t op t2);
     (get_type (Binop(expr, op, expr1)) sym_tabl)
   | Function_call (expr, exprs) ->
+    debug("mathced on function callllll");
     let get_type_table expr =
         check_expression expr sym_tabl
     in
@@ -159,12 +164,12 @@ let rec check_expression e sym_tabl =
             | Func_type(ret_type, var_types, sym_ref) ->
               ignore (List.map2 compare_type var_types
               (List.map get_type_table exprs));
-            t
+            ret_type
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found"))
-      | _ -> raise (Error "Malformed function call"))
+      | _ as x -> (check_expression x sym_tabl))
   | Array_access (name, index) ->
-    debug("Matahced on array access");
+    debug("Matched on array access");
     (match name with
       | Variable(v) ->
         let (t, iter) = lookup v sym_tabl 0 in
@@ -193,8 +198,8 @@ let rec check_expression e sym_tabl =
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
         ignore(check_func_def name ret_type params sts symbol_table sym_tabl);
-        let t = (check_var_type ret_type) in
-        t
+        let _ = (check_var_type ret_type) in
+        ret_type
       | _ -> raise (Error "Malformed Function expression"))
   | Empty_expression -> Basic_type(Void_type)
   )
@@ -298,14 +303,14 @@ and compare_type type1 type2 =
   | Array_type(b1) ->
       (match a2 with
       | Array_type(b2) -> (array_layers b1 b2)
-      | _ -> raise (Error "Mismatched array types"))
+      | _ -> raise (Error "Mismatched array types 1"))
   | Any_type ->
     (match a2 with
-      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | Any_type -> raise (Error "Mismatched array types 2")
       | _ -> true)
   | _ ->
       (match a2 with
-      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | Array_type(b2) -> raise (Error "Mismatched array types 3")
       | Any_type -> true
       | _ -> false)
   in

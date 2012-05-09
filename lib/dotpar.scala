@@ -2,7 +2,7 @@ import scala.collection.mutable.ArraySeq
 
 object Dotpar {
   // multiplexed print
-  def dp_println(x: Any) = {
+  def println(x: Any) = {
     def dotpar_string(y: Any):String = {
       y match {
         case str: Array[Char] =>
@@ -12,11 +12,11 @@ object Dotpar {
         case _ => y.toString
       }
     }
-    println(dotpar_string(x))
+    Console.println(dotpar_string(x))
   }
 
   // converts double to int for array index, throws error
-  def dp_array_index(ind: Double):Int = {
+  def array_index(ind: Double):Int = {
     val err = 0.00001; // chosen by fiat
     val r:Int = scala.math.round(ind).intValue
     if(scala.math.abs(r - ind) > err) {
@@ -25,26 +25,34 @@ object Dotpar {
     r
   }
 
+  def fill[T : Manifest](fn:((Double) => T), num:Double) = {
+    var tmp_arr = new Array[T](num.toInt)
+    for (i <- 0 until num.toInt) {
+      tmp_arr.update(i, fn(i));
+    }
+    tmp_arr
+  }
+
   // each
-  def dp_each[T](arr:Array[T], function:((T) => Any)) = {
+  def each[T](arr:Array[T], function:((T) => Any)) = {
     arr foreach function
   }
   // filter
-  def dp_filter[T](arr:Array[T], function:((T) => Boolean)):Array[T] = {
+  def filter[T](arr:Array[T], function:((T) => Boolean)):Array[T] = {
     arr.filter(function)
   }
   // map
-  def dp_map[T, TT](arr:Array[T], function:(T => TT))
+  def map[T, TT](arr:Array[T], function:(T => TT))
       (implicit m:ClassManifest[TT]):Array[TT] = {
     (arr map function).toArray
   }
   // map
-  def dp_par_map[T, TT](arr:Array[T], function:(T => TT))
+  def par_map[T, TT](arr:Array[T], function:(T => TT))
       (implicit m:ClassManifest[TT]):Array[TT] = {
     (arr.par map function).toArray
   }
   // reduce
-  def dp_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
+  def reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
     if (arr.length == 0) {
       start
     } else {
@@ -52,7 +60,7 @@ object Dotpar {
     }
   }
   // TODO: make parallel
-  def dp_par_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
+  def par_reduce[T](arr:Array[T], function:((T, T) => T), start:T):T = {
     if (arr.length == 0) {
       start
     } else {
