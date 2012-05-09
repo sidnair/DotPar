@@ -2,7 +2,7 @@ open Compile;;
 
 let _ =
   let generate self_switch ast_switch gen_switch debug_switch =
-    let ast = ast_generate stdin debug_switch in
+    let ast = Compile.ast_generate stdin debug_switch in
     let prog_str = Generate.gen_program ast in
     (if self_switch then
       Printf.printf "%s" (Ast.string_of_program ast));

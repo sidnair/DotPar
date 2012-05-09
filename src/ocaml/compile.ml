@@ -1,5 +1,6 @@
 open Ast;;
 open Semantic;;
+open Parallelizer;;
 
 let rec ast_generate stream debug =
   let ast = parse_ast stream in
@@ -8,6 +9,7 @@ let rec ast_generate stream debug =
   let ast = Transform.reverse_tree ast in
   let ast = insert_imports_program ast debug in
   ignore(Semantic.generate_sast ast debug);
+  let ast = Parallelizer.parallelize ast in
   ast
 
 and parse_ast stream =
@@ -38,7 +40,8 @@ and insert_imports imports debug_switch =
     List.map (fun x -> (insert_import x debug_switch)) imports in
   let get_statements program =
     match program with
-    | Program(imports, statements, symbol_table) -> statements in
+    | Program(imports, statements, symbol_table) -> statements
+  in
   let statements = List.map get_statements programs in
   let join a b = a @ b in
   List.fold_left join [] statements

@@ -28,7 +28,8 @@ and symbol_table = {
   mutable table : var_type StringMap.t;
   mutable parent: symbol_table option; 
   mutable children : symbol_table list;
-  mutable pure : bool
+  mutable pure : bool;
+  mutable associative : bool;
 }
 
 and expression =
@@ -96,6 +97,7 @@ let  make_symbol_table p =
     parent = p;
     children = [];
     pure = false;
+    associative = false;
   }
 ;;
 let builtin_list = 
@@ -127,9 +129,10 @@ let builtin_list =
         Func_type(Any_type,  [Any_type ; Basic_type(Number_type)] , (ref
         (make_symbol_table None);)) ] , (ref (make_symbol_table None);)) ) ;
     ("reduce",
-        Func_type( Any_type, [Func_type( Any_type, [Any_type ; Any_type] 
-        ,(ref (make_symbol_table None);)) ; Array_type(Any_type) ;
-        Any_type ]
+        Func_type( Any_type,
+          [Array_type(Any_type) ; 
+          Func_type( Any_type, [Any_type ; Any_type] ,(ref (make_symbol_table None);)) ;
+          Any_type ]
         , (ref (make_symbol_table None);) )) ;
     ("zip",
         Func_type(Array_type(Array_type(Any_type)), 
@@ -190,17 +193,8 @@ let add_to_symbol_table id id_type sym_table =
 
 ;;
 let make_global_table p =
-  let s_t = 
-  {
-    table = StringMap.empty;
-    parent = p;
-    children = [];
-    pure = false;
-  }
-  in
-  let add_func (name,t) =
-   add_to_symbol_table name t s_t 
-  in
+  let s_t = make_symbol_table p in
+  let add_func (name,t) = add_to_symbol_table name t s_t in
   ignore(List.map add_func builtin_list);
   s_t
 
