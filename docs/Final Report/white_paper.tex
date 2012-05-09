@@ -1,27 +1,25 @@
 \section{Motivation}
-Moore's Law, the trend that the number of transistors that can fit on
-a chip doubles every 2 years, has held true for half a century,
-driving innovations in all areas of technology. But recently chip
-manufacturers have moved away from ever-increasing clock speeds, the
-usual manifestation of Moore's law, and instead increase the number of
-cores in CPUs to manage power dissipation.
+Moore's Law, the trend that the number of transistors that can fit on a chip
+doubles every 2 years, has held true for half a century, driving innovations in
+all areas of technology. But recently, chip manufacturers have been forced to
+increase the number of cores in CPUs to maintain an increase in computing power
+because of issues with power dissipation.
 
-As consumer and business demands for speed grow, programs must now be
-written to take advantage of multiple cores in order to utilize the
-power of CPUs. However, the imperative programming paradigm that has
+As consumer and business demands for speed grow and utilize the power of CPUs,
+programs must be written to take advantage of multiple cores.
+However, the imperative programming paradigm that has
 prevailed in the programming community isn't conducive to safe,
 parallel programming. Parallel programming is difficult and
 synchronization bugs are notoriously difficult to fix.
 
-Many solutions to this problem of parallelization have emerged, but
-each has its drawbacks. We will briefly survey a few of the most
-prominent existing solutions.
+Many solutions to this problem have emerged, but each has its drawbacks. We will
+briefly survey some of the most prominent existing solutions.
 
 \subsection{Locking}
 Locking controls access to memory accessible by several threads of
 execution. However, this requires that the programmer manually lock
-regions of code, which is tedious and error prone.  Historically, it
-can lead to deadlock and race conditions, both of which are extremely
+regions of code, which is tedious and error prone. Historically, has lead to
+deadlock and race conditions which are extremely
 hard to debug.
 
 \subsection{Task-based Concurrency and the Actor Model}
@@ -34,7 +32,9 @@ much less error prone than locking since race conditions can be
 avoided entirely. These models can be elegant, but they still require
 manual division of labor on the part of the programmer, which
 introduces errors and overhead, especially when refactoring code. We
-seek to avoid imposing this burden on programmers.
+seek to avoid imposing this burden on programmers. Furthermore, they are
+optimized for task-based parallelism when many of today's problems demand
+data-based parallelism.
 
 \subsection{Functional Programming}
 The functional paradigm minimizes side effects in favor of
@@ -58,7 +58,7 @@ garbage collection becomes a pain\footnote{http://bit.ly/dotpar1}.
 \subsection{Implicit Parallelization}
 Some efforts to write implicitly parallel, imperative languages have
 been made\footnote{See http://bit.ly/dotpar2 and http://bit.ly/dotpar3
-  for two examples.}. However, state- of-the-art compilers are not yet
+  for examples.}. However, state- of-the-art compilers are not yet
 capable of good implicit parallelization. While some cases of
 potential parallelization are easy to recognize, many of them
 difficult or impossible to find with static
@@ -77,7 +77,7 @@ of thread creation and execution will adversely affect performance.
 \section{Introducing DotPar}
 With familiar C-like syntax, DotPar is a multi-paradigm language that
 implicitly parallelizes code with minimal programming effort. By
-abstracting away parallelization, DotPar enables programmers to focus
+abstracting parallelization, DotPar enables programmers to focus
 on designing and and architecting systems instead of on micromanaging
 performance. Additionally, it provides the expressive power of
 functional languages and includes some imperative paradigms derived
@@ -104,7 +104,7 @@ as well.
 \subsection{Robustness and Security}
 Through implicit parallelization, DotPar removes the risk of race
 conditions and deadlock.  And, since it runs on the JVM, the code is
-highly robust and portable. Furthermore, DotPar raises informative
+robust and portable. Furthermore, DotPar raises informative
 errors that allow the user to debug code efficiently and quickly,
 reducing development time.
 

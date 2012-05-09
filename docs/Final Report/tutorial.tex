@@ -1,10 +1,24 @@
-Parallel algorithms tend to be described as operations on collections of values. For instance, ``find the minimum neighbor for each vertex'', or ``sum each row of a matrix'' are data-centric operations that can be done in parallel. \footnote{http://www.cs.cmu.edu/~scandal/cacm/node4.html} This ability to operate in parallel over sets of data is often referred to as data-parallelism. It is important that this data-parallelism can be exploited to its full potential. We want to be able to run parallel functions in parallel to maximize the efficiency of the program. Thus, we seek to provide an effective nested data-parallel language.
+Parallel algorithms tend to be described as operations on collections of values.
+For instance, ``find the minimum neighbor for each vertex'', or ``sum each row
+of a matrix'' are data-centric operations that can be done in parallel.
+\footnote{http://www.cs.cmu.edu/~scandal/cacm/node4.html} This ability to
+operate in parallel over sets of data is often referred to as data-parallelism.
+It is important that this data-parallelism can be exploited to its full
+potential. We want to be able to run parallel functions in parallel to maximize
+the efficiency of the program. Thus, we seek to provide an effective nested
+data-parallel language.
 
-The following tutorial will give a quick tour of the basics of the language and build up to defining complex array manipulations to enable you to start writing useful programs as soon as possible. To do that, we'll concentrate on the basics: types, arithmetic expressions, arrays, control flow, functions, list comprehensions, and some nifty built-in functions.
+The following tutorial will give a quick tour of the basics of the language and
+build up to defining complex array manipulations to enable you to start writing
+useful programs as soon as possible. To do that, we'll concentrate on the
+basics: types, arithmetic expressions, arrays, control flow, functions, list
+comprehensions, and some nifty built-in functions.
 
 \section{Overview}
 \subsection{Hello, World}
-DotPar was designed with simplicity and power in mind. To illustrate this, let's get started with a traditional ``Hello, World'' program that prints the words ``Hello, World'' to stdout.
+DotPar was designed with simplicity and power in mind. To illustrate this, let's
+get started with a traditional ``Hello, World'' program that prints the words
+``Hello, World'' to stdout.
 
 \begin{verbatim}
 func main:void()
@@ -13,27 +27,38 @@ func main:void()
 }
 \end{verbatim}
 
-Just like in C and Java, the DotPar execution begins with a function named \verb=main=. Thus, every program must contain a main function. In this \verb=main= method, we use the built-in function \verb=print= to print the \verb=string= ``Hello, world''. A \verb=string= is an \verb=array= of characters. We will explain exactly what \verb=function=s, \verb=string=s, and \verb=char=s in later. But first, let's get this program running.
+Just like in C and Java, the DotPar execution begins with a function named
+\verb=main=. Thus, every program must contain a main function. In this
+\verb=main= method, we use the built-in function \verb=print= to print the
+\verb=string= ``Hello, world''. A \verb=string= is an \verb=array= of
+characters. We will explain exactly what \verb=function=s, \verb=string=s, and
+\verb=char=s in later. But first, let's get this program running.
 
-To compile and run this program there are three steps (assuming a UNIX-like system). First, we should save the function in a file called \verb=helloWorld.par=. DotPar programs are stored in files that have the extension \verb=.par=. Next, we run a compiler on the program file, like so:
+To compile and run this program there are three steps (assuming a UNIX-like
+system). First, we should save the function in a file called
+\verb=helloWorld.par=. DotPar programs are stored in files that have the
+extension \verb=.par=. Next, we run a compiler on the program file, like so:
 
 \begin{verbatim}
     dotparc helloWorld.par
 \end{verbatim}
 
-\verb=dotparc= can accept multiple files. So, to compile all the .par files in a directory, you would run: 
+\verb=dotparc= can accept multiple files. So, to compile all the .par files in a
+directory, you would run: 
 
 \begin{verbatim}
     dotparc *.par
 \end{verbatim}
 
-If the program residing in the file has no syntax errors and is a complete DotPar program then the compiler will produce an executable file:
+If the program residing in the file has no syntax errors and is a complete
+DotPar program then the compiler will produce an executable file:
 
 \begin{verbatim}
     out.parc
 \end{verbatim}
 
-If there are errors during compilation those will be printed to your console. In this example, running out.parc in the command line with:
+If there are errors during compilation those will be printed to your console. In
+this example, running out.parc in the command line with:
 
 \begin{verbatim}
     ./out.parc
@@ -45,16 +70,26 @@ will produce the output:
     Hello, World
 \end{verbatim}
 
-We'll now walk you through some key features of the language. As you go along, try writing and compiling these programs yourself.
+We'll now walk you through some key features of the language. As you go along,
+try writing and compiling these programs yourself.
 
 \subsection{Types And Arithmetic Expressions}
 
-DotPar contains the concept of types which are used to define a variable before its use.  The definition of a variable will assign a store address for the variable and define the type of data that will be held at that address.  DotPar only three contains basic types: \verb=number=, \verb=boolean=, and \verb=char=.
+DotPar contains the concept of types which are used to define a variable before
+its use.  The definition of a variable will assign a store address for the
+variable and define the type of data that will be held at that address.  DotPar
+only three contains basic types: \verb=number=, \verb=boolean=, and \verb=char=.
 
 \subsubsection{Numbers and Basic Arithmetic Operators}
-All numbers in DotPar are double-precision 64-bit floating point numbers.  This basic type is referred to as \verb=number=.  This simplicity allows for computations to be straightforward while maintaining incredible precision. We realized that since numbers were so imporant in the language that simplifying everything to high precision and using the parallelization for performance gains would make the language easier to use.
+All numbers in DotPar are double-precision 64-bit floating point numbers.  This
+basic type is referred to as \verb=number=.  This simplicity allows for
+computations to be straightforward while maintaining incredible precision. We
+realized that since numbers were so imporant in the language that simplifying
+everything to high precision and using the parallelization for performance gains
+would make the language easier to use.
 
-Our next program will illustrate the use of numbers and some basic arithmetic expressions that can be used to manipulate numbers.
+Our next program will illustrate the use of numbers and some basic arithmetic
+expressions that can be used to manipulate numbers.
 
 \begin{verbatim}
 func main:void()
@@ -68,14 +103,31 @@ func main:void()
 }
 \end{verbatim}
 
-The first \verb=println= statement may be counterintuitive to what one might expect.  This statement will not return \verb=2=, but rather \verb=2.0=.  Following this logic, the second print statement should, and does return \verb=.5=.  The last print statement's output should now be obvious as \verb=3.0=.
+The first \verb=println= statement may be counterintuitive to what one might
+expect.  This statement will not return \verb=2=, but rather \verb=2.0=.
+Following this logic, the second print statement should, and does return
+\verb=.5=.  The last print statement's output should now be obvious as
+\verb=3.0=.
 
-Other basic arithmetic operators include \verb=-= , \verb=*=, and \verb=/= which represent subtraction, multiplication, and division, respectively.  There is also a remainder operator, \verb=\%=,  which returns the remainder of the division of two numbers.
+Other basic arithmetic operators include \verb=-= , \verb=*=, and \verb=/= which
+represent subtraction, multiplication, and division, respectively.  There is
+also a remainder operator, \verb=\%=,  which returns the remainder of the
+division of two numbers.
 
-Note: \verb=+,= \verb=-,= \verb=*,= \verb=/,= \verb=sqrt,= \verb=ln,= \verb=log(num, base),= \verb=exp(num, exponent),= \verb=ceil,= \verb=floor,= \verb=trunc,= \verb=round,= \verb=sin(x),= \verb=cos(x),= \verb=tan(x),= \verb=asin(x),= \verb=acos(x),= \verb=atan(x)= are all supported. The trigonometric functions return a value in radians, and the inverse trigonometric functions expect a value in radians.
+Note: \verb=+,= \verb=-,= \verb=*,= \verb=/,= \verb=sqrt,= \verb=ln,=
+\verb=log(num, base),= \verb=exp(num, exponent),= \verb=ceil,= \verb=floor,=
+\verb=trunc,= \verb=round,= \verb=sin(x),= \verb=cos(x),= \verb=tan(x),=
+\verb=asin(x),= \verb=acos(x),= \verb=atan(x)= are all supported. The
+trigonometric functions return a value in radians, and the inverse trigonometric
+functions expect a value in radians.
 
 \subsubsection{Booleans and Operators}
-The boolean data type has only two possible values, \verb=true= and \verb=false=.  This uses simple flags that track true/false conditions. While this data type represents one bit of information, but it is treated internally as a 32-bit entity. We decided to have booleans because they are a very useful data type. We implemented them as 32-bit entities because that is how Java does it.
+The boolean data type has only two possible values, \verb=true= and
+\verb=false=.  This uses simple flags that track true/false conditions. While
+this data type represents one bit of information, but it is treated internally
+as a 32-bit entity. We decided to have booleans because they are a very useful
+data type. We implemented them as 32-bit entities because that is how Java does
+it.
 
 The following program will give an elementary example of the use of booleans, and their uses.  
 
@@ -90,7 +142,15 @@ func main:void()
 }
 \end{verbatim}
 
-Since a boolean tracks a single true/false condition, each print statement will only return either \verb=true= or \verb=false=.  The ! symbol is the NOT unary operator and evaluates to the complement of its argument.  Since \verb=b= is \verb=true=, the first print statement will be ``\verb=false=''.  The \verb=&&= operator signifies the binary operator AND which returns the conjunction of its two arguments.  So the second print statement will return false, since true AND false evaluates to false. The \verb=||= operator signifies the binary operator OR which returns the disjunction of its two operators.  So the last print statement will return true, since false OR true evaluates to true. 
+Since a boolean tracks a single true/false condition, each print statement will
+only return either \verb=true= or \verb=false=.  The ! symbol is the NOT unary
+operator and evaluates to the complement of its argument.  Since \verb=b= is
+\verb=true=, the first print statement will be ``\verb=false=''.  The \verb=&&=
+operator signifies the binary operator AND which returns the conjunction of its
+two arguments.  So the second print statement will return false, since true AND
+false evaluates to false. The \verb=||= operator signifies the binary operator
+OR which returns the disjunction of its two operators.  So the last print
+statement will return true, since false OR true evaluates to true. 
 
 \subsubsection{Char}
 The char data type is a single 16-bit Unicode character. 
@@ -105,10 +165,18 @@ func main:void()
 }
 \end{verbatim}
 
-The above will print out ``a'', without the quotations. Often chars by themselves are not very useful, as in reality we use a sequence of chars to represent words, or strings.  This provides a nice transition to DotPar's arrays.
+The above will print out ``a'', without the quotations. Often chars by
+themselves are not very useful, as in reality we use a sequence of chars to
+represent words, or strings.  This provides a nice transition to DotPar's
+arrays.
 
 \subsection{Arrays and Control Flow}
-There are times when writing programs when you may want to store multiple items of same type together. Arrays provide this functionality. They are contiguous bytes in memory, which facilitates easy searching and manipulation of lists of elements. Like everything else in the language, arrays are typed. You can have an array of any type, such as \verb=number=, \verb=boolean=, \verb=char=, or another array. Let's take a look at some examples.
+There are times when writing programs when you may want to store multiple items
+of same type together. Arrays provide this functionality. They are contiguous
+bytes in memory, which facilitates easy searching and manipulation of lists of
+elements. Like everything else in the language, arrays are typed. You can have
+an array of any type, such as \verb=number=, \verb=boolean=, \verb=char=, or
+another array. Let's take a look at some examples.
 
 \subsubsection{Revisiting Hello, World}
 
@@ -126,7 +194,17 @@ Arrays are where DotPar leverages its power as it can manipulate large sets of d
 
 \subsection{Array Iteration}
 \subsubsection{the each method}
-Our next example program creates an array of type number and demonstrates a method of iterating through an array. The first line creates an array arr of size 10 and populates it with the numbers 1-10. Notice at the end of the line there is a \verb=//=. This is a single-line comment. \verb=//= will cause the compiler to ignore the rest of the line. Comments are a useful to markup text to explain subtleties of the code. They are ignored by the compiler, so they are not evaluated. The second line demonstrates the use of the built-in \verb=each= function, which is used to iterate over an array element by element. For each loops contain all of its statements within curly brackets.  This for each iterates through every number in arr and calls the function print on every element. This prints a list of the elements in arr to standard out.
+Our next example program creates an array of type number and demonstrates a
+method of iterating through an array. The first line creates an array arr of
+size 10 and populates it with the numbers 1-10. Notice at the end of the line
+there is a \verb=//=. This is a single-line comment. \verb=//= will cause the
+compiler to ignore the rest of the line. Comments are a useful to markup text to
+explain subtleties of the code. They are ignored by the compiler, so they are
+not evaluated. The second line demonstrates the use of the built-in \verb=each=
+function, which is used to iterate over an array element by element. For each
+loops contain all of its statements within curly brackets.  This for each
+iterates through every number in arr and calls the function print on every
+element. This prints a list of the elements in arr to standard out.
 
 \begin{verbatim}
 func main:void()
@@ -355,12 +433,31 @@ func matrixMultiply:number[][](number[][] a, number[][] b) {
 }
 \end{verbatim}
 
-The function \verb=transpose= returns a transpose of the input matrix. The function \verb=matrixMultiply= takes in arguments which are two two-dimensional arrays, \verb=a= and \verb=b=. The function \verb=dotprod= accepts two one-dimensional arrays and calls the reduce function, which calls the sum function on each \verb=x=, \verb=y= pair which are elements in arrays \verb=a= and \verb=b=. The final line returns a statement that pairs every row in \verb=a= with every column in \verb=b= and calls the function \verb=dotprod=.
+The function \verb=transpose= returns a transpose of the input matrix. The
+function \verb=matrixMultiply= takes in arguments which are two two-dimensional
+arrays, \verb=a= and \verb=b=. The function \verb=dotprod= accepts two
+one-dimensional arrays and calls the reduce function, which calls the sum
+function on each \verb=x=, \verb=y= pair which are elements in arrays \verb=a=
+and \verb=b=. The final line returns a statement that pairs every row in
+\verb=a= with every column in \verb=b= and calls the function \verb=dotprod=.
 
 \subsubsection{Parallelization}
 These examples demonstrate the power of DotPar's implicit parallelization.
 
-The \verb=map= and \verb=reduce= functions can be parallelized, given certain restrictions. If the functions only access variables passed to them and do not mutate outside state, the mappings and reductions can be automatically parallelized and executed on multiple cores. For instance, the computation done by \verb=map= and \verb=reduce= can be done in $O(n/m)$ time, where $n$ is the size of the array and $m$ the number of processors. In the transpose function from the previous section, each cell in the new matrix can be computed independently of the other, so DotPar will parallelize this multiplication if it is appropriate given the computer's architecture and the nature of the computation.
+The \verb=map= and \verb=reduce= functions can be parallelized, given certain
+restrictions. If the functions only access variables passed to them and do not
+mutate outside state, the mappings and reductions can be automatically
+parallelized and executed on multiple cores. For instance, the computation done
+by \verb=map= and \verb=reduce= can be done in $O(n/m)$ time, where $n$ is the
+size of the array and $m$ the number of processors. In the transpose function
+from the previous section, each cell in the new matrix can be computed
+independently of the other, so DotPar will parallelize this multiplication if it
+is appropriate given the computer's architecture and the nature of the
+computation.
 
 \section{Conclusion}
-In this tutorial we have covered compiling your programs and writing basic assignment and logical statements all the way through to more complicated features like map, reduce, list comprehensions, and nested functions. With all of the these tools now available, you should now be able to unleash the performance power that DotPar provides for data manipulation.
+In this tutorial we have covered compiling your programs and writing basic
+assignment and logical statements all the way through to more complicated
+features like map, reduce, list comprehensions, and nested functions. With all
+of the these tools now available, you should now be able to unleash the
+performance power that DotPar provides for data manipulation.
