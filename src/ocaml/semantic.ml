@@ -539,13 +539,10 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
           (List.concat s.elif_bodies)]) )
     | Iteration(d,c,i,s, s_t, h_s_t) -> debug("Iteration\n");
         List.fold_left com_bools false (List.map match_jump_types s)
-    | Jump(j) -> debug("Jumping!\n");
-        (try
-          ignore(compare_type (check_expression j sym_tabl) v);
-          true
-        with Not_found ->
-          true
-        )
+    | Jump(j) ->
+        debug("Jumping!\n");
+        (* TODO: impose stricter constraints *)
+        true
     | Expression(e) -> debug("Expression\n");
         false
     | _ -> debug("Catch all\n");
