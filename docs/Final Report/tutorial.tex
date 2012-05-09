@@ -1,10 +1,24 @@
-Parallel algorithms tend to be described as operations on collections of values. For instance, ``find the minimum neighbor for each vertex'', or ``sum each row of a matrix'' are data-centric operations that can be done in parallel. \footnote{http://www.cs.cmu.edu/~scandal/cacm/node4.html} This ability to operate in parallel over sets of data is often referred to as data-parallelism. It is important that this data-parallelism can be exploited to its full potential. We want to be able to run parallel functions in parallel to maximize the efficiency of the program. Thus, we seek to provide an effective nested data-parallel language.
+Parallel algorithms tend to be described as operations on collections of values.
+For instance, ``find the minimum neighbor for each vertex'', or ``sum each row
+of a matrix'' are data-centric operations that can be done in parallel.
+\footnote{http://www.cs.cmu.edu/~scandal/cacm/node4.html} This ability to
+operate in parallel over sets of data is often referred to as data-parallelism.
+It is important that this data-parallelism can be exploited to its full
+potential. We want to be able to run parallel functions in parallel to maximize
+the efficiency of the program. Thus, we seek to provide an effective nested
+data-parallel language.
 
-The following tutorial will give a quick tour of the basics of the language and build up to defining complex array manipulations to enable you to start writing useful programs as soon as possible. To do that, we'll concentrate on the basics: types, arithmetic expressions, arrays, control flow, functions, list comprehensions, and some nifty built-in functions.
+The following tutorial will give a quick tour of the basics of the language and
+build up to defining complex array manipulations to enable you to start writing
+useful programs as soon as possible. To do that, we'll concentrate on the
+basics: types, arithmetic expressions, arrays, control flow, functions, list
+comprehensions, and some nifty built-in functions.
 
 \section{Overview}
 \subsection{Hello, World}
-DotPar was designed with simplicity and power in mind. To illustrate this, let's get started with a traditional ``Hello, World'' program that prints the words ``Hello, World'' to stdout.
+DotPar was designed with simplicity and power in mind. To illustrate this, let's
+get started with a traditional ``Hello, World'' program that prints the words
+``Hello, World'' to stdout.
 
 \begin{verbatim}
 func main:void()
@@ -13,27 +27,39 @@ func main:void()
 }
 \end{verbatim}
 
-Just like in C and Java, the DotPar execution begins with a function named \verb=main=. Thus, every program must contain a main function. In this \verb=main= method, we use the built-in function \verb=print= to print the \verb=string= ``Hello, world''. A \verb=string= is an \verb=array= of characters. We will explain exactly what \verb=function=s, \verb=string=s, and \verb=char=s are in depth later. But first, let's get this program running.
+Just like in C and Java, the DotPar execution begins with a function named
+\verb=main=. Thus, every program must contain a main function. In this
+\verb=main= method, we use the built-in function \verb=print= to print the
+\verb=string= ``Hello, world''. A \verb=string= is an \verb=array= of
+characters. We will explain exactly what \verb=function=s, \verb=string=s, and
+\verb=char=s are later. But first, let's get this program running.
 
-To compile and run this program there are three steps (assuming a UNIX-like system). First, we should save the function in a file called \verb=helloWorld.par=. DotPar programs are stored in files that have the extension \verb=.par=. Next, we run a compiler on the program file, like so:
+To compile and run this program there are three steps (assuming a UNIX-like
+system). First, we should save the function in a file called
+\verb=helloWorld.par=. DotPar programs are stored in files that have the
+extension \verb=.par=. Next, we run a compilation script on the program file,
+like so:
 
 \begin{verbatim}
-    dotparc helloWorld.par
+    scripts/dotparc.sh helloWorld.par
 \end{verbatim}
 
-\verb=dotparc= can accept multiple files. So, to compile all the .par files in a directory, you would run: 
+\verb=dotparc= can accept multiple files. So, to compile all the \.par files in
+a directory, you would run:
 
 \begin{verbatim}
     dotparc *.par
 \end{verbatim}
 
-If the program residing in the file has no syntax errors and is a complete DotPar program then the compiler will produce an executable file:
+If the program residing in the file has no syntax errors and is a complete
+DotPar program then the compiler will produce an executable file:
 
 \begin{verbatim}
     out.parc
 \end{verbatim}
 
-If there are errors during compilation those will be printed to your console. In this example, running out.parc in the command line with:
+If there are errors during compilation those will be printed to your console. In
+this example, running out.parc in the command line with:
 
 \begin{verbatim}
     ./out.parc
@@ -45,16 +71,23 @@ will produce the output:
     Hello, World
 \end{verbatim}
 
-We'll now walk you through some key features of the language. As you go along, try writing and compiling these programs yourself.
+We'll now walk you through some key features of the language. As you go along,
+try writing and compiling these programs yourself.
 
 \subsection{Types And Arithmetic Expressions}
 
-DotPar contains the concept of types which are used to define a variable before its use.  The definition of a variable will assign a store address for the variable and define the type of data that will be held at that address.  DotPar only three contains basic types: \verb=number=, \verb=boolean=, and \verb=char=.
+DotPar contains the concept of types which are used to define a variable before
+its use. The definition of a variable will assign a store address for the
+variable and define the type of data that will be held at that address.  DotPar
+only three contains basic types: \verb=number=, \verb=boolean=, and \verb=char=.
 
 \subsubsection{Numbers and Basic Arithmetic Operators}
-All numbers in DotPar are double-precision 64-bit floating point numbers.  This basic type is referred to as \verb=number=.  This simplicity allows for computations to be straightforward while maintaining incredible precision. We realized that since numbers were so imporant in the language that simplifying everything to high precision and using the parallelization for performance gains would make the language easier to use.
+All numbers in DotPar are double-precision 64-bit floating point numbers.  This
+basic type is referred to as \verb=number=.  This simplicity allows for
+computations to be straightforward while maintaining precision.
 
-Our next program will illustrate the use of numbers and some basic arithmetic expressions that can be used to manipulate numbers.
+Our next program will illustrate the use of numbers and some basic arithmetic
+expressions that can be used to manipulate numbers.
 
 \begin{verbatim}
 func main:void()
@@ -68,16 +101,25 @@ func main:void()
 }
 \end{verbatim}
 
-The first \verb=println= statement may be counterintuitive to what one might expect.  This statement will not return \verb=2=, but rather \verb=2.0=.  Following this logic, the second print statement should, and does return \verb=.5=.  The last print statement's output should now be obvious as \verb=3.0=.
+Not that the output of the \verb=println= statement is different from what many
+other languages would produce.
+The statement will not return \verb=2=, but rather \verb=2.0= because all
+numbers are doubles.
+Similarly, the last two print statements output \verb=.5= and \verb=3.0=,
+respectively.
 
-Other basic arithmetic operators include \verb=-= , \verb=*=, and \verb=/= which represent subtraction, multiplication, and division, respectively.  There is also a remainder operator, \verb=\%=,  which returns the remainder of the division of two numbers.
-
-Note: \verb=+,= \verb=-,= \verb=*,= \verb=/,= \verb=sqrt,= \verb=ln,= \verb=log(num, base),= \verb=exp(num, exponent),= \verb=ceil,= \verb=floor,= \verb=trunc,= \verb=round,= \verb=sin(x),= \verb=cos(x),= \verb=tan(x),= \verb=asin(x),= \verb=acos(x),= \verb=atan(x)= are all supported. The trigonometric functions return a value in radians, and the inverse trigonometric functions expect a value in radians.
+Other basic arithmetic operators include \verb=-= , \verb=*=, and \verb=/= which
+represent subtraction, multiplication, and division, respectively.  There is
+also a remainder operator, \verb=\%=.
 
 \subsubsection{Booleans and Operators}
-The boolean data type has only two possible values, \verb=true= and \verb=false=.  This uses simple flags that track true/false conditions. While this data type represents one bit of information, but it is treated internally as a 32-bit entity. We decided to have booleans because they are a very useful data type. We implemented them as 32-bit entities because that is how Java does it.
+The boolean data type has only two possible values, \verb=true= and
+\verb=false=.  This uses simple flags that track true/false conditions. While
+this data type represents one bit of information, but it is treated internally
+as a 32-bit entity since DotPar runs on the JVM.
 
-The following program will give an elementary example of the use of booleans, and their uses.  
+The following program will give an elementary example of the use of booleans
+and their uses.
 
 \begin{verbatim}
 func main:void()
@@ -86,16 +128,24 @@ func main:void()
     println(!b);
     boolean c = false;
     println(b && c);
-    println(c || b);  
+    println(c || b);
 }
 \end{verbatim}
 
-Since a boolean tracks a single true/false condition, each print statement will only return either \verb=true= or \verb=false=.  The ! symbol is the NOT unary operator and evaluates to the complement of its argument.  Since \verb=b= is \verb=true=, the first print statement will be ``\verb=false=''.  The \verb=&&= operator signifies the binary operator AND which returns the conjunction of its two arguments.  So the second print statement will return false, since true AND false evaluates to false. The \verb=||= operator signifies the binary operator OR which returns the disjunction of its two operators.  So the last print statement will return true, since false OR true evaluates to true. 
+Since a boolean tracks a single condition, each print statement will
+output either \verb=true= or \verb=false=.  The \! symbol is the \verb=NOT= unary
+operator and evaluates to the complement of its argument.  Since \verb=b= is
+\verb=true=, the first print statement will be ``\verb=false=''.  The \verb=&&=
+operator signifies the binary operator \verb=AND= which returns the conjunction
+of its two arguments.  So the second print statement will return false, since
+true \verb=AND= false evaluates to false. The \verb=||= operator signifies the binary
+operator \verb=OR= which returns the disjunction of its two operators. 
+Since \verb=false true= evaluates to \verb=true=, the last print statement will
+print \verb=true=.
 
 \subsubsection{Char}
-The char data type is a single 16-bit Unicode character. 
-
-The following example will given an elementary example of the use of chars.
+The \verb=char= data type is a single 16-bit Unicode character. Consider the
+following example:
 
 \begin{verbatim}
 func main:void()
@@ -105,10 +155,17 @@ func main:void()
 }
 \end{verbatim}
 
-The above will print out ``a'', without the quotations. Often chars by themselves are not very useful, as in reality we use a sequence of chars to represent words, or strings.  This provides a nice transition to DotPar's arrays.
+The above will print out \verb=a=. In practice, chars are most useful when used
+as in sequences to form strings. This provides a nice transition to DotPar's
+arrays.
 
 \subsection{Arrays and Control Flow}
-There are times when writing programs when you may want to store multiple items of same type together. Arrays provide this functionality. They are contiguous bytes in memory, which facilitates easy searching and manipulation of lists of elements. Like everything else in the language, arrays are typed. You can have an array of any type, such as \verb=number=, \verb=boolean=, \verb=char=, or another array. Let's take a look at some examples.
+There are times when writing programs when you may want to store multiple items
+of same type together. Arrays provide this functionality. They are contiguous
+bytes in memory, which facilitates easy searching and manipulation of lists of
+elements. Arrays are typed; an array can contain \verb=numbers=,
+\verb=booleans=, \verb=chars=, or other arrays. Let's take a look at some
+examples.
 
 \subsubsection{Revisiting Hello, World}
 
@@ -120,24 +177,45 @@ func main:void()
 }
 \end{verbatim}
 
-The first program we learned to write prints the words ``Hello, World.''  In this equivalent program, we explicitly create an array of type \verb=char= in the first line of \verb=main=. An arrays of chars is also often called a \verb=string=. Arrays are very fundamental building blocks in DotPar. Rather than have many built-in types, DotPar has just a few types and gives users the power to create more complicated types. So, there is no built-in \verb=string= type, so there is instead only an arrays of characters. So, the first line creates a character array with each element being a character in the statement, ``Hello, World''.
+The first program we learned to printed ``Hello, World.''  In
+this equivalent program, we explicitly create an array of type \verb=char= in
+the first line of \verb=main=. An arrays of chars is also often called a
+\verb=string=. Arrays are very fundamental building blocks in DotPar. Rather
+than have many built-in types, DotPar has just a few types and gives users the
+power to create more complicated types. Rather than having a built-in
+\verb=string= type, DotPar treats strings as an arrays of characters. So, the
+first line creates a character array with each element being a character in the
+statement, ``Hello, World''.
 
-Arrays are where DotPar leverages its power as it can manipulate large sets of data quickly by manipulating arrays, iterating through arrays, and applying functions to arrays. 
+Arrays are where DotPar leverages its power as it can manipulate large sets of
+data quickly by manipulating arrays, iterating through arrays, and applying
+functions to arrays.
 
 \subsection{Array Iteration}
 \subsubsection{the each method}
-Our next example program creates an array of type number and demonstrates a method of iterating through an array. The first line creates an array arr of size 10 and populates it with the numbers 1-10. Notice at the end of the line there is a \verb=//=. This is a single-line comment. \verb=//= will cause the compiler to ignore the rest of the line. Comments are a useful to markup text to explain subtleties of the code. They are ignored by the compiler, so they are not evaluated. The second line demonstrates the use of the built-in \verb=each= function, which is used to iterate over an array element by element. For each loops contain all of its statements within curly brackets.  This for each iterates through every number in arr and calls the function print on every element. This prints a list of the elements in arr to standard out.
+Our next example program creates an array of type number and demonstrates a
+method of iterating through an array. The first line creates an array \verb=arr=
+of size 10 and populates it with the numbers 1-10. Notice at the end of the line
+there is a \verb=//=. This is a single-line comment. \verb=//= will cause the
+compiler to ignore the rest of the line. Comments are a useful to markup text to
+explain subtleties of the code.
+The second line demonstrates the use of the built-in \verb=each=
+function, which is used to iterate over an array element by element. For each
+loops contain all of its statements within curly brackets.  This for each
+iterates through every number in arr and calls the function print on every
+element. This prints a list of the elements in arr to standard out.
 
 \begin{verbatim}
 func main:void()
 {
-    number[] arr = [1,2,3,4,5,6,7,8,9,10];  //create the array
+    number[] arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];  //create the array
     each(arr, func:void(number n) { println(n); });
 }
 \end{verbatim}
 
 \subsubsection{the for loop}
-Another way to write the program above would be to use a \verb=for= loop, which can be used to iterated over the indices of an array by using a counter. So, the variable \verb=i= of type number is created and is initialized to 0. It then checks to ensure that \verb=i= is less than \verb=len(arr)=. \verb=len= is an example of a built-in function that returns a \verb=number= whose value is the length of the array in its argument. In \verb=for= loop we are again calling the \verb=print= function and are passing in \verb=arr[i]=, which is the value in the array at index \verb=i=. The \verb=for= loop then lastly increments \verb=i= by 1.
+Another way to write the program above would be to use a \verb=for= loop, which
+can be used to iterated over the indices of an array by using a counter.
 
 \begin{verbatim}
 func main:void()
@@ -150,7 +228,18 @@ func main:void()
 }
 \end{verbatim}
 
-Arrays can be extended to arbitrarily many dimensions. For example, we create a matrix in the example below.
+The variable \verb=i= of type number is created and is initialized to 0. As long
+as \verb=i= is less than the length of the array, the program prints
+\verb=arr[i]= and increments \verb=i=
+\verb=len= is an
+example of a built-in function that returns a \verb=number= whose value is the
+length of the array in its argument. In \verb=for= loop we are again calling the
+\verb=print= function and are passing in \verb=arr[i]=, which is the value in
+the array at index \verb=i=. The \verb=for= loop finally increments \verb=i=
+by 1.
+
+Arrays can be extended to arbitrarily many dimensions. For example, we create a
+matrix in the example below.
 
 \begin{verbatim}
 func main:void()
@@ -160,11 +249,15 @@ func main:void()
 }
 \end{verbatim}
 
-Here we are creating a two-dimensional \verb=3x3= array with the numbers 1 through 9.  We have a  set of \verb=[ ]= for each dimension we want create.  We can fill this array with nested brackets by defining each row within brackets. Try running this program and see what it prints!
+Here we are creating a two-dimensional \verb=3x3= array with the numbers 1
+through 9.  We have a  set of \verb=[ ]= for each dimension we want create.  We
+can fill this array with nested brackets by defining each row within brackets.
+Try running this program and see what it prints!
 
 \subsection{Control Statements}
 
-Next, we'll look at conditional statements, random number generation, and the fill statement in DotPar. 
+Next, we'll look at conditional statements, random number generation, and the
+\verb=fill= statement in DotPar. 
 
 Let's take a look at our next example program.
 
@@ -172,32 +265,42 @@ Let's take a look at our next example program.
 func main:void()
 {
     /*
-    This program creates an array of length 10 and 
-    fills it with random numbers in the range [0-100).
-    It then prints out each element with 
-    a message declaring it even or odd.  
-    */
+     * This program creates an array of length 10 and
+     * fills it with random numbers in the range [0-100).
+     * It then prints out each element with
+     * a message declaring it even or odd.
+     */
 
     number[] arr;
     fill(arr, func:number(number index) { return rand(100); }, 10);
-    char[] even = “is even”;
-    char[] odd = “is odd”;
+    char[] even = "is even";
+    char[] odd = "is odd";
 
     each(arr, func:void(number element) {
         if (element % 2 == 0) {
-            println(element + “ “ + even);
+            println(element + " " + even);
         } else {
-            println(element + “ “ + odd);
+            println(element + " " + odd);
         }
     });
 }
 \end{verbatim}
 
-First, notice that the first few lines of the function demonstrate another way to comment in DotPar by using traditional C style comments, \verb=/* ... */= to comment out an entire block of text.
+First, notice that the first few lines of the function demonstrate that
+\verb=/* ... */= can be used to comment out an entire block of text.
 
-Next, we create an number array arr. The next line calls the built-in function \verb=fill(array, function)= which takes in an array and a function as arguments and inserts values into the array according to the passed in function. In this case we are passing in the \verb=rand(number)= function. \verb=rand= generates random numbers in the range [0, cap). Afterwards, we create two character arrays that contain the text ``is even'' and `` is odd'' which will be used later.
+Next, we create an number array arr. The next line calls the built-in function
+\verb=fill(function, number)= which takes in an array and a function as
+arguments and inserts values into the array according to the passed in function.
+In this case we are passing in the \verb=rand(number)= function. \verb=rand=
+generates random numbers in the range [0, cap). Afterwards, we create two
+character arrays that contain the text ``is even'' and `` is odd'' which will
+be used later.
 
-Next we have a call to our old friend, the \verb=each= function, that iterates through each element in the array. Within the body of the \verb=each= function we have our first example of \verb=if= statements in DotPar. They follow the form: 
+Next we have a call to our old friend, the \verb=each= function, that iterates
+through each element in the array. Within the body of the \verb=each= function
+we have our first example of \verb=if= statements in DotPar. They follow the
+form: 
 
 \begin{verbatim}
 if (conditional) {
@@ -209,10 +312,18 @@ if (conditional) {
 }
 \end{verbatim}
 
-There must be exactly one \verb=if= clause, any number of \verb=elif= clauses, and no more than one \verb=else= clause.
+There must be exactly one \verb=if= clause, any number of \verb=elif= clauses,
+and no more than one \verb=else= clause.
 
-The parenthetical after the \verb=if= is the condition that must be met in order to run the code within the braces. If this condition is true, the code with the braces of the else is run. The conditional we test for in this example is \verb=element \% 2 == 0=. \verb=element= is the value in the array, the \verb=\%= is the arithmetic operation for modulus, the \begin{verbatim}== 
-\end{verbatim} tests equality, and 0 is the number 0. Within the \verb=if= we print the number followed by the character sequence specifying it is even and within the \verb=else= we print the number followed by the character sequence specifying it is odd.
+The parenthetical after the \verb=if= is the condition that must be met in order
+to run the code within the braces. If this condition is true, the code with the
+braces of the else is run. The conditional we test for in this example is
+\verb=element \% 2 == 0=. \verb=element= is the value in the array, the
+\verb=\%= is the arithmetic operation for remainer, the \begin{verbatim}== 
+\end{verbatim} tests equality, and 0 is the number 0. Within the \verb=if= we
+print the number followed by the character sequence specifying it is even and
+within the \verb=else= we print the number followed by the character sequence
+specifying it is odd.
 
 \subsection{List Comprehensions}
 As a more complicated example, you may want to write something like:
@@ -228,22 +339,31 @@ As a more complicated example, you may want to write something like:
     }
 \end{verbatim}
 
-This function creates an array with the square of the even numbers in the original array. But this is rather verbose, which seems unnecessary for a conceptually simple task like this. DotPar provides an easy way to express this logic, borrowing the useful list comprehension from Python and Haskell. We will illustrate the power of list comprehensions by replacing the previous program fragment in one line:
+This function creates an array with the square of the even numbers in the
+original array. But this is rather verbose, which seems unnecessary for a
+conceptually simple task like this. DotPar provides an easy way to express this
+logic, borrowing the idea of a list comprehension from Python and Haskell. We
+will illustrate the power of list comprehensions by replacing the previous
+program fragment in one line:
 
 \begin{verbatim}
-number[] squares = [exp(x,2) for number x in [1,2,3,4,5] if (x % 2 == 0)];
+number[] squares = [x * x for number x in [1, 2, 3, 4, 5] if (x % 2 == 0)];
 \end{verbatim}
 
 You can also use an expanded notation for using n arrays, such as
 
 \begin{verbatim}
-number[] foo = [x*y for number x, number y in [1, 3, 9], [1, 2, 3] if (x != 1)];
+number[] foo = [x * y for number x, number y in [1, 3, 9], [1, 2, 3] if (x != 1)];
 \end{verbatim}
 
 \subsection{Working with Functions}
-In DotPar, functions are first-class, which means they can be assigned to variables or passed to other functions as arguments. A function provides a convenient way to encapsulate some computation, which can then be used without stressing its implementation. All functions are declared with the \verb=func= reserved word, and can be nested within each other.
+In DotPar, functions are first-class, which means they can be assigned to
+variables or passed to other functions as arguments. A function provides a
+convenient way to encapsulate some computation, which can then be used without
+stressing its implementation. All functions are declared with the \verb=func=
+reserved word, and can be nested within each other.
 
-A function definition has this form:
+A function definition has the form:
 
 \begin{verbatim}
 func function-name : return-type(optional parameter declarations)
@@ -253,77 +373,82 @@ func function-name : return-type(optional parameter declarations)
 }
 \end{verbatim}
 
-\subsubsection{Revisiting main}
-With this in mind, let's take a look at \verb=main= again. As in Java, \verb=main= can accept arguments. However, as in C, the arguments can be omitted.
-
-\begin{verbatim}
-func main: void(char[][] args)
-{
-    if (len(args) > 0) {
-      each(args, func: void(char[] s) { println(s); });
-    }   
-    else {
-      println(“No arguments passed!”);
-    }
-}
-\end{verbatim}
-
-Try running this program, passing various arguments and check out the results.
-
 \subsubsection{Declaring an Array}
-Next, let's fill a create a matrix of integers. This example will demonstrate how to pass functions as parameters.
+Next, let's fill a create a matrix of integers. This example will demonstrate
+how to pass functions as parameters.
 
 \begin{verbatim}
 func main: void()
 {
-// This creates an array with 10 rows and 20 columns. The values are not populated,
-// so they are random.
+    // This creates an array with 10 rows and 20 columns. The values default to 0.
     number[10][20] b;
 }
 \end{verbatim}
 
 \subsection{Idioms and Parallelism}
-Our next sample programs will contain more complex array manipulation and introduce some useful functions for arrays. These functions aren't common in imperative languages, and they exhibit some nice properties of DotPar.
+Our next sample programs will contain more complex array manipulation and
+introduce some useful functions for arrays. These functions aren't common in
+imperative languages, and they exhibit some nice properties of DotPar.
 
 \subsubsection{Map}
-\verb=map(array, function)= calls \verb=function(item)= for each of the array's items and returns an array of the return values.  For example, let's compute some cubes:
+\verb=map(array, function)= calls \verb=function(item)= for each of the array's
+items and returns an array of the return values.  For example, let's compute
+some cubes:
 
 \begin{verbatim}
 func main:void(){
     func cube:number (number value, number index){
         return value*value*value;
     }
-    number[] a = [1,2,3,4,5];
+    number[] a = [1, 2, 3, 4, 5];
     map(a, cube);
 }
 \end{verbatim}
 
-Note that this example could have been computed more succinctly with a list comprehension. However, in some cases, you may find a \verb=map(array, function)= to be clearer. When you run map it returns a transformed list. Whereas when you run each it performs the functions and returns nothing, instead usings the 
+Note that this example could have been computed more succinctly with a list
+comprehension. However, in some cases, you may find a \verb=map(array,
+function)= to be clearer.
 
 \subsubsection{Reduce}
-\verb=reduce(array, function, original)= returns a single value constructed by applying the reducing function repeatedly to the reduced value so far and each element of the array. For instance, if you wanted to add all the elements of a numerical array, one could define the function \verb=sum(number a, number b)=, and apply \verb=sum= to the array.
+\verb=reduce(array, function, original)= returns a single value constructed by
+applying the reducing function repeatedly to the reduced value so far and each
+element of the array. For instance, if you wanted to add all the elements of a
+numerical array, one could define the function \verb=sum(number a, number b)=,
+and apply \verb=sum= to the array.
 
-To break things down, we take the first two elements of the array and apply \verb=sum= to them. This returns the sum of the elements, our first result. Then, we take the third element of the array, and apply \verb=sum= to our first result and the third element, obtaining our second result. We continue in this manner, until we have one result and no more elements to reduce.
+Conceptually, this takes the first two elements of the array and apply
+\verb=sum= to them. This returns the sum of the elements, our first result.
+Then, we take the third element of the array, and apply \verb=sum= to our first
+result and the third element, obtaining our second result. We continue in this
+manner, until we have one result and no more elements to reduce.
+
+However, in the case of \verb
 
 For a concrete example, let's compute the sum of the numbers 1 to 10000:
 
 \begin{verbatim}
 func main:void(){
-   func sum:number (number a, number b){
-       return a+b;
-   }
-   number[] x;
-   fill(x, func:number(number index) { return index+1; }, 10000);
-   // 0 is the starting value, we do this so that we can return 0 
-   //if the array is  empty
-   //Here we are filling the array with the values 0 - 10000 for 
-   //the use in the suming function
-   println(reduce(x, sum, 0));
+  func sum:number (number a, number b) {
+    return a + b;
+  }
+
+  func filler:number(number index) {
+    return index + 1;
+  }
+
+  number[] x = fill(x, filler, 10000);
+  // 0 is the starting value, we do this so that we can return 0 
+  // if the array is  empty.
+  // Here we are filling the array with the values 0 - 10000 for
+  // use in the suming function
+  println(reduce(x, sum, 0));
 }
 \end{verbatim}
 
 \subsubsection{Matrix Multiplication}
-In this example we introduce nested functions and explore how working with functions can create clearer and better code. We'll also take a look at the feature that gives DotPar its name: implicit parallelism.
+In this example we introduce nested functions and explore how working with
+functions can create clearer and better code. We'll also take a look at the
+feature that gives DotPar its name: implicit parallelism.
 
 \begin{verbatim}
 func matrixMultiply:number[][](number[][] a, number[][] b) {
@@ -331,8 +456,8 @@ func matrixMultiply:number[][](number[][] a, number[][] b) {
         number[len(a[0])][len(a)] transposed;
         number i;
         number j;
-        for (i<0; i < len(a); i = i + 1){
-            for (j<0; j < len(a[0]); j = j+ 1){
+        for (i < 0; i < len(a); i = i + 1){
+            for (j < 0; j < len(a[0]); j = j+ 1){
                 transposed[j][i] = a[i][j];
             }
         }
@@ -342,25 +467,46 @@ func matrixMultiply:number[][](number[][] a, number[][] b) {
     func sum:number(number a, number b) {
           return a + b;
     }
-    
+
     func dotprod:number(number[] a, number[] b) {
           return reduce([x * y for number x, number y in a, b], sum );
     }
-    
+
     if (len(a) != len(b[0])) {
           return nil; // one can always return nil in place of a real value
     }
-    
+
     return [[dotprod(row, col) for number[] col in transpose(b)] for number[] row in a];
 }
 \end{verbatim}
 
-The function \verb=transpose= returns a transpose of the input matrix. The function \verb=matrixMultiply= takes in arguments which are two two-dimensional arrays, \verb=a= and \verb=b=. The function \verb=dotprod= accepts two one-dimensional arrays and calls the reduce function, which calls the sum function on each \verb=x=, \verb=y= pair which are elements in arrays \verb=a= and \verb=b=. The final line returns a statement that pairs every row in \verb=a= with every column in \verb=b= and calls the function \verb=dotprod=.
+The function \verb=transpose= returns a transpose of the input matrix. The
+function \verb=matrixMultiply= takes in arguments which are two two-dimensional
+arrays, \verb=a= and \verb=b=. The function \verb=dotprod= accepts two
+one-dimensional arrays and calls the reduce function, which calls the sum
+function on each \verb=x=, \verb=y= pair which are elements in arrays \verb=a=
+and \verb=b=. The final line returns a statement that pairs every row in
+\verb=a= with every column in \verb=b= and calls the function \verb=dotprod=.
 
 \subsubsection{Parallelization}
 These examples demonstrate the power of DotPar's implicit parallelization.
 
-The \verb=map= and \verb=reduce= functions can be parallelized, given certain restrictions. If the functions only access variables passed to them and do not mutate outside state, the mappings and reductions can be automatically parallelized and executed on multiple cores. For instance, the computation done by \verb=map= and \verb=reduce= can be done in $O(n/m)$ time, where $n$ is the size of the array and $m$ the number of processors. In the transpose function from the previous section, each cell in the new matrix can be computed independently of the other, so DotPar will parallelize this multiplication if it is appropriate given the computer's architecture and the nature of the computation.
+The \verb=map= and \verb=reduce= functions can be parallelized, given certain
+restrictions. If the functions only access variables passed to them and do not
+mutate outside state, a map can be parallelized. A function passed to a reduce
+must also be associative.
+For instance, the computation done
+by \verb=map= and \verb=reduce= can be done in $O(n/m)$ time, where $n$ is the
+size of the array and $m$ the number of processors. In the transpose function
+from the previous section, each cell in the new matrix can be computed
+independently of the other, so a DotPar implementation can parallelize this
+multiplication if it is appropriate given the computer's architecture and the
+nature of the computation.
 
 \section{Conclusion}
-In this tutorial we have covered compiling your programs and writing basic assignment and logical statements all the way through to more complicated features like map, reduce, list comprehensions, and nested functions. With all of the these tools now available, you should now be able to unleash the performance power that DotPar provides for data manipulation.
+
+In this tutorial we have covered compiling your programs and writing basic
+assignment and logical statements all the way through to more complicated
+features like map, reduce, list comprehensions, and nested functions. With all
+of the these tools now available, you should now be able to unleash the
+performance power that DotPar provides for data manipulation.

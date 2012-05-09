@@ -16,10 +16,31 @@ of building the compiler anew.
 Holding with tradition, the Makefile provides familiar commands such
 as \texttt{all}, \texttt{clean}, and \texttt{test}, which each in turn
 generate a binary, clean up generated intermediate files, and run the
-test suites on the generated binary, respectively. We reference our
-Makefile in figure \ref{makefile}.
+test suites on the generated binary, respectively. 
 
-\begin{figure}[H]
+Additionally, we provide a finer-grained access to our test suites
+with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
+and \texttt{full\_test} which run the seperate test suites that target
+the major parts of our compiler in turn. The test suites themselves
+are detailed in the ``Testing Methodology'' section.
+
+To manage the code and facilitate collaboration, we used a source
+control system known as git, which has recently become a popular tool,
+especially in the open source world. In particular, we extensively
+used branches in order to allow development in different areas at the
+same time. Also, we leveraged the excellent git hosting tool
+github.com, as detailed in the ``Github'' section.
+
+The \texttt{dotpar} compiler itself is built on OCaml, as detailed in
+``Language Implementation Tools''. We invoke the OCaml compiler from
+our Makefile, compiling each separate part of the compiler with
+\texttt{ocamlc -c} and then linking them together with \texttt{ocamlc
+  -o} in discrete steps. The compiler itself has no dependencies on
+external OCaml libraries that are not packaged with the standard OCaml
+environment, which enhances it's portability.
+
+\subsection{Makefile for the Project}
+
 \begin{verbatim}
 SRC = src
 OCAML_PATH = $(SRC)/ocaml
@@ -28,7 +49,7 @@ all: bin compiler
 
 bin:
 	mkdir bin
-
+	
 compiler:
 	cd $(OCAML_PATH); \
 	ocamlc -c ast.ml; \
@@ -65,30 +86,6 @@ clean: clean_ocaml
 
 .PHONY: all compiler test clean
 \end{verbatim}
-\caption{Makefile for the project}
-\label{makefile}
-\end{figure}
-
-Additionally, we provide a finer-grained access to our test suites
-with such commands as \texttt{parser\_test}, \texttt{semantic\_test},
-and \texttt{full\_test} which run the seperate test suites that target
-the major parts of our compiler in turn. The test suites themselves
-are detailed in the ``Testing Methodology'' section.
-
-To manage the code and facilitate collaboration, we used a source
-control system known as git, which has recently become a popular tool,
-especially in the open source world. In particular, we extensively
-used branches in order to allow development in different areas at the
-same time. Also, we leveraged the excellent git hosting tool
-github.com, as detailed in the ``Github'' section.
-
-The \texttt{dotpar} compiler itself is built on OCaml, as detailed in
-``Language Implementation Tools''. We invoke the OCaml compiler from
-our Makefile, compiling each separate part of the compiler with
-\texttt{ocamlc -c} and then linking them together with \texttt{ocamlc
-  -o} in discrete steps. The compiler itself has no dependencies on
-external OCaml libraries that are not packaged with the standard OCaml
-environment, which enhances it's portability.
 
 \subsection{Compilation Process}
 

@@ -1,8 +1,21 @@
-DotPar is a flexible language that provides implicit nested data parallelism with powerful first-class functions while providing a familiar imperative interface. The focus is on parallel performance for arrays and loops, since these are often the source of performance bottlenecks.
-\\ \\*Previous implementations of nested data-parallel languages have relied on the use of purely functional paradigms which can make the learning-curve steep and difficult to those who just want to pick up a new tool. DotPar provides a multi-paradigm nested data-parallel language with a friendly imperative style in addition to powerful functions. Its implicit parallelism focuses on the performance of arrays and loops, but its implementation requirements are flexible enough for other forms of parallelism as well.
+DotPar is a flexible language that provides implicit nested data parallelism
+with powerful first-class functions while providing a familiar imperative
+interface. The focus is on parallel performance for arrays and loops, since
+these are often the source of performance bottlenecks.
+
+\\ \\*Previous implementations of nested data-parallel languages have relied on
+the use of purely functional paradigms which can make the learning-curve steep
+and difficult to those who just want to pick up a new tool. DotPar provides a
+multi-paradigm nested data-parallel language with a friendly imperative style in
+addition to powerful functions. Its implicit parallelism focuses on the
+performance of arrays and loops, but its implementation requirements are
+flexible enough for other forms of parallelism as well.
 
 \section{Lexical Convention}
-A program consists of zero or more input statements, and one or more lines stored in files. These are translated in several phases, which are described in Section 13. The first phases do low-level lexical transformations, which reduce the program to a series of tokens.
+A program consists of zero or more input statements, and one or more lines
+stored in files. These are translated in several phases, which are described in
+Section 13. The first phases do low-level lexical transformations, which reduce
+the program to a series of tokens.
 
 \tab \emph{lines:} 
 \\* \tab \tab \tab \textit{imports\_opt external\_declaration}
@@ -15,7 +28,11 @@ A program consists of zero or more input statements, and one or more lines store
 import\_declarations will be explained in detail in Section 11.
 
 \section{Tokens}
-DotPar has 5 token classes: identifiers, keywords, literals, operators, and other separators. All white space, collectively including blanks, horizontal and vertical tabs, newlines, and comments as described below are ignored except as they separate certain tokens. Sometimes white space is required to separate otherwise adjacent identifiers, keywords, and literals.
+DotPar has 5 token classes: identifiers, keywords, literals, operators, and
+other separators. All white space, collectively including blanks, horizontal and
+vertical tabs, newlines, and comments as described below are ignored except as
+they separate certain tokens. Sometimes white space is required to separate
+otherwise adjacent identifiers, keywords, and literals.
 \subsection{Comments}
 The characters /* introduce a block comment, which terminates with the characters */. In addition, // adds line comments which converts everything that follows to a comment until the end of the line. Comments do not nest, and they do not occur within string or character literals.
 \subsection{Constants}
@@ -52,37 +69,79 @@ There are only two values for a boolean constant, \verb!true! or \verb!false!. T
 \verb!nil! is a special literal that can stand in for any other type of value. \verb!nil! evaluates to \verb!false!. \verb!nil! and \verb!false! are the only values in the language that evaluate to \verb!false!.
 \subsection{Identifiers}
 An identifier is a sequence of letters and digits, and underscores. The first character must be a letter. Identifiers are case-sensitive and may have any length.
+
 \subsection{Keywords}
-The following identifiers are reserved for use as keywords, and may not be used otherwise:
+The following identifiers are reserved for use as keywords. This include
+built-in functions, Scala keywords, and keywords reserved for future use in the
+language.
 \begin{itemize}
-\item
-\verb!import!
-\item
-\verb!true!
-\item
-\verb!false!
-\item
-\verb!boolean!
-\item
-\verb!char!
-\item
-\verb!func!
-\item
-\verb!number!
-\item
-\verb!void!
-\item
-\verb!if!
-\item
-\verb!else!
-\item
-\verb!elif!
-\item
-\verb!for!
-\item
-\verb!in!
-\item
-\verb!return!
+	\item{\verb=abstract=}
+	\item{\verb=case=}
+	\item{\verb=catch=}
+	\item{\verb=class=}
+	\item{\verb=def=}
+	\item{\verb=do=}
+	\item{\verb=else=}
+	\item{\verb=extends=}
+	\item{\verb=false=}
+	\item{\verb=final=}
+	\item{\verb=finally=}
+	\item{\verb=for=}
+	\item{\verb=forSome=}
+	\item{\verb=if=}
+	\item{\verb=implicit=}
+	\item{\verb=import=}
+	\item{\verb=lazy=}
+	\item{\verb=match=}
+	\item{\verb=new=}
+	\item{\verb=null=}
+	\item{\verb=object=}
+	\item{\verb=override=}
+	\item{\verb=package=}
+	\item{\verb=private=}
+	\item{\verb=protected=}
+	\item{\verb=return=}
+	\item{\verb=sealed=}
+	\item{\verb=super=}
+	\item{\verb=this=}
+	\item{\verb=throw=}
+	\item{\verb=trait=}
+	\item{\verb=try=}
+	\item{\verb=true=}
+	\item{\verb=type=}
+	\item{\verb=val=}
+	\item{\verb=var=}
+	\item{\verb=while=}
+	\item{\verb=with=}
+	\item{\verb=yield=}
+	\item{\verb=cat=}
+	\item{\verb=each=}
+	\item{\verb=fill=}
+	\item{\verb=filter=}
+	\item{\verb=len=}
+	\item{\verb=map=}
+	\item{\verb=reduce=}
+	\item{\verb=zip=}
+	\item{\verb=acos=}
+	\item{\verb=asin=}
+	\item{\verb=atan=}
+	\item{\verb=cos=}
+	\item{\verb=exp=}
+	\item{\verb=ln=}
+	\item{\verb=log=}
+	\item{\verb=sin=}
+	\item{\verb=sqrt=}
+	\item{\verb=tan=}
+	\item{\verb=ceil=}
+	\item{\verb=floor=}
+	\item{\verb=trunc=}
+	\item{\verb=round=}
+	\item{\verb=rand=}
+	\item{\verb=print=}
+	\item{\verb=println=}
+	\item{\verb=printerr=}
+	\item{\verb=read=}
+	\item{\verb=readln=}
 \end{itemize}
 
 \section{Syntax Notation}
@@ -133,12 +192,30 @@ The operators in postfix expressions group left to right.
 \subsubsection{Array References}
 A postfix expression followed by an expression in square brackets is a postfix expression denoting a subscripted array reference. The postfix expression must evaluate to an array and the expression must evaluate to a type number.
 \subsubsection{Function call}
-A postfix expression followed by the function designator, followed by parentheses containing a possibly empty, comma-separated list of assignment expressions, which constitute the arguments to the given function.   
-\\ \\* The term argument is used for an expression passed by a function call; the term parameter is used for an input object (or its identifier) received by a function definition, or described in function declaration. The scope is lexical.
-\\ \\* Arguments are passed by value. A function may change the values of its parameter objects, which are copies of the argument expressions, but these changes cannot affect the values of the arguments. 
-\\ \\*However, array references are passed by value, so a function may modify the contents of an array passed to it. 
-\\ \\* Type agreement is strict between the parameters and arguments. Thus, DotPar is strongly and statically typed.          
-\\ \\* The order of evaluation of arguments is unspecified. In addition, the arguments and their side effects need not be fully evaluated before the function is entered if the compiler can guarantee that this does not affect the correctness of the program. 
+A postfix expression followed by the function designator, followed by
+parentheses containing a possibly empty, comma-separated list of assignment
+expressions, which constitute the arguments to the given function.   
+\\ \\* The term argument is used for an expression passed by a function call;
+the term parameter is used for an input object (or its identifier) received by a
+function definition, or described in function declaration. The scope is lexical.
+\\ \\* Arguments are passed by value. A function may change the values of its
+parameter objects, which are copies of the argument expressions, but these
+changes cannot affect the values of the arguments. 
+\\ \\*However, array references are passed by value, so a function may modify
+the contents of an array passed to it.
+\\ \\* Type agreement is strict between the parameters and arguments. Thus,
+DotPar is strongly typed. By some definitions it is not statically typed because
+it is possible to get a type error at runtime. Because DotPar does not support
+overloading or generics, there is no easy way to support a function like
+\verb=println= which accepts an arbitrary type. Thus, DotPar compilers can
+accept a more flexible, internally used \verb=Any= type. The same is true for
+functions like \verb=map= and \verb=reduce=. This gives DotPar great
+flexibility. Unfortunately, it also makes it possible for type errors to occur
+at run time.
+\\ \\* The order of evaluation of arguments is unspecified. In addition, the
+arguments and their side effects need not be fully evaluated before the function
+is entered if the compiler can guarantee that this does not affect the
+correctness of the program. 
 
 \subsection{Unary Expressions}
 Expressions with unary operators group right-to-left.
@@ -146,11 +223,18 @@ Expressions with unary operators group right-to-left.
 \\* \tab \tab \emph{postfix\_expression}
 \\* \tab \tab \emph{NOT unary\_expression}
 \\* \tab \tab \emph{SUB unary\_expression}
-\\ \\* The NOT unary\_expresssion refers to the ! operator. The operand of the ! operator must have a boolean type, and the result is true if the value of its operand evaluates to false, and false otherwise. The type of the result is boolean.
-\\ \\* The SUB unary\_expression refers to the - operator. The operand of the - operator must have a number type, and the result is the negation of the value of its operand. The type of the result is number.
+\\ \\* The NOT unary\_expresssion refers to the ! operator. The operand of the !
+operator must have a boolean type, and the result is true if the value of its
+operand evaluates to false, and false otherwise. The type of the result is
+boolean.
+\\ \\* The SUB unary\_expression refers to the - operator. The operand of the -
+operator must have a number type, and the result is the negation of the value of
+its operand. The type of the result is number.
 
 \subsection{Arithmetic Expressions}
-Arithmetic Expressions are grouped left to right, and include: \%, /, *, + , - but this is infact is not useful, as it is parsed to preserve C style precedence. All operators return number types.
+Arithmetic Expressions are grouped left to right, and include: \%, /, *, + , and
+-.
+All operators return number types.
 \\ \\* \tab \emph{arithmetic\_expression:}
 \\* \tab \tab \emph{unary\_expression}
 \\* \tab \tab \emph{arithmetic\_expression REM arithmetic\_expression}
@@ -158,11 +242,9 @@ Arithmetic Expressions are grouped left to right, and include: \%, /, *, + , - b
 \\* \tab \tab \emph{arithmetic\_expression MULT arithmetic\_expression}
 \\* \tab \tab \emph{arithmetic\_expression ADD arithmetic\_expression}
 \\* \tab \tab \emph{arithmetic\_expression SUB arithmetic\_expression}
-\\ \\*REM refers to the \% operator, the remainder which refers to the remaining value after quotient the first operand by the second. Note that the remainder of a negative value will be negative.
-\\ \\*DIV refers to the / operator, the division which refers to quotient of the first operand and the second.
-\\ \\*MULT refers to the * operator, the multiplication between its two operands.
-\\ \\*ADD refers to the + operator, the addition between its two operands.
-\\ \\*SUB refers to the binary - operator, the subtraction between its two operands.
+\\ \\*REM refers to the \% operator, the remainder which refers to the remaining
+value after quotient the first operand by the second. Note that the remainder of
+a negative value will be negative.
 
 \subsection{Relational Expressions}
 The relational operators group left-to-right.
@@ -174,7 +256,12 @@ The relational operators group left-to-right.
 \\* \tab \tab \emph{relational\_expression LEQ relational\_expression}
 \\* \tab \tab \emph{relational\_expression EQ relational\_expression}
 \\* \tab \tab \emph{relational\_expression NEQ relational\_expression}
-\\ \\* The GEQ refers to \textgreater= operators(greater or equal), GT to \textgreater (greater), LT to \textless (less than), LEQ to \textless= (less than or equal), EQ to == (equality), and NEQ to != (not equality). All yield false if the specified relation is false, and true if it is true. The type of the result is boolean. The usual arithmetic conversions are performed on arithmetic operands. GEQ, GT, LEQ, and LT have higher precedence than EQ and NEQ.
+\\ \\* The GEQ refers to \textgreater= operators(greater or equal), GT to
+\textgreater (greater), LT to \textless (less than), LEQ to \textless= (less
+than or equal), EQ to == (equality), and NEQ to != (not equality). All yield
+boolean values. The usual arithmetic conversions are performed on
+arithmetic operands. GEQ, GT, LEQ, and LT have higher precedence than EQ and
+NEQ.
 
 \subsection{Conditional Expressions}
 The conditional operators group left-to-right and include \&\& and \textbar\textbar.
@@ -351,16 +438,14 @@ The language includes several built-in functions that provide basic building blo
 \subsection{Array}
 \begin{verbatim}
 cat(arr, other\_arr) // concatenate two arrays and return the result
-each(arr, fn(element, index)) // iterate through an array
-fill(dimensions, fn(index)) // fill an array using a function. dimensions
-// is an array that has the size of each dimension in the output array
-filter(arr, fn(element, index)) // selects certain elements from an 
+each(arr, fn(element)) // iterate through an array
+fill(fn(index), len) // fill an array using a function.
+filter(arr, fn(element)) // selects certain elements from an 
 // array; the filter function returns a boolean
 len(arr) // array length
-map(arr, fn(element, index)) //runs function fn on each element of the array
-reduce(sum, nums, 0) // reduce operation. The last argument is the 
+map(arr, fn(element)) //runs function fn on each element of the array
+reduce(arr, fn, base) // reduce operation. The last argument is the 
 // initial value.
-zip(arr, other\_arr) // combine two arrays into a nested array
 \end{verbatim}
 
 \subsection{String}
@@ -393,55 +478,9 @@ zip(arr, other\_arr) // combine two arrays into a nested array
     print(s)
     println(s)
     printerr(s)
-    read()
     readln()
 \end{verbatim}
 
-\section{Future Goals}
-We have an ambitious set of possible additions to the language. We do not expect to complete all of them, but we do hope to add at least a few of these features. Also, note that some of these goals are mutually exclusive. For instance, if Java interoperability is implemented, adding some of the library functionality mentioned below will not be necessary. Note that these additions are in no particular order.
-
-\begin{enumerate}
-\item
-Add more assignment operators: *=, \textbackslash=, +=, -=, \%=
-\item
-Do basic type inference
-\item
-Add new control flow tools: foreach loops, while, break, and continue
-\item
-Add new container objects, such as a struct or dictionary
-\item
-Introduce shorthand syntax for operations like array concatenation (++)
-\item
-Range selection for arrays and strings, e.g. arr[i:j] or arr[i:j:stride]
-\item
-Java interoperability (this will be hard given static analysis for parallelization)
-\item
-Namespacing
-\item
-Immutable values
-\item
-Library-level functionality
-\begin{itemize}
-\item
-String manipulation: trim, contains, split
-\item
-Regexes
-\item
-Arrays: populate (like fill, but for existing arrays), max, min, push, pop
-\item
-Basic data structures
-\item
-Time
-\item
-Char to int function
-\end{itemize}
-\item
-Mutating versions of some functions, such as map! and zip!
-\item
-Function keywords and/or optional params
-\item
-Implement more parallelized aspects in the language
-\end{enumerate}
 
 \section{Grammar}
 \newlength\rulelhs

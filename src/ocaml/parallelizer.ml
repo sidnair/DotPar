@@ -161,7 +161,7 @@ and can_par_expr e symbols =
   (* TODO: is it necessary to recurse into these statements? *)
   | Function_expression(state) -> true
   | Declaration(type_dec, expr) -> true
-  | Declaration_expression(type_dec, rv, lv) -> true
+  | Declaration_expression(type_dec, lv, rv) -> can_par_expr rv symbols
   | Array_literal(exprs) -> true
   | Unop(op, expr) -> true
   | Binop(expr1, op, expr2) -> true
@@ -179,6 +179,7 @@ and can_par_assignment_expr lv symbols =
   | Variable(name) -> snd(lookup name symbols 0) == 0
   | Array_access(e1, e2) -> (match e1 with
       | Variable(name) -> snd(lookup name symbols 0) == 0
+      | Array_access(e1, e2) -> can_par_assignment_expr e1 symbols
       | _ -> raise (Error "Malformed array statement")
       )
   | _ -> raise (Error "Invalid assignment expression")

@@ -19,6 +19,13 @@ func main:void() {
   println(reduce(numbers, sum, 0));
 
   number[] list_comp = [x * x for number x in numbers if (x % 2 == 0)];
+
   println(list_comp);
+
+
+  print("here");
+  printerr("oh no");
+  println(readln());
+
 }
 

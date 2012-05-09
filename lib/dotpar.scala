@@ -1,18 +1,37 @@
 import scala.collection.mutable.ArraySeq
 
 object Dotpar {
+
+  var lines = io.Source.stdin.getLines
+
+  def readln():Array[Char] = {
+    if (lines.hasNext)
+      return lines.next.toCharArray
+    else
+      return Array[Char]()
+  }
+
+  def dotpar_string(y: Any):String = {
+    y match {
+      case str: Array[Char] =>
+        str.map(_.toString).reduceLeft(_+_)
+      case arr: Array[_] =>
+        "[" + arr.map(dotpar_string(_)).reduceLeft(_+", "+_) + "]"
+      case _ => y.toString
+    }
+  }
+
   // multiplexed print
   def println(x: Any) = {
-    def dotpar_string(y: Any):String = {
-      y match {
-        case str: Array[Char] =>
-          str.map(_.toString).reduceLeft(_+_)
-        case arr: Array[_] =>
-          "[" + arr.map(dotpar_string(_)).reduceLeft(_+", "+_) + "]"
-        case _ => y.toString
-      }
-    }
     Console.println(dotpar_string(x))
+  }
+
+  def print(x: Any) = {
+    Console.print(dotpar_string(x))
+  }
+
+  def printerr(x: Any) = {
+    Console.err.println(dotpar_string(x))
   }
 
   // converts double to int for array index, throws error
@@ -25,12 +44,20 @@ object Dotpar {
     r
   }
 
+  def len[T](arr:Array[T]) = {
+    arr.length
+  }
+
   def fill[T : Manifest](fn:((Double) => T), num:Double) = {
     var tmp_arr = new Array[T](num.toInt)
     for (i <- 0 until num.toInt) {
       tmp_arr.update(i, fn(i));
     }
     tmp_arr
+  }
+
+  def concat[T : Manifest](arr:Array[T], other:Array[T]) = {
+    Array.concat(arr, other)
   }
 
   // each

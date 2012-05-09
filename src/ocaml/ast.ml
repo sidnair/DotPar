@@ -108,8 +108,9 @@ let builtin_list =
         , (ref (make_symbol_table None);))) ;
     ("each" ,  
         Func_type( Basic_type(Void_type)
-        , [Array_type(Any_type) ; Func_type(Any_type,  [Any_type ;
-        Basic_type(Number_type)], (ref (make_symbol_table None );)) ]
+        , [Array_type(Any_type) ;
+        Func_type(Any_type,  [Any_type ; ], (ref (make_symbol_table None );))
+        ]
         , (ref (make_symbol_table None);)));
     ("fill", 
         Func_type( Array_type(Any_type),
@@ -117,9 +118,9 @@ let builtin_list =
         Basic_type(Number_type)]
         , (ref (make_symbol_table None);))) ; 
     ("filter", 
-        Func_type( Basic_type(Boolean_type) 
-        , [Array_type(Any_type) ; Func_type(Array_type(Any_type) ,
-        [Basic_type(Number_type) ; Basic_type(Number_type) ], (ref
+        Func_type( Array_type(Any_type)
+        , [Array_type(Any_type) ; Func_type(Basic_type(Boolean_type) ,
+        [Any_type ; Any_type ], (ref
         (make_symbol_table None);)) ], (ref (make_symbol_table None);)))  ;
     ("len", 
         Func_type(Basic_type(Number_type), [Array_type(Any_type)] , (ref
@@ -201,7 +202,7 @@ let reserved_words =
     "cos"      ; "exp"     ; "ln"      ; "log"    ; "sin"      ;
     "sqrt"     ; "tan"     ; "ceil"    ; "floor"  ; "trunc"    ;
     "round"    ; "rand"    ; "print"   ; "println";
-    "printerr" ; "read"    ; "readln"    
+    "printerr" ; "read"    ; "readln"
   ]
 
 ;;

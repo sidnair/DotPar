@@ -422,6 +422,12 @@ func main:void() {
     println(x);
 }""",True),
 
+("""func main:void() {
+    number[][] mat = [[1,2],[3,4]];
+    mat[1][1] = 0;
+    mat[1][0] = 10;
+    println(mat);
+}""",True),
 
 ("""func main:void() {
 func fib:number(number n) {
