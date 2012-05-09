@@ -13,7 +13,7 @@ func main:void() {
     return index + 1;
   }
 
-  numbers = fill(fill_arr, 5);
+  numbers = fill(fill_arr, 500000.);
   println(numbers);
   println(map(numbers, square));
   println(reduce(numbers, sum, 0));
@@ -21,8 +21,6 @@ func main:void() {
   number[] list_comp = [x * x for number x in numbers if (x % 2 == 0)];
 
   println(list_comp);
-
-  println(readln());
 
 }
 
