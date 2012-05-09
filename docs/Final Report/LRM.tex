@@ -351,16 +351,14 @@ The language includes several built-in functions that provide basic building blo
 \subsection{Array}
 \begin{verbatim}
 cat(arr, other\_arr) // concatenate two arrays and return the result
-each(arr, fn(element, index)) // iterate through an array
-fill(dimensions, fn(index)) // fill an array using a function. dimensions
-// is an array that has the size of each dimension in the output array
-filter(arr, fn(element, index)) // selects certain elements from an 
+each(arr, fn(element)) // iterate through an array
+fill(fn(index), len) // fill an array using a function.
+filter(arr, fn(element)) // selects certain elements from an 
 // array; the filter function returns a boolean
 len(arr) // array length
-map(arr, fn(element, index)) //runs function fn on each element of the array
-reduce(sum, nums, 0) // reduce operation. The last argument is the 
+map(arr, fn(element)) //runs function fn on each element of the array
+reduce(arr, fn, base) // reduce operation. The last argument is the 
 // initial value.
-zip(arr, other\_arr) // combine two arrays into a nested array
 \end{verbatim}
 
 \subsection{String}
@@ -393,55 +391,9 @@ zip(arr, other\_arr) // combine two arrays into a nested array
     print(s)
     println(s)
     printerr(s)
-    read()
     readln()
 \end{verbatim}
 
-\section{Future Goals}
-We have an ambitious set of possible additions to the language. We do not expect to complete all of them, but we do hope to add at least a few of these features. Also, note that some of these goals are mutually exclusive. For instance, if Java interoperability is implemented, adding some of the library functionality mentioned below will not be necessary. Note that these additions are in no particular order.
-
-\begin{enumerate}
-\item
-Add more assignment operators: *=, \textbackslash=, +=, -=, \%=
-\item
-Do basic type inference
-\item
-Add new control flow tools: foreach loops, while, break, and continue
-\item
-Add new container objects, such as a struct or dictionary
-\item
-Introduce shorthand syntax for operations like array concatenation (++)
-\item
-Range selection for arrays and strings, e.g. arr[i:j] or arr[i:j:stride]
-\item
-Java interoperability (this will be hard given static analysis for parallelization)
-\item
-Namespacing
-\item
-Immutable values
-\item
-Library-level functionality
-\begin{itemize}
-\item
-String manipulation: trim, contains, split
-\item
-Regexes
-\item
-Arrays: populate (like fill, but for existing arrays), max, min, push, pop
-\item
-Basic data structures
-\item
-Time
-\item
-Char to int function
-\end{itemize}
-\item
-Mutating versions of some functions, such as map! and zip!
-\item
-Function keywords and/or optional params
-\item
-Implement more parallelized aspects in the language
-\end{enumerate}
 
 \section{Grammar}
 \newlength\rulelhs
