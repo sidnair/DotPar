@@ -159,12 +159,12 @@ let rec check_expression e sym_tabl =
             | Func_type(ret_type, var_types, sym_ref) ->
               ignore (List.map2 compare_type var_types
               (List.map get_type_table exprs));
-            t
+            ret_type
             | _ -> raise (Error "Invalid params in func call"))
           with Not_found -> raise (Error "Function not found"))
       | _ -> raise (Error "Malformed function call"))
   | Array_access (name, index) ->
-    debug("Matahced on array access");
+    debug("Matched on array access");
     (match name with
       | Variable(v) ->
         let (t, iter) = lookup v sym_tabl 0 in
@@ -298,14 +298,14 @@ and compare_type type1 type2 =
   | Array_type(b1) ->
       (match a2 with
       | Array_type(b2) -> (array_layers b1 b2)
-      | _ -> raise (Error "Mismatched array types"))
+      | _ -> raise (Error "Mismatched array types 1"))
   | Any_type ->
     (match a2 with
-      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | Any_type -> raise (Error "Mismatched array types 2")
       | _ -> true)
   | _ ->
       (match a2 with
-      | Array_type(b2) -> raise (Error "Mismatched array types")
+      | Array_type(b2) -> raise (Error "Mismatched array types 3")
       | Any_type -> true
       | _ -> false)
   in

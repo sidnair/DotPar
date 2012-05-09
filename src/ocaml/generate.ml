@@ -64,13 +64,8 @@ and gen_expression inds expression table =
   | Function_call(expr, exprs) ->
       (* match special functions *)
       (match(gen_expression inds expr table) with
-      | "println" -> "Dotpar.dp_println(" ^
-          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
-          ")\n"
-      | "each" -> "Dotpar.dp_each(" ^
-          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
-          ")\n"
-      | "filter" -> "Dotpar.dp_filter(" ^
+      | ("println" | "each" | "filter" | "fill") as fn_name ->
+          "Dotpar." ^ fn_name ^ "(" ^
           (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
           ")\n"
       | "map" -> gen_map inds exprs table
@@ -81,7 +76,7 @@ and gen_expression inds expression table =
   | Array_access(expr, expr2) ->
       (* uses a function-call index syntax *)
       (gen_expression inds expr table) ^
-      "(Dotpar.dp_array_index(" ^ (gen_expression inds expr2 table) ^ "))"
+      "(Dotpar.array_index(" ^ (gen_expression inds expr2 table) ^ "))"
   | Variable(str) -> str
   (* constants *)
   | Char_literal(c) -> "'" ^ (String.make 1 c) ^ "'"
@@ -214,11 +209,11 @@ and gen_initial type_dec =
 and gen_map inds exprs table =
   let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
   if is_pure then
-    "Dotpar.dp_par_map(" ^
+    "Dotpar.par_map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
       ")\n"
   else
-    "Dotpar.dp_map(" ^
+    "Dotpar.map(" ^
       (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
       ")\n"
 
@@ -226,11 +221,11 @@ and gen_reduce inds exprs table =
   let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
   let is_assoc = (get_fn_sym table (List.nth exprs 1)).associative in
   if is_pure && is_assoc then
-    "Dotpar.dp_par_reduce(" ^
+    "Dotpar.par_reduce(" ^
     (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
     ")\n"
   else
-    "Dotpar.dp_reduce(" ^
+    "Dotpar.reduce(" ^
     (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
     ")\n"
 

@@ -113,8 +113,9 @@ let builtin_list =
         , (ref (make_symbol_table None);)));
     ("fill", 
         Func_type( Array_type(Any_type),
-        [ Array_type(Basic_type(Number_type)) ; 
-        Func_type(Any_type, [Any_type], (ref (make_symbol_table None);))]
+        [ Array_type(Any_type) ; 
+        Func_type(Any_type, [Any_type], (ref (make_symbol_table None);)) ;
+        Basic_type(Number_type)]
         , (ref (make_symbol_table None);))) ; 
     ("filter", 
         Func_type( Basic_type(Boolean_type) 
