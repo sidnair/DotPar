@@ -57,23 +57,32 @@ let rec check_expression e sym_tabl =
   debug("Checking an expression... \n");
   (match e with
   | Assignment_expression (left, right) ->
-      let rec check_array_type expr depth = 
+      let rec get_array_type expr depth =
           (match expr with
-          | Array_access(name, index) -> 
+          | Array_access(name, index) ->
             ignore(check_expression index sym_tabl);
-            (check_array_type name (depth + 1))
+            get_array_type name (depth + 1)
           | Variable(v) ->
             let (t, iter) = lookup v sym_tabl 0 in
-            let t1 = check_expression right sym_tabl in
-            ignore(compare_type t (aug_type t1 depth));
-            t
-          | _ -> raise (Error "sup"))
-      and aug_type t depth =
-        if (depth == 0) then t else (aug_type (Array_type(t)) (depth - 1))
+            (t, depth)
+          | _ ->
+            ((check_expression expr sym_tabl), depth)
+          )
+      in let rec strip_type t depth =
+        if (depth == 0) then
+          t
+        else
+          match t with
+          | Array_type(a) -> strip_type a (depth - 1)
+          | _ -> raise (Error "Invalid depth")
       in
-          let t1 = (check_expression right sym_tabl) in
-          ignore(check_array_type left 0);
-          t1
+      let left_type, d = get_array_type left 0 in
+      let left_stripped = strip_type left_type d in
+      let right_type, d = get_array_type right 0 in 
+      let right_stripped = strip_type right_type d in
+      ignore(compare_type left_stripped right_stripped);
+
+      left_stripped
   | Declaration (var_type, var) ->
     (match var with
       | Variable(v) ->
@@ -174,11 +183,16 @@ let rec check_expression e sym_tabl =
         if not (require_number index_t)
           then raise (Error "Invalid Array Access")
         else begin
+          (*TODO: ???*)
             (match t with
             | Array_type(a) -> a
             | _ -> t)
         end
-      | _ -> raise (Error "sdfsdfMalformed Array Statement111"))
+      | Array_access(name, index) ->
+          (*ignore(check_expression index sym_tabl);*)
+          let r = (check_expression name sym_tabl) in
+          r
+      | _ -> raise (Error "Malformed Array Statement"))
   | Variable (v) -> let (t, expr) = lookup v sym_tabl 0 in t
   | Char_literal (c) -> Basic_type(Char_type)
   | Number_literal (f) -> Basic_type(Number_type)
@@ -347,7 +361,7 @@ and compare_type type1 type2 =
     (* do vanilla type checking here *)
   else if ((not (type1 = type2)) && (not any)) then raise
       (Error (Printf.sprintf "Type Mismatch: got %s expected %s"
-      (string_of_type type1) (string_of_type type2)))
+          (string_of_type type1) (string_of_type type2)))
   else type1
 
 and check_unop op type1 =
@@ -527,7 +541,7 @@ and check_func_def (name : string) ret_type params stats sym_tabl p_s_tabl =
         List.fold_left com_bools false (List.map match_jump_types s)
     | Jump(j) -> debug("Jumping!\n");
         (try
-          ignore(compare_type (get_type j sym_tabl) v);
+          ignore(compare_type (check_expression j sym_tabl) v);
           true
         with Not_found ->
           true
@@ -580,7 +594,7 @@ and require_func type1 =
   | _ -> false
 
 and check_statement stat sym_tabl =
-  debug ("Checking Statement... \n" ^ (string_of_statement stat) ^ "-------\n");
+  debug ("Checking Statement... \n" ^ (string_of_statement stat));
   match stat with
   | Expression(e) -> ignore (check_expression e sym_tabl);
   debug("Matched on Expression");
