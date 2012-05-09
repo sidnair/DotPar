@@ -120,7 +120,7 @@ let builtin_list =
     ("filter", 
         Func_type( Array_type(Any_type)
         , [Array_type(Any_type) ; Func_type(Basic_type(Boolean_type) ,
-        [Any_type ; Any_type ], (ref
+        [Any_type], (ref
         (make_symbol_table None);)) ], (ref (make_symbol_table None);)))  ;
     ("len", 
         Func_type(Basic_type(Number_type), [Array_type(Any_type)] , (ref
