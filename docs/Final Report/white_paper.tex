@@ -21,7 +21,7 @@ hard to debug.
 
 \subsection{Task-based Concurrency and the Actor Model}
 Task-based concurrency, used in languages like Ada and X10, doesn't
-expose threads to the programmer. Simple computations, not threads are
+expose threads to the programmer. Simple computations, not threads, are
 the unit of parallelization. The actor model, present in SmallTalk and
 Scala, treats different threads as actors that communicate with each
 other via message passing. Since the actors don't share state, this is
@@ -85,8 +85,8 @@ Based on static analysis of code and user annotations, DotPar can
 detect a large class of parallelization opportunities, speeding up
 execution considerably.
 
-\subsection{Static and Strong Typing}
-Keeping DotPar strongly and statically typed provides compile-time
+\subsection{Strong Typing}
+Keeping DotPar strongly typed provides compile-time
 check for common mistakes that should never make it to
 production. This also enhances the compiler’s ability to parallelize
 the code.
