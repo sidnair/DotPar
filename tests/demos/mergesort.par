@@ -1,7 +1,0 @@
-func merge_sort:number[](number[] arr) {
-  return [];
-}
-
-func main:void() {
-    println(merge_sort([1,2,3]));
-}
