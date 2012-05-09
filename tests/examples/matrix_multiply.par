@@ -2,7 +2,6 @@ func sum:number(number[] a) {
     func add:number(number x, number y) {
         return x+y;
     }
-
     return reduce(a, sum, 0);
 }
 
