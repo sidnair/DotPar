@@ -1,0 +1,24 @@
+func square:number(number index, number element) {
+  return element * element;
+}
+
+func sum:number(number a, number b) {
+  return a + b;
+}
+
+func main:void() {
+  number[] numbers;
+
+  func fill_arr:number(number index) {
+    return index + 1;
+  }
+
+  numbers = fill(numbers, fill_arr, 5);
+  println(numbers);
+  println(map(numbers, square));
+  println(reduce(numbers, sum, 0));
+
+  number[] list_comp = [x * x for number x in numbers if (x % 2 == 0)];
+  println(list_comp);
+}
+
