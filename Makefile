@@ -1,6 +1,5 @@
 SRC = src
 OCAML_PATH = $(SRC)/ocaml
-C_PATH = $(SRC)/c
 
 all: bin compiler
 
@@ -39,7 +38,7 @@ semantic_test: compiler
 full_test: compiler
 	scala tests/full_test.scala
 
-clean: clean_ocaml clean_c
+clean: clean_ocaml
 
 # http://linuxdevcenter.com/pub/a/linux/2002/01/31/make_intro.html?page=2
-.PHONY: all compiler c_compiler test clean
+.PHONY: all compiler test clean
