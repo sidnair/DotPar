@@ -193,8 +193,8 @@ let rec check_expression e sym_tabl =
       | Function_definition(name, ret_type, params, sts, symbol_table) ->
         ignore(link_tables sym_tabl symbol_table);
         ignore(check_func_def name ret_type params sts symbol_table sym_tabl);
-        let t = (check_var_type ret_type) in
-        t
+        let _ = (check_var_type ret_type) in
+        ret_type
       | _ -> raise (Error "Malformed Function expression"))
   | Empty_expression -> Basic_type(Void_type)
   )

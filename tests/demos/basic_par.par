@@ -1,4 +1,4 @@
-func square:number(number index, number element) {
+func square:number(number element) {
   return element * element;
 }
 
@@ -13,7 +13,7 @@ func main:void() {
     return index + 1;
   }
 
-  numbers = fill(numbers, fill_arr, 5);
+  numbers = fill(fill_arr, 5);
   println(numbers);
   println(map(numbers, square));
   println(reduce(numbers, sum, 0));

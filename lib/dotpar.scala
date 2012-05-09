@@ -25,10 +25,12 @@ object Dotpar {
     r
   }
 
-  def fill[T](arr:Array[T], fn:((Int) => T), num:Double) = {
+  def fill[T : Manifest](fn:((Double) => T), num:Double) = {
+    var tmp_arr = new Array[T](num.toInt)
     for (i <- 0 until num.toInt) {
-      arr.update(i, fn(i));
+      tmp_arr.update(i, fn(i));
     }
+    tmp_arr
   }
 
   // each
