@@ -24,9 +24,13 @@ small errors if possible,  and adding necessary information to the symbol table.
 
 Next, the parallelizer, where the main optimizations are acomplished, takes 
 the modified ast from the semantic analyzer and performs two passes to test. 
-Each pass performs a series of tests to find, and declare certain functions as \emph{pure}.
-These functions that are pure can be parallelized. Our optimizatinos focus on major
-bottlenecks of source programs including maps, reduces, and list comprehensions.
+Each pass performs a series of tests to find, and declare certain functions as
+\emph{pure}. Additionally, certain functions can be marked as
+\emph{associative}.
+These functions that are pure can be parallelized in maps and list
+comprehensions, and pure and associative functions can be parallelized in
+reduces as well. Our optimizatinos focus on major bottlenecks of source programs
+including maps, reduces, and list comprehensions.
 
 Lastly, the parallelizer outputs a modified ast which is fed into the generator, 
 which does a pass over the ast, translating the tree into and creating parallelized 
@@ -40,10 +44,13 @@ will only attempt to parallelize a program after extensive checks which gives ad
 compile security and relability.
 
 \section{Implementation}
-The grammar was designed and implemented Sid Nair, and Nathan Hwang, with the
-conversion to Ocaml being carried out by Sid Nair and Justin Hines.  The parser was
-completed by Nathan Hwang and Justin Hines.  The transform by Nathan Hwang.  The
-Semantic Analyzer was implemented by Justin Hines and Andrew Hitti.  The Parallelizer was
-implemented by Sid Nair with minor contributions by Justin Hines, and Nathan Hwang. 
-The Geneator was implemented by Nathan Hwang with signifcant contributions from 
-Sid Nair, Andrew Hitti, and Justin Hines.
+The original grammar, written using \verb=yacc= and \verb=lex=, was designed and
+implemented Sid Nair and Nathan Hwang. The conversion to OCaml was done by Sid
+Nair and Justin Hines. The parsing to create the AST was was completed by
+Nathan Hwang and Justin Hines. An additional transformation pass on the tree was
+done by Nathan Hwang. The semantic analysis pass was implemented by Justin
+Hines and Andrew Hitti. The parallelizer was implemented by Sid Nair with minor
+contributions from Justin Hines and Nathan Hwang. The Generator was implemented
+by Nathan Hwang with signifcant contributions from Sid Nair, Andrew Hitti, and
+Justin Hines. Test cases were written by all group members, but the primary
+contributors were Nathan Hwang, Andrew Hitti, and Logan Donovan.
