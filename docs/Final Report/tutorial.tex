@@ -350,12 +350,6 @@ program fragment in one line:
 number[] squares = [x * x for number x in [1, 2, 3, 4, 5] if (x % 2 == 0)];
 \end{verbatim}
 
-You can also use an expanded notation for using n arrays, such as
-
-\begin{verbatim}
-number[] foo = [x * y for number x, number y in [1, 3, 9], [1, 2, 3] if (x != 1)];
-\end{verbatim}
-
 \subsection{Working with Functions}
 In DotPar, functions are first-class, which means they can be assigned to
 variables or passed to other functions as arguments. A function provides a
@@ -445,49 +439,6 @@ func main:void(){
 }
 \end{verbatim}
 
-\subsubsection{Matrix Multiplication}
-In this example we introduce nested functions and explore how working with
-functions can create clearer and better code. We'll also take a look at the
-feature that gives DotPar its name: implicit parallelism.
-
-\begin{verbatim}
-func matrixMultiply:number[][](number[][] a, number[][] b) {
-    func transpose: number[][](number[][] a) {
-        number[len(a[0])][len(a)] transposed;
-        number i;
-        number j;
-        for (i < 0; i < len(a); i = i + 1){
-            for (j < 0; j < len(a[0]); j = j+ 1){
-                transposed[j][i] = a[i][j];
-            }
-        }
-        return transposed;
-    }
-
-    func sum:number(number a, number b) {
-          return a + b;
-    }
-
-    func dotprod:number(number[] a, number[] b) {
-          return reduce([x * y for number x, number y in a, b], sum );
-    }
-
-    if (len(a) != len(b[0])) {
-          return nil; // one can always return nil in place of a real value
-    }
-
-    return [[dotprod(row, col) for number[] col in transpose(b)] for number[] row in a];
-}
-\end{verbatim}
-
-The function \verb=transpose= returns a transpose of the input matrix. The
-function \verb=matrixMultiply= takes in arguments which are two two-dimensional
-arrays, \verb=a= and \verb=b=. The function \verb=dotprod= accepts two
-one-dimensional arrays and calls the reduce function, which calls the sum
-function on each \verb=x=, \verb=y= pair which are elements in arrays \verb=a=
-and \verb=b=. The final line returns a statement that pairs every row in
-\verb=a= with every column in \verb=b= and calls the function \verb=dotprod=.
-
 \subsubsection{Parallelization}
 These examples demonstrate the power of DotPar's implicit parallelization.
 
@@ -502,6 +453,38 @@ from the previous section, each cell in the new matrix can be computed
 independently of the other, so a DotPar implementation can parallelize this
 multiplication if it is appropriate given the computer's architecture and the
 nature of the computation.
+
+\subsubsection{A Final Example}
+In a final example, we highlight some of the parallelization opportunities
+detected by our implementation of a DotPar compiler.
+
+\begin{verbatim}
+  func square:number(number element) {
+    return element * element;
+  }
+
+  func sum:number(number a, number b) {
+    return a + b;
+  }
+
+  func main:void() {
+    number[] numbers;
+
+    func fill_arr:number(number index) {
+      return index + 1;
+    }
+
+    numbers = fill(fill_arr, 5);
+
+    println(map(numbers, square));
+    println(reduce(numbers, sum, 0));
+
+    number[] list_comp = [x * x for number x in numbers if (x % 2 == 0)];
+    println(list_comp);
+  }
+\end{verbatim}
+
+The map, reduce, and list comprehension are all run in parallel.
 
 \section{Conclusion}
 

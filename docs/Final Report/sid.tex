@@ -18,9 +18,16 @@ maintains the paradigms of our type system, but means that it is possible to get
 a type error after semantic analysis, which violates some definitions of static
 typing.
 
-Parallelization was another challenging feature. But because it is the selling
-point of the language we will discuss implementation here even though the LRM
-does not strictly require it. We decided that our focus would be data
+Another feature on our wishlist that we wanted but were forced to cut was Java
+interoperability. Java interoperability would make our language practical in the
+real world. Unfortunately, it would require generating an AST from bytecode in
+order to do dependency analysis and to do type checking. That said, compiled
+DotPar code can be used with Java code, just not the other way around.
+
+\section{Implementing Parallelism}
+Parallelization was another challenging feature. Because it is the selling
+point of the language, we will briefly discuss the implementation details.
+We decided that our focus would be data
 parallelism on \verb$for$ loops and special constructs like the \verb$map$ and
 \verb$reduce$ functions and list comprehensions. We did not want to parallelize
 lines outside of blocks. This would require constructing a full data flow graph
@@ -40,18 +47,21 @@ Banerjee GCD test and the Delta test. Because these tests are well-known and our
 language provides ways to naturally parallelize maps and reduces even without
 this analysis we decided not to implement these tests.
 
-Another limitation of our parallelism is that we can only detect associativity
-and commutativity of functions in special cases. Detecting these properties in
-general cases is an open problem in the field. Without detecting these
+First, we call a function that has side effects \emph{impure}.  Since we only
+parallelize maps, reduces, and list comprehensions, the only functions which are
+impure are ones that make assignments to variables outside their immediate
+scope.
+
+Detecting associativity of functions is more difficult. Detecting it in the
+general case is an open problem in the field. Without detecting these
 properties, however, it becomes impossible to parallelize certain classes of
 problems. For instance, to parallelize a \verb$reduce$, the reduction function
-must be associative.
+must be associative. Fortunately, we are able to detect simple instances of
+associativity, such as a \verb$sum$ or \verb$product$ function.
 
-Another feature on our wishlist that we wanted but were forced to cut was Java
-interoperability. Java interoperability would make our language practical in the
-real world. Unfortunately, it would require generating an AST from bytecode in
-order to do dependency analysis and to do type checking. That said, compiled
-DotPar code can be used with Java code, just not the other way around.
+Thus, though we do miss some opportunities for parallelism, we also never
+incorrectly detect an opportunity for parallelism, so DotPar does not introduce
+race conditions.
 
 \section{Language Implementation Tools}
 To implement the language, we wrote the compiler in OCaml and used Scala as our
