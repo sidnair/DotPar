@@ -22,17 +22,9 @@
 \usepackage[margin=1.35in]{geometry}
 
 \begin{document}
+\input{title.tex}
 
-% title stuff
-\title{DotPar \\ Final Report \\ Team 3}
-\author{
-Logan Donovan - lrd2127@columbia.edu \and
-Justin Hines - jph2149@columbia.edu \and
-Andrew Hitti - aah2147@columbia.edu \and
-Nathan Hwang - nyh2105@columbia.edu \and
-Sid Nair - ssn2114@columbia.edu}
-\maketitle
-
+\newpage
 \tableofcontents
 %----------------------------
 \newpage
@@ -65,9 +57,37 @@ Sid Nair - ssn2114@columbia.edu}
 \input{conclusions}
 
 \part{Appendix}
-Include a listing of the complete source code with identification of
-who wrote which module of the compiler. This listing does not have to
-be included in the paper copy of the final report.
+\section{Source Files}
+Below are all of our source files for the project. The tests and example programs can be found in our compressed source code.
+\subsection{ast.ml}
+\input{Code/ast}
 
+\subsection{compile.ml}
+\input{Code/compile}
 
+\subsection{dotpar.ml}
+\input{Code/dotpar}
+
+\subsection{generate.ml}
+\input{Code/generate}
+
+\subsection{parallelizer.ml}
+\input{Code/parallelizer}
+
+\subsection{parser.mly}
+\input{Code/parser}
+
+\subsection{scanner.mll}
+\input{Code/scanner}
+
+\subsection{semantic.ml}
+\input{Code/semantic}
+
+\subsection{transform.ml}
+\input{Code/transform}
+
+\subsection{dotpar.scala}
+\input{dotparscala}
+
+\subsection{•}
 \end{document}

@@ -1,0 +1,311 @@
+\begin{verbatim}
+(* Generate scala code from an AST *)
+(* Ripped off from AST reverser *)
+
+open Ast;;
+open Printf;;
+open Semantic;;
+
+exception NotImplemented;;
+exception SemanticError;;
+
+(* Use two spaces for indentation in the generated Scala program. *)
+let ind = "  "
+
+let rec gen_expr_map inds table exp =
+  gen_expression inds exp table
+
+and gen_expression inds expression table =
+  let next_inds = (ind ^ inds) in
+  match expression with
+    Assignment_expression(lv, rv) ->
+      (gen_expression inds lv table) ^ " = " ^ (gen_expression inds rv table)
+  | Declaration(type_dec, expr) ->
+      "var " ^ (gen_expression inds expr table) ^ ":" ^ (gen_type type_dec table) ^
+      " = " ^ (gen_expression inds (gen_initial type_dec) table)
+  | Declaration_expression(type_dec, lv, rv) ->
+      "var " ^ (gen_expression inds lv table) ^ ":" ^ (gen_type type_dec table) ^
+      " = " ^ (gen_expression inds rv table)
+  | Array_literal(exprs) ->
+      "Array(" ^ (String.concat ", "
+                    (List.map (gen_expr_map inds table) exprs)) ^ ")"
+  | List_comprehension(expr, params, exprs, if_cond, symbols) ->
+      (if (List.length params) == 1 then
+        let if_cond_str = (gen_expression inds if_cond symbols) in
+        "(" ^ (gen_expression inds (List.nth exprs 0) symbols) ^
+        (if symbols.pure then ".par" else "") ^
+        (if (String.length if_cond_str) > 0 then
+          ".filter({(" ^ (gen_param inds (List.nth params 0) symbols) ^
+          ") => " ^ if_cond_str ^ "})"
+        else
+          "") ^
+        ".map({(" ^ (gen_param inds (List.nth params 0) symbols) ^ 
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
+      else
+        let if_cond_str = (gen_expression inds if_cond symbols) in
+        "(" ^ (gen_expression inds (List.nth exprs 0) symbols) ^
+        (if symbols.pure then ".par" else "") ^
+        (if (String.length if_cond_str) > 0 then
+          ".zipped.filter({(" ^
+          (String.concat "," (List.map (gen_param_map inds symbols) params)) ^
+          ") => " ^ if_cond_str ^ "})"
+        else
+          "") ^
+        ".zipped.map({(" ^
+        (String.concat "," (List.map (gen_param_map inds symbols) params)) ^ 
+        ") => " ^ (gen_expression "" expr symbols) ^ "})" ^ ").toArray"
+      )
+  (* unary operators *)
+  | Unop(op,expr) -> (gen_unop op) ^ (gen_expression inds expr table)
+  (* all binary operators *)
+  | Binop(expr1,op,expr2) ->
+      "(" ^ (gen_expression inds expr1 table) ^ " " ^
+      (gen_binop op) ^ " " ^
+      (gen_expression inds expr2 table) ^ ")"
+  | Function_call(expr, exprs) ->
+      (* match special functions *)
+      (match(gen_expression inds expr table) with
+      | ("rand" | "cat" | "len" | "each" | "filter" | "fill" |
+      "println" | "print" | "printerr" | "readln") as fn_name ->
+          "Dotpar." ^ fn_name ^ "(" ^
+          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+          ")\n"
+      | "map" -> gen_map inds exprs table
+      | "reduce" -> gen_reduce inds exprs table
+      | _ as name -> name ^ "(" ^
+          (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^ ")"
+      )
+  | Array_access(expr, expr2) ->
+      (* uses a function-call index syntax *)
+      (gen_expression inds expr table) ^
+      "(Dotpar.array_index(" ^ (gen_expression inds expr2 table) ^ "))"
+  | Variable(str) -> str
+  (* constants *)
+  | Char_literal(c) -> "'" ^ (String.make 1 c) ^ "'"
+  | Number_literal(n) -> (string_of_float n)
+  | String_literal(s) ->
+      let char_wrap c =
+        "\'" ^ (String.make 1 c) ^ "\'"
+      in
+      let explode s =
+        let rec exp i l =
+          if (i < 0) then l else (s.[i] :: (exp (i - 1) l)) in
+        List.rev (exp ((String.length s) - 1) [])
+      in
+      "Array(" ^ (String.concat ", " (List.map char_wrap (explode s))) ^ ")"
+  | Boolean_literal(b) -> (if (b) then "true" else "false")
+  | Nil_literal -> "" (* TODO: ??? is this legal? *)
+        (* --- *)
+  | Anonymous_function(ret_type, params, block, symbols) ->
+      "(new Function" ^ (string_of_int (List.length params)) ^
+      (* TODO: ??? *)
+      (let extract_type param = 
+        match param with
+        | Param(param_type, varname) -> param_type
+      in
+      let type_list = (List.map extract_type params) @ [ret_type] in
+      let fn_type = (String.concat ", " (List.map (gen_type_map symbols) type_list)) in
+      "[" ^ fn_type ^ "]") ^
+      "{\n" ^ inds ^
+      "def apply(" ^
+      (String.concat ", " (List.map (gen_param_map inds symbols) params)) ^
+      ")" ^ 
+      (let type_str = (gen_type ret_type symbols) in
+      if (String.length type_str) > 0 then ":" ^ type_str
+      else "") ^
+      " = {\n" ^ inds ^
+      (gen_statements next_inds block symbols) ^
+      inds ^ "}" ^
+      inds ^ "})"
+  | Function_expression(state) ->
+      (gen_statement inds state table)
+  | Empty_expression -> ""
+
+and gen_unop op =
+  match op with
+    Neg -> "-"
+  | Not -> "!"
+and gen_binop op =
+  match op with
+    Add -> "+"
+  | Sub -> "-"
+  | Mult -> "*"
+  | Div -> "/"
+  | Mod -> "%"
+  | Eq -> "=="
+  | Neq -> "!="
+  | Lt -> "<"
+  | Leq -> "<="
+  | Gt -> ">"
+  | Geq -> ">="
+  | And -> "&&"
+  | Or -> "||"
+
+and gen_basic_type btype =
+  match btype with
+    Void_type -> "Unit"
+  | Number_type -> "Double"
+  | Char_type -> "Char"
+  | Boolean_type -> "Boolean"
+
+and gen_type_map table var_type =
+  gen_type var_type table
+
+and gen_type var_type table =
+  match var_type with
+    Basic_type(b) -> (gen_basic_type b)
+  | Array_type(a) -> "Array[" ^ (gen_type a table) ^ "]"
+  (* | Fixed_array_type(a,expr) -> *)
+  (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
+  | Func_type(ret_type, param_types, sym_ref) ->
+      "((" ^ (String.concat ", " (List.map (gen_type_map table) param_types)) ^ ") => " ^
+      (gen_type ret_type table) ^ ")"
+  | Func_param_type(ret_type, params) ->
+      let extract_type param = 
+        match param with
+        | Param(param_type, varname) -> param_type
+      in
+      let type_list = (List.map extract_type params) in
+      "((" ^ (String.concat ", " (List.map (gen_type_map table) type_list)) ^ ") => " ^
+      (gen_type ret_type table) ^ ")"
+  | _ -> raise NotImplemented
+
+(* this generates appropriate initial values for declarations *)
+and gen_initial_basic btype =
+  match btype with
+    Void_type -> Empty_expression
+  | Number_type -> Number_literal 0.0
+  | Char_type -> Char_literal '\000'
+  | Boolean_type -> Boolean_literal true
+and gen_initial type_dec =
+  match type_dec with
+  | Basic_type(b) -> (gen_initial_basic b)
+  | Array_type(a) -> Array_literal [(gen_initial a)]
+  (* | Fixed_array_type(a,expr) -> *)
+  (*     (gen_type a) ^ "[" ^ (gen_expression expr) ^ "]" *)
+  | Func_type(ret_type, param_types, sym_ref) ->
+      (let rec range l u =
+        if ( l > u )
+        then []
+        else l::( range ( l + 1 ) u )
+      in
+      let make_param ptype name = Param(ptype, name) in
+      let make_var var = Variable ("param" ^ var) in
+      let params = (List.map2 make_param
+                      param_types
+                      (List.map make_var
+                         (List.map string_of_int
+                            (range 1 (List.length param_types)))))
+      in
+      (* TODO: clean up *)
+      Anonymous_function (ret_type, params,
+                          [Expression (gen_initial ret_type)],
+                          (make_symbol_table None);))
+  | Func_param_type(ret_type, params) ->
+      (* TODO: clean up *)
+      Anonymous_function (ret_type, params,
+                          [Expression (gen_initial ret_type)],
+                          (make_symbol_table None);)
+  | _ -> raise NotImplemented
+
+and gen_map inds exprs table =
+  let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
+  if is_pure then
+    "Dotpar.par_map(" ^
+      (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+      ")\n"
+  else
+    "Dotpar.map(" ^
+      (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+      ")\n"
+
+and gen_reduce inds exprs table =
+  let is_pure = (get_fn_sym table (List.nth exprs 1)).pure in
+  let is_assoc = (get_fn_sym table (List.nth exprs 1)).associative in
+  if is_pure && is_assoc then
+    "Dotpar.par_reduce(" ^
+    (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+    ")\n"
+  else
+    "Dotpar.reduce(" ^
+    (String.concat ", " (List.map (gen_expr_map inds table) exprs)) ^
+    ")\n"
+
+and gen_param_map inds table parm =
+  gen_param inds parm table
+
+and gen_param inds parm table =
+  match parm with
+    Param(param_type, varname) ->
+      (gen_expression inds varname table) ^ ":" ^ (gen_type param_type table)
+
+and gen_selection inds select table =
+  let next_inds = (ind ^ inds) in
+  inds ^ "if(" ^ (gen_expression inds select.if_cond table) ^ ")" ^
+  "{\n" ^ next_inds ^
+  (gen_statements next_inds select.if_body table) ^
+  inds ^ "}\n" ^
+  (if ((List.length select.elif_conds) != 0) then
+    let gen_elif cond body =
+      " else if(" ^ (gen_expression next_inds cond table) ^ ")" ^
+      "{\n" ^ next_inds ^
+      (gen_statements next_inds body table) ^
+      inds ^ "}\n"
+    in
+    (String.concat ""
+       (List.map2 gen_elif select.elif_conds select.elif_bodies))
+  else "") ^
+  (if (select.else_body != []) then
+    " else {\n" ^ next_inds ^
+     (gen_statements next_inds select.else_body table) ^
+    inds ^ "}\n"
+  else "")
+
+and gen_statement inds stat table =
+  let next_inds = ind ^ inds in
+  match stat with
+    Expression(e) -> inds ^ (gen_expression inds e table) ^ ";\n"
+  | Statements(s) -> (gen_statements inds s table) ^ "\n" ^ inds
+  | Selection(s) -> (gen_selection inds s table) ^ "\n"
+  | Iteration(dec,check,incr, stats, symbols, header_symbols) ->
+      inds ^ (gen_expression inds dec header_symbols) ^ "\n" ^
+      inds ^ "while(" ^ (gen_expression inds check header_symbols) ^ ") {\n" ^
+      next_inds ^ (gen_statements next_inds stats symbols) ^
+      next_inds ^ (gen_expression next_inds incr header_symbols) ^
+      inds ^ "}\n"
+  | Jump(j) -> inds ^ "return " ^ (gen_expression inds j table) ^ "\n"
+  | Function_definition(name, ret_type, params, sts, symbols) ->
+      (match name with
+        "main" ->
+          inds ^ "def main" ^ "(" ^
+          (if List.length(params)==0 then
+            "args: Array[String]" (* only place with Arrays !!! *)
+          else
+            (String.concat ", " (List.map (gen_param_map inds symbols) params))
+          ) ^ ")" ^ (* (gen_type ret_type) ^ !!! *)
+          " {\n" ^ (gen_statements next_inds sts symbols) ^ inds ^ "}\n"
+      | anything ->
+          let ret_type = (gen_type ret_type symbols) in
+          inds ^ "def " ^ name ^
+          "(" ^ (String.concat ", " (List.map (gen_param_map inds symbols) params)) ^ ")" ^
+          (if (String.length ret_type) > 0 then ":" ^ ret_type ^ " ="
+          else "") ^
+          " {\n" ^ next_inds ^
+          (gen_statements next_inds sts symbols) ^
+          inds ^ "}\n"
+      )
+
+and gen_statements inds statements table =
+  match statements with
+    head::tail ->
+      (gen_statement inds head table) ^ (gen_statements inds tail table)
+  | _-> ""
+
+let gen_program program =
+  match program with
+    Program(imports, statements, symbol_table) ->
+        let boilerplate = format_of_string ("object Main {\n  %s\n}\n")
+        in
+        (Printf.sprintf boilerplate (gen_statements ind statements symbol_table))
+
+\end{verbatim}

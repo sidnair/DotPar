@@ -1,0 +1,16 @@
+\begin{verbatim}
+func main:void() {
+  func fill_arr:number(number index) {
+    return rand(10);
+  }
+
+  number[] arr = fill(fill_arr, 10);
+  number[] threes = [x for number x in arr if x == 3];
+
+  number sol = len(threes);
+
+  println(arr);
+  println(sol);
+  println(threes);
+}
+\end{verbatim}
